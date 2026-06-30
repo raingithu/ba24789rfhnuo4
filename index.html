@@ -98,7 +98,7 @@
         <button class="btn btn-primary" onclick="App.copyRoomId()">複製房號</button>
       </div>
       <div id="lobby-controls" style="display:flex; flex-direction:column; gap:12px; width:100%;">
-        <input type="text" id="room-input" placeholder="輸入房號 (選填)" style="padding:10px; border-radius:8px; border:1px solid var(--sage); text-align:center; font-size:16px;">
+        <input type="text" id="room-input" placeholder="輸入房號 (6碼英文數字)" maxlength="6" style="padding:10px; border-radius:8px; border:1px solid var(--sage); text-align:center; font-size:16px;" autocomplete="off" spellcheck="false">
         <div style="display:flex; gap:10px; width:100%;">
           <button class="btn btn-primary" style="flex:1;" onclick="App.createRoom()">建立房間</button>
           <button class="btn btn-primary" style="flex:1;" onclick="App.joinRoom()">加入遊戲</button>
@@ -693,8 +693,8 @@ function handlePoopDraw(drawId, card) {
   if (drawId !== myPlayerId) {
     log(`${drawPlayer.name} 摸到了大便！`);
   }
-  // 總是 broadcast，讓所有人都知道誰摸到了大便
-  channel.send({ type: 'broadcast', event: 'DRAW_POOP', payload: { playerName: drawPlayer.name } }).catch(() => {});
+  // 總是 broadcast，讓所有人都知道誰摸到了大便（包含 deck 長度以便同步）
+  channel.send({ type: 'broadcast', event: 'DRAW_POOP', payload: { playerName: drawPlayer.name, deckCount: state.deck.length } }).catch(() => {});
 
   // 如果是自己的回合（無論 host/joiner），顯示 modal 讓玩家選擇
   if (drawId === myPlayerId) {
@@ -1394,9 +1394,15 @@ async function createRoom() {
 }
 
 async function joinRoom() {
-  const input = document.getElementById('room-input').value.toUpperCase().trim();
+  const input = document.getElementById('room-input').value.trim();
   if (!input) { alert('請輸入房號'); return; }
-  currentRoomId = input;
+  // 房號格式：6 碼大寫英文字母或數字（A-Z, 0-9）
+  if (!/^[A-Z0-9]{6}$/.test(input.toUpperCase())) {
+    alert('房號格式錯誤！請輸入 6 碼英文字母或數字（例如：ABCD12）');
+    return;
+  }
+  const normalized = input.toUpperCase();
+  currentRoomId = normalized;
   isHost = false;
   guestJoined = true;
   showLobbyUI(currentRoomId);
@@ -1976,12 +1982,17 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     }
   });
 
-  // DRAW_POOP：當某人摸到大便時廣播，讓其他人知道
+  // DRAW_POOP：當某人摸到大便時廣播，讓其他人知道並同步 deck
   channel.on('broadcast', { event: 'DRAW_POOP' }, (payload) => {
-    const { playerName } = payload.payload || {};
+    const { playerName, deckCount } = payload.payload || {};
     const targetPlayer = state.players.find(p => p && p.name === playerName);
     if (targetPlayer && targetPlayer.alive) {
       log(`${playerName} 摸到了大便！`);
+      // 同步 deck：從頭部移除一張（模擬 host 的 deck.shift()）
+      if (state.deck.length > 0) {
+        state.deck.shift();
+      }
+      UI.deckCount.textContent = state.deck.length;
       renderAll();
     }
   });
