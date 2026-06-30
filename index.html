@@ -218,6 +218,19 @@ function shuffle(arr) {
 }
 
 function log(msg) {
+  // 將自己的座位代號替換為「你」
+  if (myPlayerId >= 0 && state.players[myPlayerId]) {
+    const mySeat = state.players[myPlayerId].name; // e.g. 'A'
+    if (mySeat && mySeat.length === 1) {
+      const escaped = mySeat.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      // 字串開頭的代號：「B 摸了一張牌。」→「你摸了一張牌。」
+      msg = msg.replace(new RegExp('^' + escaped + ' ', 'g'), '你');
+      // 中間的代號：「A 與 B 交換手牌！」→「A 與你交換手牌！」
+      msg = msg.replace(new RegExp(' ' + escaped + ' ', 'g'), '你');
+      // 清理可能產生的雙空格
+      msg = msg.replace(/  /g, ' ');
+    }
+  }
   const line = document.createElement('div');
   line.textContent = msg;
   line.style.padding = '4px 0';
