@@ -458,6 +458,11 @@ function startTurn() {
       console.log('[STARTTURN] pendingInteractive stuck, force clearing');
       state.pendingInteractive = false;
     }
+    // 切換到不同玩家時清除 pendingInteractiveTargetIsHuman，防止殘留值觸發 shouldContinueAI
+    if (state.lastActivePlayerId !== undefined && state.lastActivePlayerId !== p.id) {
+      state.pendingInteractiveTargetIsHuman = false;
+    }
+    state.lastActivePlayerId = p.id;
     const canRunAI = !UI.modal.classList.contains('show') && !state.pendingInteractive && isServer && !isJoiner;
     console.log('[STARTTURN] player=' + p.name + '(id=' + p.id + ') isHuman=' + p.isHuman + ' isJoiner=' + isJoiner + ' modal=' + UI.modal.classList.contains('show') + ' pendingInt=' + state.pendingInteractive + ' isHost=' + isHost + ' → runAI=' + canRunAI);
     if (canRunAI) {
@@ -508,7 +513,11 @@ function playCard(cardId, isAI = false) {
       const target = state.players[targetId];
       if (target) {
         if (targetId_isHuman(targetId)) {
-          // 目標是 human：區分本地 human（房主）和遠端 human（加入者）
+          // 目標是 human：先 broadcast INTERACTIVE_TARGET 讓 joiner 端先 log「打出了一張」
+          if (card.type !== TYPES.COMMAND || targetId !== p.id) {
+            channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
+          }
+          // 然後執行效果，等房主選擇
           if (targetId === myPlayerId) {
             // 本地 human（房主 id=0）→ 執行效果，等房主選擇
             switch (card.type) {
@@ -527,10 +536,7 @@ function playCard(cardId, isAI = false) {
         } else {
           // 目標是 AI → 先 broadcast INTERACTIVE_TARGET 讓 receiver 端先 log「打出了一張」
           if (card.type !== TYPES.COMMAND || targetId !== p.id) {
-            const target = state.players[targetId];
-            if (target) {
-              channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
-            }
+            channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
           }
           // 然後執行效果
           switch (card.type) {
@@ -542,14 +548,6 @@ function playCard(cardId, isAI = false) {
           }
           state.pendingInteractive = false;
           state.pendingInteractiveTargetIsHuman = false;
-        }
-      }
-      // AI 對 human 目標：broadcast INTERACTIVE_TARGET 讓 joiner 端顯示 modal
-      // （AI 對 AI 目標已在上面的分支中 broadcast）
-      if (card.type !== TYPES.COMMAND || targetId !== p.id) {
-        const target = state.players[targetId];
-        if (target && targetId_isHuman(targetId)) {
-          channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
         }
       }
     } else {
@@ -1402,7 +1400,7 @@ function showLobbyUI(roomId) {
   if (copyBtn) copyBtn.style.display = isHost ? 'block' : 'none';
   if (isHost) {
     document.getElementById('start-game-btn').style.display = 'block';
-    document.getElementById('lobby-status').textContent = '玩家已加入！可以開始遊戲';
+    document.getElementById('lobby-status').textContent = '等候玩家加入...';
   } else {
     document.getElementById('start-game-btn').style.display = 'none';
     document.getElementById('lobby-status').textContent = '已就座，等待房主開始';
@@ -1473,6 +1471,7 @@ function joinChannel(roomId) {
     } else {
       // Joiner: render + update turn status based on whose turn it is
       renderAll();
+      updateActiveAvatar();
       const p = state.players[state.currentPlayer];
       if (p) {
         if (p.id === myPlayerId) {
@@ -1543,6 +1542,7 @@ window.showRematchModal = function showRematchModal(winnerName) {
     state.gameOver = false;
     state.pendingInteractive = false;
     state.pendingInteractiveTargetIsHuman = false;
+    state.lastActivePlayerId = -1;
     state.skipDraw = false;
     state.skipDrawFor = -1;
     state.deck = [];
@@ -1747,7 +1747,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     const to = state.players[toIdx];
     if (!from || !to) return;
     // 在清除 pendingInteractive 之前，先檢查是否需要繼續 AI 回合
-    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play';
+    // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
+    const isJoiner = guestJoined && from && from.id === 1;
+    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isJoiner;
     state.pendingInteractive = false;
     state.pendingInteractiveTargetIsHuman = false;
     switch (data.result) {
@@ -1804,7 +1806,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     const to = state.players[toIdx];
     if (!from || !to) return;
     // 在清除 pendingInteractive 之前，先檢查是否需要繼續 AI 回合
-    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play';
+    // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
+    const isJoiner = guestJoined && from && from.id === 1;
+    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isJoiner;
     state.pendingInteractive = false;
     state.pendingInteractiveTargetIsHuman = false;
     switch (data.result) {
@@ -1855,7 +1859,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
         log(`指使了自己！被指使回合為 ${data.commandTurnsLeft || state.commandTurnsLeft}。`);
         state.commandTurnsLeft = data.commandTurnsLeft || state.commandTurnsLeft;
         // 指使自己：currentPlayer 不變，如果 source 是 AI 且是 AI 回合，繼續 AI（只有 server 端執行）
-        if (isServer && !source.isHuman && state.currentPlayer === source.id && state.phase === 'play') {
+        // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
+        const isJoinerCmd = guestJoined && source && source.id === 1;
+        if (isServer && !source.isHuman && state.currentPlayer === source.id && state.phase === 'play' && !isJoinerCmd) {
           setTimeout(() => runAI(), 300);
         }
         break;
@@ -2799,6 +2805,8 @@ function initGameState() {
   state.commandSource = -1;
   state.turnCount = 0;
   state.pendingInteractive = false;
+  state.pendingInteractiveTargetIsHuman = false;
+  state.lastActivePlayerId = -1;
   state.aiMemory = { topCards: [], knownPoopPositions: [] };
 
   UI.board.classList.add('active');
