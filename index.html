@@ -98,7 +98,7 @@
         <button class="btn btn-primary" onclick="App.copyRoomId()">複製房號</button>
       </div>
       <div id="lobby-controls" style="display:flex; flex-direction:column; gap:12px; width:100%;">
-        <input type="text" id="room-input" placeholder="輸入房號 (6碼英文數字)" maxlength="6" style="padding:10px; border-radius:8px; border:1px solid var(--sage); text-align:center; font-size:16px;" autocomplete="off" spellcheck="false">
+        <input type="text" id="room-input" placeholder="輸入房號 (６碼英文數字)" maxlength="6" style="padding:10px; border-radius:8px; border:1px solid var(--sage); text-align:center; font-size:16px;" autocomplete="off" spellcheck="false">
         <div style="display:flex; gap:10px; width:100%;">
           <button class="btn btn-primary" style="flex:1;" onclick="App.createRoom()">建立房間</button>
           <button class="btn btn-primary" style="flex:1;" onclick="App.joinRoom()">加入遊戲</button>
@@ -464,8 +464,9 @@ function startTurn() {
     UI.turnStatus.textContent = `${p.name} 的回合...`;
     UI.turnStatus.style.color = '#9c8aaa';
     // 只有 host 端對 AI 玩家執行 AI（排除 human player 和 joiner）
-    // joiner 的 player id 是 1（如果有加入者）
-    const isJoiner = guestJoined && p.id === 1;
+    // isHuman 在 host 端對 joiner = false，在 joiner 端對自己 = true
+    // 用 p.id < 2 判斷是否為 human（id 0,1 都是 human，id >= 2 是 AI）
+    const isHumanPlayer = p.id < 2;
     // 如果 pendingInteractive 殘留且不是 human 回合，強制清除
     if (state.pendingInteractive && !p.isHuman && isServer) {
       console.log('[STARTTURN] pendingInteractive stuck, force clearing');
@@ -476,8 +477,8 @@ function startTurn() {
       state.pendingInteractiveTargetIsHuman = false;
     }
     state.lastActivePlayerId = p.id;
-    const canRunAI = !UI.modal.classList.contains('show') && !state.pendingInteractive && isServer && !isJoiner;
-    console.log('[STARTTURN] player=' + p.name + '(id=' + p.id + ') isHuman=' + p.isHuman + ' isJoiner=' + isJoiner + ' modal=' + UI.modal.classList.contains('show') + ' pendingInt=' + state.pendingInteractive + ' isHost=' + isHost + ' → runAI=' + canRunAI);
+    const canRunAI = !UI.modal.classList.contains('show') && !state.pendingInteractive && isServer && !isHumanPlayer;
+    console.log('[STARTTURN] player=' + p.name + '(id=' + p.id + ') isHuman=' + p.isHuman + ' isHumanPlayer=' + isHumanPlayer + ' modal=' + UI.modal.classList.contains('show') + ' pendingInt=' + state.pendingInteractive + ' isHost=' + isHost + ' → runAI=' + canRunAI);
     if (canRunAI) {
       setTimeout(() => runAI(), 800);
     }
@@ -547,10 +548,8 @@ function playCard(cardId, isAI = false) {
             // pendingInteractive 不清，等 RESULT handler 清除
           }
         } else {
-          // 目標是 AI → 先 broadcast INTERACTIVE_TARGET 讓 receiver 端先 log「打出了一張」
-          if (card.type !== TYPES.COMMAND || targetId !== p.id) {
-            channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
-          }
+          // 目標是 AI → 先 broadcast INTERACTIVE_TARGET 讓 receiver 端先 log「打出了一張」（包含 self-command）
+          channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: card.type, senderId: p.id, targetId: targetId, senderName: p.name, cardTypeName: card.name } }).catch(() => {});
           // 然後執行效果
           switch (card.type) {
             case TYPES.SWAP: executeSwap(p, target, null); break;
@@ -689,10 +688,8 @@ function handlePoopDraw(drawId, card) {
   const drawPlayer = state.players[drawId];
   if (!drawPlayer || !drawPlayer.alive) return;
 
-  // 廣播「摸到大便」訊息給其他人（摸牌者本地已在 drawPhase 中 log）
-  if (drawId !== myPlayerId) {
-    log(`${drawPlayer.name} 摸到了大便！`);
-  }
+  // 廣播「摸到大便」訊息給所有人
+  log(`${drawPlayer.name} 摸到了大便！`);
   // 總是 broadcast，讓所有人都知道誰摸到了大便（包含 deck 長度以便同步）
   channel.send({ type: 'broadcast', event: 'DRAW_POOP', payload: { playerName: drawPlayer.name, deckCount: state.deck.length } }).catch(() => {});
 
@@ -716,7 +713,7 @@ function handlePoopDraw(drawId, card) {
             log(`大便已放回牌堆第 ${insertedIdx+1} 張位置。`);
             // 被指使者摸到大便 → 立即解除指使狀態
             if (state.commandTarget === drawPlayer.id && state.commandTurnsLeft > 0) {
-              log(`${drawPlayer.name} 解除被指使狀態。`);
+              log(`${drawPlayer.name} 已解除被指使狀態。`);
               state.commandTarget = -1;
               state.commandTurnsLeft = 0;
               state.skipDraw = false;
@@ -742,7 +739,7 @@ function handlePoopDraw(drawId, card) {
       log(`${drawPlayer.name} 使用掃除清理了大便！`);
       // 被指使者摸到大便 → 立即解除指使狀態
       if (state.commandTarget === drawPlayer.id && state.commandTurnsLeft > 0) {
-        log(`${drawPlayer.name} 解除被指使狀態。`);
+        log(`${drawPlayer.name} 已解除被指使狀態。`);
         state.commandTarget = -1;
         state.commandTurnsLeft = 0;
         state.skipDraw = false;
@@ -1065,8 +1062,8 @@ function handleSwap(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 只有 server 端才呼叫 startTurn（觸發 AI）
-            if (isServer) startTurn();
+            // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+            if (isServer) endTurnPhase();
           } else {
             [from.hand, to.hand] = [to.hand, from.hand];
             renderAll();
@@ -1088,8 +1085,8 @@ function handleSwap(from, to, onComplete) {
         state.skipDraw = false;
         state.skipDrawFor = -1;
         channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-        // 只有 server 端才呼叫 startTurn（觸發 AI）
-        if (isServer) startTurn();
+        // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+        if (isServer) endTurnPhase();
       } else {
         [from.hand, to.hand] = [to.hand, from.hand];
         renderAll();
@@ -1135,8 +1132,7 @@ function handleDemand(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 只有 server 端才呼叫 startTurn（觸發 AI）
-            if (isServer) startTurn();
+            // 不呼叫 startTurn/endTurnPhase：runAI() 的 canEnd 邏輯會自動處理
           } else {
             const cardOptions = to.hand.map((c, i) => `${c.name} #${i+1}`);
             showModal('選擇一張牌交出', '', cardOptions, selected => {
@@ -1167,8 +1163,8 @@ function handleDemand(from, to, onComplete) {
         state.skipDraw = false;
         state.skipDrawFor = -1;
         channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-        // 只有 server 端才呼叫 startTurn（觸發 AI）
-        if (isServer) startTurn();
+        // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+        if (isServer) endTurnPhase();
       } else {
         const idx = Math.floor(Math.random() * to.hand.length);
         const card = to.hand.splice(idx, 1)[0];
@@ -1766,9 +1762,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     const to = state.players[toIdx];
     if (!from || !to) return;
     // 在清除 pendingInteractive 之前，先檢查是否需要繼續 AI 回合
-    // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
-    const isJoiner = guestJoined && from && from.id === 1;
-    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isJoiner;
+    // 用 p.id < 2 判斷是否為 human（id 0,1 都是 human，id >= 2 是 AI）
+    const isHumanPlayer = from && from.id < 2;
+    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isHumanPlayer;
     state.pendingInteractive = false;
     state.pendingInteractiveTargetIsHuman = false;
     switch (data.result) {
@@ -1825,9 +1821,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     const to = state.players[toIdx];
     if (!from || !to) return;
     // 在清除 pendingInteractive 之前，先檢查是否需要繼續 AI 回合
-    // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
-    const isJoiner = guestJoined && from && from.id === 1;
-    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isJoiner;
+    // 用 p.id < 2 判斷是否為 human（id 0,1 都是 human，id >= 2 是 AI）
+    const isHumanPlayer = from && from.id < 2;
+    const shouldContinueAI = isServer && from && state.pendingInteractiveTargetIsHuman && state.currentPlayer === from.id && state.phase === 'play' && !isHumanPlayer;
     state.pendingInteractive = false;
     state.pendingInteractiveTargetIsHuman = false;
     switch (data.result) {
@@ -1875,12 +1871,12 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
     if (!source || !target) return;
     switch (data.result) {
       case 'self':
-        log(`指使了自己！被指使回合為 ${data.commandTurnsLeft || state.commandTurnsLeft}。`);
+        log(`指使了自己！ ${target.name} 需要經歷 ${data.commandTurnsLeft || state.commandTurnsLeft} 個回合。`);
         state.commandTurnsLeft = data.commandTurnsLeft || state.commandTurnsLeft;
         // 指使自己：currentPlayer 不變，如果 source 是 AI 且是 AI 回合，繼續 AI（只有 server 端執行）
-        // 加入 isJoiner 檢查：防止 joiner 被強制出牌（PITFALL 70）
-        const isJoinerCmd = guestJoined && source && source.id === 1;
-        if (isServer && !source.isHuman && state.currentPlayer === source.id && state.phase === 'play' && !isJoinerCmd) {
+        // 用 p.id < 2 判斷是否為 human（id 0,1 都是 human，id >= 2 是 AI）
+        const isHumanPlayer = source && source.id < 2;
+        if (isServer && !source.isHuman && state.currentPlayer === source.id && state.phase === 'play' && !isHumanPlayer) {
           setTimeout(() => runAI(), 300);
         }
         break;
@@ -1930,7 +1926,7 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
         state.commandTarget = data.commandTarget;
         state.commandTurnsLeft = data.commandTurnsLeft;
         if (data.currentPlayer !== undefined) state.currentPlayer = data.currentPlayer;
-        log(`指使了${target.name}！${target.name}需要經歷${data.commandTurnsLeft}個回合。`);
+        log(`指使了 ${target.name} ！ ${target.name} 需要經歷 ${data.commandTurnsLeft} 個回合。`);
         // 只有 server 端呼叫 startTurn（觸發 AI），非 server 端更新 UI
         if (isServer) {
           startTurn();
@@ -2238,8 +2234,8 @@ function handleSwapIncoming(from, to) {
           state.pendingInteractiveTargetIsHuman = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          // 只有 server 端才呼叫 startTurn（觸發 AI）
-          if (isServer) startTurn();
+          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+          if (isServer) endTurnPhase();
         } else {
           // target 接受：執行效果
           state.pendingInteractive = false;
@@ -2294,8 +2290,8 @@ function handleDemandIncoming(from, to) {
           state.pendingInteractiveTargetIsHuman = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          // 只有 server 端才呼叫 startTurn（觸發 AI）
-          if (isServer) startTurn();
+          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+          if (isServer) endTurnPhase();
         } else {
           // 不要否決 → 等 showDemandChoice 選擇後再清除 pendingInteractive
           showDemandChoice(from, to, null);
@@ -2339,8 +2335,7 @@ function handleCommandIncoming(from, to) {
           state.pendingInteractive = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: from.id, targetIndex: to.id, result: 'veto' } }).catch(() => {});
-          // 只有 server 端才呼叫 startTurn（觸發 AI）
-          if (isServer) startTurn();
+          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
         } else {
           state.pendingInteractive = false;
           // target 接受：broadcast COMMAND_RESULT(accepted) 讓 sender 端執行效果
@@ -2463,7 +2458,8 @@ function showInteractiveChoice(card, senderId, onChoose) {
         state.pendingInteractive = true;
         state.pendingInteractiveTargetIsHuman = targetId_isHuman(target.id);
         if (target.id === sender.id) {
-          // 指使自己：直接執行效果，不廣播 INTERACTIVE_TARGET（避免重複執行）
+          // 指使自己：broadcast INTERACTIVE_TARGET 讓其他玩家看到訊息，然後執行效果
+          channel.send({ type: 'broadcast', event: 'INTERACTIVE_TARGET', payload: { cardType: TYPES.COMMAND, senderId: senderId, targetId: target.id, senderName: sender.name, cardTypeName: '指使' } }).catch(() => {});
           executeCommand(sender, target, null);
           state.pendingInteractive = false;
         } else if (targetId_isHuman(target.id)) {
@@ -2520,12 +2516,12 @@ function performSwapLogic(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 只有 server 端才呼叫 startTurn（觸發 AI）
-            if (isServer) startTurn();
+            // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
+            if (isServer) endTurnPhase();
           } else {
             // 不接受否決：執行效果
             state.pendingInteractive = false;
-            if (isServer) startTurn();
+            if (isServer) endTurnPhase();
             doSwapExchange(from, to, onComplete);
           }
         }
@@ -2550,7 +2546,8 @@ function performSwapLogic(from, to, onComplete) {
           state.skipDraw = false;
           state.skipDrawFor = -1;
           channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          if (isServer) startTurn();
+          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI（同 DEMAND_RESULT veto 分支）
+          if (isServer) endTurnPhase();
         } else {
           doSwapExchange(from, to, onComplete);
         }
@@ -2604,8 +2601,7 @@ function performDemandLogic(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 只有 server 端才呼叫 startTurn（觸發 AI）
-            if (isServer) startTurn();
+            // 不呼叫 startTurn/endTurnPhase：runAI() 的 canEnd 邏輯會自動處理
           } else {
             showDemandChoice(from, to, onComplete);
           }
@@ -2629,7 +2625,7 @@ function performDemandLogic(from, to, onComplete) {
           state.skipDraw = false;
           state.skipDrawFor = -1;
           channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          if (isServer) startTurn();
+          // 不呼叫 startTurn/endTurnPhase：runAI() 的 canEnd 邏輯會自動處理
         } else {
           deliverDemandCard(from, to, onComplete);
         }
@@ -2661,8 +2657,13 @@ function showDemandChoice(from, to, onComplete) {
     // broadcast（不管 isServer）
     channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'delivered', card: card, fromHand: from.hand, toHand: to.hand } }).catch(() => {});
     state.pendingInteractive = false;
-    if (isServer) startTurn();
-    if (onComplete) onComplete();
+    // onComplete 來自 AI 出牌時為 null，此時 runAI() 的 canEnd 檢查因 modal 開啟而失敗
+    // 必須手動觸發 endTurnPhase() 讓 AI 摸牌後結束回合
+    if (onComplete) {
+      onComplete();
+    } else if (isServer) {
+      endTurnPhase();
+    }
     // 注意：DEMAND 完成後不回調 nextTurn()，因為 from 的回合仍在進行中
   });
 }
@@ -2681,7 +2682,7 @@ function deliverDemandCard(from, to, onComplete) {
   channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'delivered', card: card, fromHand: from.hand, toHand: to.hand } }).catch(() => {});
   // 清除 pendingInteractive（broadcast 可能不回送給發送者）
   state.pendingInteractive = false;
-  if (isServer) startTurn();
+  // 不移除 startTurn()：runAI() 的 canEnd 邏輯會自動處理回合結束，startTurn() 會造成連鎖 runAI bug
   if (onComplete) onComplete();
   // 注意：DEMAND 完成後不回調 nextTurn()，因為 from 的回合仍在進行中
 }
@@ -2691,10 +2692,9 @@ function performCommandLogic(source, target, onComplete) {
     state.commandSource = source.id;
     state.commandTarget = source.id;
     state.commandTurnsLeft += 2;
-    log(`指使了自己！被指使回合為 ${state.commandTurnsLeft}。`);
-    if (isServer) {
-      channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: source.id, targetIndex: target.id, result: 'self', commandTurnsLeft: state.commandTurnsLeft } }).catch(() => {});
-    }
+    log(`指使了自己！ ${target.name} 需要經歷 ${state.commandTurnsLeft} 個回合。`);
+    // 無論 isServer 都要 broadcast，讓其他玩家（包含 joiner 對 host 的 self-command）同步效果訊息
+    channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: source.id, targetIndex: target.id, result: 'self', commandTurnsLeft: state.commandTurnsLeft } }).catch(() => {});
     if (onComplete) onComplete();
     // 指使自己不改變 currentPlayer，不需要 startTurn()
     return;
@@ -2702,7 +2702,7 @@ function performCommandLogic(source, target, onComplete) {
 
   if (target.hand.some(c => c.type === TYPES.VETO)) {
     if (target.id === myPlayerId) {
-      showModal(`你被${source.name}指使了，要否決嗎？`, '',
+      showModal(`你被 ${source.name} 指使了，要否決嗎？`, '',
         ['要', '不要'],
         choice => {
           if (choice === '要') {
@@ -2718,7 +2718,7 @@ function performCommandLogic(source, target, onComplete) {
             state.pendingInteractive = false;
             if (isServer) {
               channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: source.id, targetIndex: target.id, result: 'veto' } }).catch(() => {});
-              startTurn();
+              endTurnPhase();
             }
           } else {
             // target 接受：效果由 sender 端執行
@@ -2746,7 +2746,7 @@ function performCommandLogic(source, target, onComplete) {
           state.skipDraw = false;
           state.skipDrawFor = -1;
           channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: source.id, targetIndex: target.id, result: 'veto' } }).catch(() => {});
-          if (isServer) startTurn();
+          if (isServer) endTurnPhase();
         } else {
           applyCommandEffect(source, target, onComplete);
         }
@@ -2770,7 +2770,7 @@ function applyCommandEffect(source, target, onComplete) {
     state.skipDraw = true;
     state.skipDrawFor = source.id;
   }
-  log(`指使了${target.name}！${target.name}需要經歷${remainingTurns + 2}個回合。`);
+  log(`指使了 ${target.name} ！ ${target.name} 需要經歷 ${state.commandTurnsLeft} 個回合。`);
   // broadcast（只有 sender 端呼叫此函式，所以 always broadcast）
   channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: {
     sourceIndex: source.id, targetIndex: target.id, result: isSelfCommand ? 'self' : 'commanded',
