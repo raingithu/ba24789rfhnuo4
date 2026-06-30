@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>曲線吞噬者</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --grid-color: #2a2a2a;
+            --snake-color: #00ffcc;
+            --snake-head-color: #ccff00;
+            --food-color: #ff3366;
+            --text-color: #ffffff;
+            --ui-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+             margin: 0;
+             padding: 10px;
+             background-color: var(--bg-color);
+             color: var(--text-color);
+             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+             height: 100vh;
+             height: 100dvh;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+             overflow: hidden;
+         }
+
+         /* UI 資訊列 - 在遊戲視窗外面 */
+         .ui-bar {
+             width: 100%;
+             max-width: 500px;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+             padding: 10px 12px;
+         }
+
+         .ui-left {
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+
+         .ui-right {
+             margin-left: auto;
+             display: flex;
+             align-items: center;
+             gap: 8px;
+         }
+
+         /* 暫停按鈕 - 圓角方形 */
+         #pause-btn {
+             min-width: 44px;
+             height: 36px;
+             padding: 0 12px;
+             border: none;
+             border-radius: 8px;
+             background: rgba(255, 255, 255, 0.08);
+             color: rgba(255, 255, 255, 0.7);
+             font-size: 0.85rem;
+             font-weight: 500;
+             cursor: pointer;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 6px;
+             transition: all 0.2s ease;
+             white-space: nowrap;
+             user-select: none;
+         }
+
+         #pause-btn:hover {
+             background: rgba(255, 255, 255, 0.15);
+             color: #fff;
+         }
+
+         #pause-btn:active {
+             transform: scale(0.96);
+         }
+
+         #pause-btn.paused {
+             background: rgba(0, 255, 204, 0.15);
+             color: var(--snake-color);
+         }
+
+         /* 難度徽章 */
+         .difficulty-badge {
+             padding: 4px 12px;
+             border-radius: 12px;
+             font-size: 0.8rem;
+             font-weight: 600;
+             background: linear-gradient(135deg, rgba(204, 255, 0, 0.15), rgba(204, 255, 0, 0.05));
+             color: var(--snake-head-color);
+             border: 1px solid rgba(204, 255, 0, 0.2);
+             white-space: nowrap;
+         }
+
+         .score-board {
+             display: flex;
+             align-items: baseline;
+             gap: 8px;
+         }
+
+         .score-board .label {
+             font-size: 0.85rem;
+             color: rgba(255, 255, 255, 0.5);
+         }
+
+         .score-board span {
+             font-size: 1.3rem;
+             font-weight: 700;
+             color: var(--snake-color);
+             font-variant-numeric: tabular-nums;
+             min-width: 2ch;
+             text-align: right;
+         }
+
+        /* 遊戲區域容器 */
+         #game-container {
+             position: relative;
+             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+             border-radius: 12px;
+             overflow: hidden;
+             border: 1px solid #333;
+             width: 0;
+             height: 0;
+         }
+
+        canvas {
+              display: block;
+              background-color: var(--bg-color);
+          }
+
+        /* 遊戲覆蓋層 */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(4px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            transition: opacity 0.3s;
+        }
+
+        #overlay h1 {
+            font-size: 3rem;
+            margin: 0 0 20px 0;
+            color: var(--snake-color);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px var(--snake-color);
+        }
+
+        #overlay p {
+            font-size: 1.2rem;
+            color: #ddd;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            background: linear-gradient(45deg, var(--snake-color), #00cc99);
+            color: #000;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+            transition: transform 0.1s, box-shadow 0.1s;
+            font-weight: bold;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+        }
+
+        .hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* 難度提升提示 */
+        #difficulty-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 255, 204, 0.5);
+            color: #000;
+            padding: 10px 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        #difficulty-toast.show {
+            opacity: 1;
+        }
+
+        #swipe-hint {
+            position: fixed;
+            bottom: 18px;
+            width: 100%;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.9rem;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ui-bar">
+         <div class="ui-left">
+             <div class="difficulty-badge">難度：天堂</div>
+         </div>
+         <div class="ui-right">
+             <div class="score-board">
+                 <span class="label">分數</span>
+                 <span id="score">0</span>
+             <button id="pause-btn" title="暫停 (空白鍵)">⏸ 暫停</button>
+             </div>
+         </div>
+     </div>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="overlay">
+            <h1 id="status-text">曲線吞噬者</h1>
+            <p id="final-score">觸控滑動來改變吞噬者的移動方向</p>
+            <button class="btn" id="start-btn">開始遊戲</button>
+        </div>
+    </div>
+
+    <div id="difficulty-toast">難度提升！</div>
+    <div id="swipe-hint">請在視窗內任意位置滑動，PC端支援鍵盤方向鍵和WASD操作</div>
+
+<script>
+
+// 遊戲設定與狀態
+const config = {
+    gridSize: 20,
+    speed: 150,
+    swipeThreshold: 30,
+    tapThreshold: 10,
+    colors: {
+        bg: '#1a1a1a',
+        snakeHead: '#ccff00',
+        snakeBody: '#00ffcc',
+        food: '#ff3366'
+    },
+    difficulty: {
+        levels: [
+            { score: 0, speed: 150, name: "天堂" },
+            { score: 100, speed: 140, name: "簡單" },
+            { score: 200, speed: 130, name: "一般" },
+            { score: 300, speed: 120, name: "進階" },
+            { score: 400, speed: 110, name: "高手" },
+            { score: 500, speed: 100, name: "地獄" }
+        ],
+        maxLevelIndex: 5,
+        currentLevelIndex: 0
+    },
+    walls: [],          // 不可穿過的牆面 [ {x, y} ]
+    wallClosed: false,  // 是否已完全封閉
+    wallAnimation: null, // { progress, total, side, col, row, startX, startY, endX, endY }
+    };
+
+let canvas, ctx;
+let gameInterval;
+let isPlaying = false;
+let isPaused = false;
+let score = 0;
+
+let snake = [];
+let food = { x: 0, y: 0 };
+let direction = { x: 0, y: 0 };
+let nextDirection = { x: 0, y: 0 };
+
+let touchStartX = 0;
+let touchStartY = 0;
+let isTouching = false;
+
+function init() {
+    canvas = document.getElementById('gameCanvas');
+    ctx = canvas.getContext('2d');
+    
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    
+    // 確保 ctx 初始 scale 為 1（避免高 DPI 疊加）
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    const startBtn = document.getElementById('start-btn');
+    startBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        startGame();
+    });
+
+    const pauseBtn = document.getElementById('pause-btn');
+    pauseBtn.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        if (!isPlaying && !isPaused) return;
+        togglePause();
+    });
+
+    const container = document.getElementById('game-container');
+    container.addEventListener('pointerdown', handleTouchStart, { passive: false });
+    container.addEventListener('pointermove', handleTouchMove, { passive: false });
+    container.addEventListener('pointerup', handleTouchEnd, { passive: false });
+    container.addEventListener('pointercancel', handleTouchEnd, { passive: false });
+    
+    container.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
+    container.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
+    
+    // 鍵盤支援
+    document.addEventListener('keydown', handleKeyDown);
+    }
+
+    function handleKeyDown(e) {
+      if (!isPlaying) return;
+    
+      if (e.key === ' ') {
+          e.preventDefault();
+          togglePause();
+          return;
+      }
+    
+      const keyMap = {
+          'ArrowUp': 'up', 'ArrowDown': 'down',
+          'ArrowLeft': 'left', 'ArrowRight': 'right',
+          'w': 'up', 's': 'down',
+          'a': 'left', 'd': 'right',
+          'W': 'up', 'S': 'down',
+          'A': 'left', 'D': 'right'
+      };
+    
+      const dir = keyMap[e.key];
+      if (dir) {
+          e.preventDefault();
+          changeDirection(dir);
+      }
+    }
+
+function resizeCanvas() {
+    const container = document.getElementById('game-container');
+
+    // 計算可用空間
+    const uiBarHeight = 48;
+    const hintHeight = 24;
+    const padding = 8;
+
+    const maxWidth = window.innerWidth - padding * 2;
+    const maxHeight = window.innerHeight - uiBarHeight - hintHeight - padding * 2;
+
+    // 固定的格子像素大小（不受螢幕大小影響），最小 52px、最大 104px
+    const targetCellSize = Math.min(52, Math.max(104, Math.floor(maxHeight / 20)));
+    const canvasHeight = Math.floor(maxHeight / targetCellSize) * targetCellSize;
+    const rows = Math.floor(canvasHeight / targetCellSize);
+    const canvasWidth = Math.min(Math.floor(maxWidth / targetCellSize) * targetCellSize, 600);
+    const cols = Math.floor(canvasWidth / targetCellSize);
+
+    config.gridSize = targetCellSize;
+
+    // 高 DPI 支援
+    const dpr = window.devicePixelRatio || 1;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    container.style.width = canvasWidth + 'px';
+    container.style.height = canvasHeight + 'px';
+
+    canvas.width = canvasWidth * dpr;
+    canvas.height = canvasHeight * dpr;
+    canvas.style.width = canvasWidth + 'px';
+    canvas.style.height = canvasHeight + 'px';
+    ctx.scale(dpr, dpr);
+
+    draw();
+}
+
+function handleTouchStart(e) {
+    if (!isPlaying) return;
+    e.preventDefault(); 
+    
+    isTouching = true;
+    const point = e.pointerType === 'touch' ? e : e;
+    touchStartX = point.clientX;
+    touchStartY = point.clientY;
+}
+
+function handleTouchMove(e) {
+    if (!isPlaying || !isTouching) return;
+    e.preventDefault();
+
+    const point = e.pointerType === 'touch' ? e : e;
+    const diffX = point.clientX - touchStartX;
+    const diffY = point.clientY - touchStartY;
+
+    const distance = Math.sqrt(diffX*diffX + diffY*diffY);
+
+    if (distance > config.tapThreshold) {
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) changeDirection('right');
+            else changeDirection('left');
+        } else {
+            if (diffY > 0) changeDirection('down');
+            else changeDirection('up');
+        }
+    }
+}
+
+function handleTouchEnd(e) {
+    isTouching = false;
+}
+
+function togglePause() {
+    isPaused = !isPaused;
+    const btn = document.getElementById('pause-btn');
+    if (isPaused) {
+        btn.innerText = '▶ 繼續';
+        btn.classList.add('paused');
+        clearInterval(gameInterval);
+    } else {
+        btn.innerText = '⏸ 暫停';
+        btn.classList.remove('paused');
+        gameInterval = setInterval(gameLoop, config.difficulty.speed);
+    }
+}
+
+function toggleWallAnimation() {
+    if (isPaused) return;
+    
+    const anim = config.wallAnimation;
+    if (anim && anim.interval) {
+        clearInterval(anim.interval);
+        anim.paused = true;
+    } else if (anim && anim.paused) {
+        anim.interval = setInterval(() => {
+            if (config.wallAnimation.currentIndex < config.wallAnimation.perimeter.length) {
+                const cell = config.wallAnimation.perimeter[config.wallAnimation.currentIndex];
+                config.walls.push({ x: cell.x, y: cell.y });
+                config.wallAnimation.currentIndex++;
+                draw();
+                
+                if (config.wallAnimation.currentIndex >= config.wallAnimation.perimeter.length) {
+                    config.wallClosed = true;
+                    clearInterval(config.wallAnimation.interval);
+                    config.wallAnimation = null;
+                }
+            }
+        }, 80);
+    }
+}
+
+function startGame() {
+    document.getElementById('overlay').classList.add('hidden');
+    resetGame();
+    isPlaying = true;
+
+    if (gameInterval) clearInterval(gameInterval);
+    gameInterval = setInterval(gameLoop, config.difficulty.speed);
+}
+
+function resetGame() {
+    isPaused = false;
+    const btn = document.getElementById('pause-btn');
+    btn.innerText = '⏸ 暫停';
+    btn.classList.remove('paused');
+
+    const centerX = Math.floor(canvas.width / config.gridSize / 2);
+    const centerY = Math.floor(canvas.height / config.gridSize / 2);
+
+    snake = [
+        { x: centerX, y: centerY },
+        { x: centerX, y: centerY + 1 },
+        { x: centerX, y: centerY + 2 }
+    ];
+
+    direction = { x: 0, y: -1 };
+    nextDirection = { x: 0, y: -1 };
+    score = 0;
+
+    config.difficulty.currentLevelIndex = 0;
+    config.difficulty.speed = config.difficulty.levels[0].speed;
+
+    config.walls = [];
+    config.wallClosed = false;
+    config.wallAnimation = null;
+    config.extraWallsTriggered = false;
+
+    updateDifficultyDisplay();
+
+    updateScore();
+    placeFood();
+}
+
+function changeDirection(newDir) {
+    const goingUp = direction.y === -1;
+    const goingDown = direction.y === 1;
+    const goingRight = direction.x === 1;
+    const goingLeft = direction.x === -1;
+
+    switch (newDir) {
+        case 'up':
+            if (!goingDown) nextDirection = { x: 0, y: -1 };
+            break;
+        case 'down':
+            if (!goingUp) nextDirection = { x: 0, y: 1 };
+            break;
+        case 'left':
+            if (!goingRight) nextDirection = { x: -1, y: 0 };
+            break;
+        case 'right':
+            if (!goingLeft) nextDirection = { x: 1, y: 0 };
+            break;
+    }
+}
+
+function gameLoop() {
+    direction = nextDirection;
+
+    const head = { ...snake[0] };
+    head.x += direction.x;
+    head.y += direction.y;
+
+    const cols = Math.floor(canvas.width / config.gridSize);
+    const rows = Math.floor(canvas.height / config.gridSize);
+
+    if (head.x < 0) head.x = cols - 1;
+    if (head.x >= cols) head.x = 0;
+    if (head.y < 0) head.y = rows - 1;
+    if (head.y >= rows) head.y = 0;
+
+    // 碰撞障礙物（僅在牆面完全關閉後生效）
+    if (config.wallClosed) {
+        for (let w of config.walls) {
+            if (head.x === w.x && head.y === w.y) {
+                gameOver();
+                return;
+            }
+        }
+    }
+
+    for (let i = 0; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+            gameOver();
+            return;
+        }
+    }
+
+    snake.unshift(head);
+
+    if (head.x === food.x && head.y === food.y) {
+         score += 10;
+         updateScore();
+         placeFood();
+          // 500 分後每次吃食物隨機新增障礙物
+           if (config.extraWallsTriggered) {
+               addRandomObstacle();
+           }
+    } else {
+         snake.pop();
+    }
+
+    draw();
+}
+
+function placeFood() {
+    const cols = Math.floor(canvas.width / config.gridSize);
+    const rows = Math.floor(canvas.height / config.gridSize);
+    
+    let valid = false;
+    while (!valid) {
+        food.x = Math.floor(Math.random() * cols);
+        food.y = Math.floor(Math.random() * rows);
+        
+        // 避免食物出現在最外圍四週（防止死局）
+        if (config.wallClosing && (food.x === 0 || food.x === cols - 1 || food.y === 0 || food.y === rows - 1)) {
+            continue;
+        }
+        
+        valid = true;
+              for (let part of snake) {
+                  if (part.x === food.x && part.y === food.y) {
+                      valid = false;
+                      break;
+                  }
+              }
+              for (let w of config.walls) {
+                  if (w.x === food.x && w.y === food.y) {
+                      valid = false;
+                      break;
+                  }
+              }
+    }
+}
+
+function gameOver() {
+    isPlaying = false;
+    clearInterval(gameInterval);
+    
+    document.getElementById('status-text').innerText = "粉身碎骨";
+    document.getElementById('final-score').innerText = `分數：${score}`;
+    document.getElementById('start-btn').innerText = "再玩一次";
+    document.getElementById('overlay').classList.remove('hidden');
+}
+
+function updateScore() {
+    document.getElementById('score').innerText = score;
+    checkDifficulty();
+}
+
+function checkDifficulty() {
+    const levels = config.difficulty.levels;
+    const currentLevelIndex = config.difficulty.currentLevelIndex;
+    
+    if (currentLevelIndex < levels.length - 1) {
+        const nextLevel = levels[currentLevelIndex + 1];
+        if (score >= nextLevel.score) {
+            config.difficulty.currentLevelIndex = currentLevelIndex + 1;
+            config.difficulty.speed = nextLevel.speed;
+            
+            updateDifficultyDisplay();
+            
+            // 分數到 300 時觸發牆面關閉
+             if (nextLevel.score === 300 && !config.wallClosed && config.wallAnimation === null) {
+                 startWallClosure();
+             }
+            
+             // 分數到 500 時，新增旗標：此後每次吃食物都會隨機增加障礙物
+             if (nextLevel.score === 500 && !config.extraWallsTriggered) {
+                 config.extraWallsTriggered = true;
+             }
+            
+            if (gameInterval) clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, config.difficulty.speed);
+            
+            showDifficultyToast(nextLevel.name);
+        }
+    }
+}
+
+function updateDifficultyDisplay() {
+    const levelIndex = config.difficulty.currentLevelIndex;
+    const levelName = config.difficulty.levels[levelIndex].name;
+    document.querySelector('.difficulty-badge').innerText = `難度：${levelName}`;
+}
+
+function showDifficultyToast(levelName) {
+    const toast = document.getElementById('difficulty-toast');
+    toast.innerText = `難度提升！目前：${levelName}`;
+    toast.classList.add('show');
+    
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 1500);
+}
+
+function addRandomObstacle() {
+    const cols = Math.floor(canvas.width / config.gridSize);
+    const rows = Math.floor(canvas.height / config.gridSize);
+    
+    let attempts = 0;
+    while (attempts < 100) {
+        const x = Math.floor(Math.random() * cols);
+        const y = Math.floor(Math.random() * rows);
+        
+        // 不能出現在已有牆上
+        let onWall = false;
+        for (let w of config.walls) {
+            if (w.x === x && w.y === y) {
+                onWall = true;
+                break;
+            }
+        }
+        if (onWall) {
+            attempts++;
+            continue;
+        }
+        
+        // 不能出現在蛇身上
+        let onSnake = false;
+        for (let part of snake) {
+            if (part.x === x && part.y === y) {
+                onSnake = true;
+                break;
+            }
+        }
+        if (onSnake) {
+            attempts++;
+            continue;
+        }
+        
+        // 不能出現在食物上
+        if (food.x === x && food.y === y) {
+            attempts++;
+            continue;
+        }
+        
+        // 可以新增
+        config.walls.push({ x, y });
+        draw();
+        return;
+    }
+}
+
+// 牆面關閉動畫
+function startWallClosure() {
+    const cols = Math.floor(canvas.width / config.gridSize);
+    const rows = Math.floor(canvas.height / config.gridSize);
+
+    config.wallClosing = true;
+    // 收集四週格子：12點鐘順時針
+    const perimeter = [];
+    
+    // 上方行 (row 0): 左 → 右
+    for (let x = 0; x < cols; x++) {
+        perimeter.push({ x, y: 0 });
+    }
+    // 右方行 (col cols-1): top+1 → bottom
+    for (let y = 1; y < rows; y++) {
+        perimeter.push({ x: cols - 1, y });
+    }
+    // 下方行 (row rows-1): right-1 → left
+    for (let x = cols - 2; x >= 0; x--) {
+        perimeter.push({ x, y: rows - 1 });
+    }
+    // 左方行 (col 0): bottom-1 → 1
+    for (let y = rows - 2; y > 0; y--) {
+        perimeter.push({ x: 0, y });
+    }
+    
+    config.wallAnimation = {
+        perimeter,
+        currentIndex: 0,
+        total: perimeter.length,
+        interval: null
+    };
+    
+    // 每 80ms 關閉一格
+    config.wallAnimation.interval = setInterval(() => {
+        if (config.wallAnimation.currentIndex < config.wallAnimation.perimeter.length) {
+            const cell = config.wallAnimation.perimeter[config.wallAnimation.currentIndex];
+            config.walls.push({ x: cell.x, y: cell.y });
+            config.wallAnimation.currentIndex++;
+            draw();
+            
+            if (config.wallAnimation.currentIndex >= config.wallAnimation.perimeter.length) {
+                config.wallClosed = true;
+                clearInterval(config.wallAnimation.interval);
+                config.wallAnimation = null;
+            }
+        }
+    }, 80);
+}
+
+function draw() {
+    ctx.fillStyle = config.colors.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 繪製格線（使用 fillRect 代替 stroke，效能更好）
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+    for (let x = 0; x <= canvas.width; x += config.gridSize) {
+        ctx.fillRect(x, 0, 0.6, canvas.height);
+    }
+    for (let y = 0; y <= canvas.height; y += config.gridSize) {
+        ctx.fillRect(0, y, canvas.width, 0.6);
+    }
+    
+    if (snake.length > 0) {
+         // 繪製食物（單一 shadow，避免頻繁切換）
+         ctx.shadowBlur = 15;
+         ctx.shadowColor = config.colors.food;
+         ctx.fillStyle = config.colors.food;
+         drawCircle(food.x, food.y, config.gridSize * 0.4);
+     }
+    
+    // 繪製牆面
+    ctx.shadowBlur = 8;
+    ctx.shadowColor = '#FF6644';
+    ctx.fillStyle = '#FF6644';
+    for (let w of config.walls) {
+        const size = config.gridSize * 0.7;
+        const offset = (config.gridSize - size) / 2;
+        drawRoundRect(
+            w.x * config.gridSize + offset,
+            w.y * config.gridSize + offset,
+            size, size,
+            3
+        );
+    }
+    
+    // 蛇身（單一 shadow 批次繪製）
+    ctx.shadowBlur = 0;
+    for (let i = 0; i < snake.length; i++) {
+         const isHead = i === 0;
+         if (isHead) {
+             ctx.shadowBlur = 15;
+             ctx.shadowColor = '#FFFFFF';
+             ctx.fillStyle = '#FFFFFF';
+         } else {
+             // 蛇身漸層：越靠近尾巴越透明
+             const opacity = 1 - (i / (snake.length + 5));
+             ctx.fillStyle = `rgba(0, 255, 204, ${opacity})`;
+         }
+
+         const size = config.gridSize * 0.72;
+          const offset = (config.gridSize - size) / 2;
+        
+         
+         drawRoundRect(
+             snake[i].x * config.gridSize + offset,
+             snake[i].y * config.gridSize + offset,
+             size, size, 
+             4
+         );
+     }
+    ctx.shadowBlur = 0;
+}
+
+function drawRoundRect(x, y, width, height, radius) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+    ctx.closePath();
+    ctx.fill();
+}
+
+function drawCircle(x, y, radius) {
+    ctx.beginPath();
+    ctx.arc(
+        x * config.gridSize + config.gridSize / 2,
+        y * config.gridSize + config.gridSize / 2,
+        radius, 0, Math.PI * 2
+    );
+    ctx.fill();
+}
+
+window.onload = init;
+
+</script>
+</body>
+</html>
