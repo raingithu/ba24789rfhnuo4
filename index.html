@@ -173,12 +173,55 @@ const TYPES = {
   REVERSE: 'reverse', COMMAND: 'command', VETO: 'veto'
 };
 
+// ================= 卡牌圖示與名稱 =================
 const CARD_ICONS = { poop:'💩', cleanse:'🧹', divination:'🔮', peek:'👁️', shuffle:'🔀', swap:'🔄', demand:'📥', skip:'⏭️', reverse:'🔁', command:'👉', veto:'🚫' };
 const CARD_NAMES = { poop:'大便', cleanse:'掃除', divination:'占卜', peek:'看穿', shuffle:'洗牌', swap:'交換', demand:'索要', skip:'跳過', reverse:'轉向', command:'指使', veto:'否決' };
-const AVATAR_ICONS = { 0:'😎', 1:'🤖', 2:'👻', 3:'👽' };
 function getCardIcon(type) { return CARD_ICONS[type] || ''; }
 function getCardName(type) { return CARD_NAMES[type] || type; }
-function getAvatarIcon(id) { return AVATAR_ICONS[id] || '?'; }
+
+// ================= 頭像配置 =================
+const HUMAN_AVATARS = ['😎','🤖','👻','👽','🫠','🤡','👶','😱','👶🏿','🥱','🤣','👩🏼','🙊','😶'];
+const AI_AVATARS    = ['🐱','🐮','🐵','🐻','🦥','🐶','🐸','🦁','🐼','🐨','🦊','🐹','🐍','🦝'];
+const AVATAR_GRADIENTS = [
+  'linear-gradient(135deg, #78b89e, #a8d8c0)',
+  'linear-gradient(135deg, #a8d8a0, #c8e8c0)',
+  'linear-gradient(135deg, #8fb88a, #c0d8b8)',
+  'linear-gradient(135deg, #d4e8c8, #f0e8d0)',
+  'linear-gradient(135deg, #f0c0a0, #f8e0d0)',
+  'linear-gradient(135deg, #a0c0f0, #d0e0f8)',
+  'linear-gradient(135deg, #e0a0d0, #f0d0e8)',
+  'linear-gradient(135deg, #c8e8a0, #e0f8c0)',
+  'linear-gradient(135deg, #a0d8e8, #c0eef8)',
+  'linear-gradient(135deg, #f8d8a0, #fce8c0)',
+  'linear-gradient(135deg, #d0a0e8, #e8c0f8)',
+  'linear-gradient(135deg, #a0e8c0, #c0f8e0)',
+  'linear-gradient(135deg, #e8c0a0, #f8d8c0)',
+  'linear-gradient(135deg, #c0a0e8, #d8c0f8)'
+];
+
+function shuffleArray(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function pickAvatars(humanIds, aiIds) {
+  const picked = [];
+  // human id 從 human 池挑，AI id 從 AI 池挑，各自不重複
+  const humanShuffled = shuffleArray(HUMAN_AVATARS);
+  const aiShuffled = shuffleArray(AI_AVATARS);
+  let hi = 0, ai = 0;
+  for (const id of humanIds) {
+    picked[id] = { icon: humanShuffled[hi++] || '?', bg: AVATAR_GRADIENTS[id % AVATAR_GRADIENTS.length] };
+  }
+  for (const id of aiIds) {
+    picked[id] = { icon: aiShuffled[ai++] || '?', bg: AVATAR_GRADIENTS[id % AVATAR_GRADIENTS.length] };
+  }
+  return picked;
+}
 
 let state = {
   deck: [], discard: [], players: [], currentPlayer: 0, direction: 1,
@@ -616,7 +659,10 @@ function playCard(cardId, isAI = false) {
 }
 
 function clickDeck() {
-  if (myPlayerId === -1) return;
+  if (myPlayerId === -1) {
+    setTimeout(() => showModal('你已經被淘汰了！', [`好好觀戰吧，你還想幹嘛？`], ['知道了'], () => { hideModal(); }), 500);
+    return;
+  }
   if (state.phase === 'play') {
     const cp = state.players[state.currentPlayer];
     if (cp && !cp.isHuman) return;
@@ -1062,8 +1108,8 @@ function handleSwap(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-            if (isServer) endTurnPhase();
+            // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+            if (isServer && from && from.id >= 2) endTurnPhase();
           } else {
             [from.hand, to.hand] = [to.hand, from.hand];
             renderAll();
@@ -1085,8 +1131,8 @@ function handleSwap(from, to, onComplete) {
         state.skipDraw = false;
         state.skipDrawFor = -1;
         channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-        // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-        if (isServer) endTurnPhase();
+        // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+        if (isServer && from && from.id >= 2) endTurnPhase();
       } else {
         [from.hand, to.hand] = [to.hand, from.hand];
         renderAll();
@@ -1163,8 +1209,8 @@ function handleDemand(from, to, onComplete) {
         state.skipDraw = false;
         state.skipDrawFor = -1;
         channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-        // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-        if (isServer) endTurnPhase();
+        // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+        if (isServer && from && from.id >= 2) endTurnPhase();
       } else {
         const idx = Math.floor(Math.random() * to.hand.length);
         const card = to.hand.splice(idx, 1)[0];
@@ -1837,6 +1883,8 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
         // 清除 skipDraw
         state.skipDraw = false;
         state.skipDrawFor = -1;
+        // AI sender 否決後觸發摸牌結束回合；human sender 自己控制
+        if (isServer && from && from.id >= 2) endTurnPhase();
         break;
       case 'swapped':
         log(`${from.name} 與 ${to.name} 交換手牌！`);
@@ -1889,10 +1937,9 @@ channel.on('broadcast', { event: 'REMATCH_DECLINE' }, (payload) => {
         state.currentPlayer = sourceIdx;
         state.skipDraw = false;
         state.skipDrawFor = -1;
-        // 只有 server 端才觸發 startTurn（更新 UI + 可能的 AI）
-        if (isServer) {
-          startTurn();
-        } else {
+        // AI sender 觸發摸牌結束回合；human sender 自己控制
+        if (isServer && source && source.id >= 2) endTurnPhase();
+        if (!isServer) {
           // Joiner 端只更新 UI
           updateActiveAvatar();
           renderAll();
@@ -2234,8 +2281,6 @@ function handleSwapIncoming(from, to) {
           state.pendingInteractiveTargetIsHuman = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-          if (isServer) endTurnPhase();
         } else {
           // target 接受：執行效果
           state.pendingInteractive = false;
@@ -2290,8 +2335,12 @@ function handleDemandIncoming(from, to) {
           state.pendingInteractiveTargetIsHuman = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-          if (isServer) endTurnPhase();
+          console.log('[DEMAND veto] isServer=' + isServer + ' from.id=' + (from ? from.id : 'null') + ' phase=' + state.phase + ' pendingInt=' + state.pendingInteractive + ' skipDraw=' + state.skipDraw);
+          // broadcast 不回送，AI sender 否決後必須觸發摸牌結束回合
+          if (isServer && from && from.id >= 2) {
+            console.log('[DEMAND veto] calling endTurnPhase()');
+            endTurnPhase();
+          }
         } else {
           // 不要否決 → 等 showDemandChoice 選擇後再清除 pendingInteractive
           showDemandChoice(from, to, null);
@@ -2335,7 +2384,6 @@ function handleCommandIncoming(from, to) {
           state.pendingInteractive = false;
           // 兩端都 broadcast（joiner 端也需要 broadcast 讓 sender 端同步）
           channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: from.id, targetIndex: to.id, result: 'veto' } }).catch(() => {});
-          // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
         } else {
           state.pendingInteractive = false;
           // target 接受：broadcast COMMAND_RESULT(accepted) 讓 sender 端執行效果
@@ -2516,12 +2564,13 @@ function performSwapLogic(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'SWAP_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 改為 endTurnPhase() 避免 startTurn() 連鎖 runAI
-            if (isServer) endTurnPhase();
+            // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+            if (isServer && from && from.id >= 2) endTurnPhase();
           } else {
             // 不接受否決：執行效果
             state.pendingInteractive = false;
-            if (isServer) endTurnPhase();
+            // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+            if (isServer && from && from.id >= 2) endTurnPhase();
             doSwapExchange(from, to, onComplete);
           }
         }
@@ -2601,7 +2650,8 @@ function performDemandLogic(from, to, onComplete) {
             state.skipDrawFor = -1;
             state.pendingInteractive = false;
             channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'veto', fromHand: from.hand, toHand: to.hand } }).catch(() => {});
-            // 不呼叫 startTurn/endTurnPhase：runAI() 的 canEnd 邏輯會自動處理
+            // broadcast 不回送給發送者，AI sender 否決後必須在此觸發摸牌結束回合
+            if (isServer && from && from.id >= 2) endTurnPhase();
           } else {
             showDemandChoice(from, to, onComplete);
           }
@@ -2657,11 +2707,11 @@ function showDemandChoice(from, to, onComplete) {
     // broadcast（不管 isServer）
     channel.send({ type: 'broadcast', event: 'DEMAND_RESULT', payload: { fromIndex: from.id, toIndex: to.id, result: 'delivered', card: card, fromHand: from.hand, toHand: to.hand } }).catch(() => {});
     state.pendingInteractive = false;
-    // onComplete 來自 AI 出牌時為 null，此時 runAI() 的 canEnd 檢查因 modal 開啟而失敗
-    // 必須手動觸發 endTurnPhase() 讓 AI 摸牌後結束回合
+    // onComplete 來自 AI 出牌時為 null，且 from 是 AI → 必須觸發 endTurnPhase() 讓 AI 摸牌後結束回合
+    // human 出牌時 onComplete 也是 null，但 from.id >= 2 可區分
     if (onComplete) {
       onComplete();
-    } else if (isServer) {
+    } else if (isServer && from && from.id >= 2) {
       endTurnPhase();
     }
     // 注意：DEMAND 完成後不回調 nextTurn()，因為 from 的回合仍在進行中
@@ -2746,7 +2796,8 @@ function performCommandLogic(source, target, onComplete) {
           state.skipDraw = false;
           state.skipDrawFor = -1;
           channel.send({ type: 'broadcast', event: 'COMMAND_RESULT', payload: { sourceIndex: source.id, targetIndex: target.id, result: 'veto' } }).catch(() => {});
-          if (isServer) endTurnPhase();
+          // 只有 AI sender 才 endTurnPhase()，human sender 自己控制回合
+          if (isServer && source && source.id >= 2) endTurnPhase();
         } else {
           applyCommandEffect(source, target, onComplete);
         }
@@ -2806,6 +2857,15 @@ function initGameState() {
     { id: 2, name: '?', isHuman: false, hand: [], alive: true, icon: '👻', avatarBg: 'linear-gradient(135deg, #8fb88a, #c0d8b8)' },
     { id: 3, name: '?', isHuman: false, hand: [], alive: true, icon: '👽', avatarBg: 'linear-gradient(135deg, #d4e8c8, #f0e8d0)' }
   ];
+
+  // 隨機分配不重複頭像：human (id 0,1) 與 AI (id 2,3) 從各自池子挑
+  const avatars = pickAvatars([0, 1], [2, 3]);
+  for (let i = 0; i < 4; i++) {
+    if (avatars[i]) {
+      state.players[i].icon = avatars[i].icon;
+      state.players[i].avatarBg = avatars[i].bg;
+    }
+  }
 
   state.players.forEach(p => p.name = '?');
   for (let s = 0; s < 4; s++) {
