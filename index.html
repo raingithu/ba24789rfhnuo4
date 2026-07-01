@@ -63,7 +63,7 @@
   .btn-primary:active { box-shadow: inset 2px 2px 5px rgba(100, 150, 80, 0.15); }
   .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); }
   .label-tag { font-size: 13px; font-weight: bold; color: var(--sage); background: rgba(240, 248, 236, 0.6); padding: 2px 8px; border-radius: 6px; }
-  #modal-overlay { position: fixed; inset: 0; background: rgba(60, 80, 55, 0.25); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+  #modal-overlay { position: fixed; inset: 0; background: rgba(60, 80, 55, 0.1); /*backdrop-filter: blur(4px);*/ display: flex; align-items: center; justify-content: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
   #modal-overlay.show { opacity: 1; pointer-events: auto; }
   .modal-box { width: 90%; max-width: 400px; padding: 24px; display: flex; flex-direction: column; gap: 16px; align-items: center; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
   #modal-overlay.show .modal-box { transform: scale(1); }
