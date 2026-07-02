@@ -2,6 +2,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
+    <meta name="robots" content="noindex,nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>小精靈</title>
     <style>
@@ -604,7 +605,7 @@
                  if (g.inGhostHouse) {
                      // 讓幽靈在鬼屋出口附近擺動
                      var exitX = 9 * TILE_SIZE + TILE_SIZE / 2;
-                     var exitY = 8 * TILE_SIZE + TILE_SIZE / 2;
+                     var exitY = 9 * TILE_SIZE + TILE_SIZE / 2;
                      var dx = g.x - exitX;
                      var dy = g.y - exitY;
                      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
