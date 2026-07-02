@@ -378,6 +378,7 @@
     let justDied = false;
     let ghostReleaseTimer = 0;
     let isPaused = false;
+    let ghostsEatenCounter = 0; // 追蹤吃了多少隻恐懼幽靈，每 10 隻+1 生命
     const GHOST_RELEASE_FRAMES = 300;
 
     // 關卡配置
@@ -533,6 +534,7 @@
         lives = 3;
         cy = 1 + "-" + 1;
         totalCleared = 0;
+        ghostsEatenCounter = 0;
         scoreEl.innerText = score;
         livesEl.innerText = lives;
         levelEl.innerText = 1;
@@ -889,6 +891,7 @@
             var collisionDist = (pacman.radius + GHOST_RADIUS) * 0.8;
             if (Math.sqrt(cdx*cdx + cdy*cdy) < collisionDist) {
                 if (g.frightened && !g.dead) {
+                    ghostsEatenCounter++;
                     if (score >= EAT_SCORE_THRESHOLD) {
                         score += 200;
                         scoreEl.innerText = score;
@@ -896,11 +899,15 @@
                         g.returningHome = true;
                         g.dir = {x: -g.dir.x, y: -g.dir.y};
                     } else {
-                        // 一般情況：吃掉
                         g.dead = true;
                         score += 200;
                         scoreEl.innerText = score;
                         playSound('eat');
+                    }
+                    // 每吃 10 隻恐懼幽靈 +1 生命
+                    if (ghostsEatenCounter % 10 === 0) {
+                        lives++;
+                        livesEl.innerText = lives;
                     }
                 } else if (!g.dead) {
                     // 死亡
