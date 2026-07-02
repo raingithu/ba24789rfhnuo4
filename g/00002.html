@@ -247,6 +247,13 @@
             text-align: right;
         }
 
+        .lb-level {
+            font-size: 0.85rem;
+            color: #aaa;
+            min-width: 100px;
+            text-align: center;
+        }
+
         #lb-input-area {
             display: none;
             flex-direction: column;
@@ -1213,7 +1220,7 @@
             lbBtn.addEventListener('pointerdown', (ev) => {
                 ev.preventDefault();
                 ev.stopPropagation();
-                showLeaderboard(score, totalCleared);
+                showLeaderboard(score, getGameOverLevelLabel());
             });
             overlay.appendChild(lbBtn);
 
@@ -1314,7 +1321,7 @@
         lbBtn.addEventListener('pointerdown', (ev) => {
             ev.preventDefault();
             ev.stopPropagation();
-            showLeaderboard(score, totalCleared);
+            showLeaderboard(score, getGameOverLevelLabel());
         });
         overlay.appendChild(lbBtn);
 
@@ -1768,11 +1775,19 @@
     // ================= 排行榜功能 =================
     let currentLeaderboardData = [];
     let currentSubmitScore = 0;
-    let currentSubmitCleared = 0;
+    let currentSubmitLevelLabel = '';
 
-    function showLeaderboard(score, cleared) {
+    // 計算遊戲結束時的關卡標籤（格式：第X-N關）
+    function getGameOverLevelLabel() {
+        const LEVEL_MAPS_LEN = LEVEL_MAPS.length;
+        const cycle = Math.ceil(totalCleared / LEVEL_MAPS_LEN);
+        const displayLevel = ((totalCleared - 1) % LEVEL_MAPS_LEN) + 1;
+        return '第' + cycle + '-' + displayLevel + '關';
+    }
+
+    function showLeaderboard(score, levelLabel) {
         currentSubmitScore = score;
-        currentSubmitCleared = cleared;
+        currentSubmitLevelLabel = levelLabel;
         const lbOverlay = document.getElementById('leaderboard-overlay');
         const lbList = document.getElementById('lb-list');
         const lbInputArea = document.getElementById('lb-input-area');
@@ -1829,6 +1844,13 @@
             score.textContent = entry.score;
             row.appendChild(score);
 
+            if (entry.level) {
+                const lvl = document.createElement('span');
+                lvl.className = 'lb-level';
+                lvl.textContent = entry.level;
+                row.appendChild(lvl);
+            }
+
             lbList.appendChild(row);
         });
     }
@@ -1881,7 +1903,7 @@
             sb.from('pmleaderboard').insert({
                 name: name,
                 score: currentSubmitScore,
-                level: currentSubmitCleared
+                level: currentSubmitLevelLabel
             }).then(({data, error}) => {
                 submitBtn.disabled = false;
                 submitBtn.textContent = '送出';
