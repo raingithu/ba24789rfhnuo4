@@ -273,7 +273,7 @@
             border: 2px solid var(--pacman-color);
             border-radius: 8px;
             padding: 10px 16px;
-            font-size: 1.1rem;
+            font-size: 0.8rem;
             color: #fff;
             text-align: center;
             width: 240px;
@@ -417,7 +417,7 @@
 
     <!-- 排行榜遮罩 -->
     <div id="leaderboard-overlay">
-        <div id="lb-title">🏆 排行榜</div>
+        <div id="lb-title">🏆 排行榜 🏆</div>
         <div id="lb-list"></div>
         <div id="lb-input-area">
             <input type="text" id="lb-name-input" maxlength="12" placeholder="輸入暱稱（最多中文６字／英文12字）" />
@@ -1780,9 +1780,9 @@
     // 計算遊戲結束時的關卡標籤（格式：第X-N關）
     function getGameOverLevelLabel() {
         const LEVEL_MAPS_LEN = LEVEL_MAPS.length;
-        const cycle = Math.ceil(totalCleared / LEVEL_MAPS_LEN);
-        const displayLevel = ((totalCleared - 1) % LEVEL_MAPS_LEN) + 1;
-        return '第' + cycle + '-' + displayLevel + '關';
+        const goCycle = Math.floor(totalCleared / LEVEL_MAPS_LEN) + 1;
+        const goLevel = (totalCleared % LEVEL_MAPS_LEN) + 1;
+        return '第' + goCycle + '-' + goLevel + '關';
     }
 
     function showLeaderboard(score, levelLabel) {
