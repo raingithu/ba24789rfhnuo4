@@ -420,7 +420,7 @@
         <div id="lb-title">🏆 排行榜</div>
         <div id="lb-list"></div>
         <div id="lb-input-area">
-            <input type="text" id="lb-name-input" maxlength="12" placeholder="輸入名稱 (最多中文６字/英文12字)" />
+            <input type="text" id="lb-name-input" maxlength="12" placeholder="輸入暱稱（最多中文６字／英文12字）" />
             <button id="lb-submit-btn">送出</button>
         </div>
         <div id="lb-status"></div>
@@ -1865,13 +1865,13 @@
         if (currentLeaderboardData.length < 10) {
             // 不足 10 筆，可以直接提交
             lbInputArea.classList.add('active');
-            lbStatus.textContent = '恭喜進入排行榜！請輸入名稱';
+            lbStatus.textContent = '恭喜進入排行榜！請輸入暱稱';
             nameInput.value = '';
             setupSubmitHandler();
         } else if (score > currentLeaderboardData[currentLeaderboardData.length - 1].score) {
             // 分數高於第 10 名
             lbInputArea.classList.add('active');
-            lbStatus.textContent = '恭喜進入排行榜！請輸入名稱';
+            lbStatus.textContent = '恭喜進入排行榜！請輸入暱稱';
             nameInput.value = '';
             setupSubmitHandler();
         } else {
@@ -1887,11 +1887,11 @@
         submitBtn.onclick = function() {
             const name = nameInput.value.trim();
             if (!name) {
-                document.getElementById('lb-status').textContent = '請輸入名稱';
+                document.getElementById('lb-status').textContent = '請輸入暱稱';
                 return;
             }
             if (name.length > 12) {
-                document.getElementById('lb-status').textContent = '名稱太長（最多 12 字）';
+                document.getElementById('lb-status').textContent = '名稱太長（最多中文６字／英文12字）';
                 return;
             }
 
