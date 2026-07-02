@@ -5,6 +5,7 @@
     <meta name="robots" content="noindex,nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>小精靈</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         :root {
             --bg-color: #111;
@@ -135,7 +136,8 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            background: rgba(0, 0, 0, 0.9);
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
             padding: 30px;
             border: 2px solid var(--pacman-color);
             border-radius: 10px;
@@ -144,6 +146,184 @@
             gap: 6px;
             z-index: 20;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
+        }
+
+        .leaderboard-btn {
+            background: linear-gradient(135deg, #FFD700, #FFA500);
+            border: none;
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            border-radius: 8px;
+            touch-action: manipulation;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        .leaderboard-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+        }
+
+        .leaderboard-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 排行榜遮罩 */
+        #leaderboard-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(6px);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 30;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        #leaderboard-overlay.active {
+            display: flex;
+        }
+
+        #lb-title {
+            color: #FFD700;
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 16px;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+        }
+
+        #lb-list {
+            width: 100%;
+            max-width: 400px;
+            max-height: 60vh;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .lb-row {
+            display: flex;
+            align-items: center;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            font-size: 1rem;
+            color: #fff;
+        }
+
+        .lb-row.top1 { background: rgba(255, 215, 0, 0.2); }
+        .lb-row.top2 { background: rgba(192, 192, 192, 0.15); }
+        .lb-row.top3 { background: rgba(205, 127, 50, 0.15); }
+
+        .lb-rank {
+            width: 36px;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+        }
+
+        .lb-name {
+            flex: 1;
+            text-align: left;
+            padding: 0 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lb-score {
+            font-weight: bold;
+            color: #00bcd4;
+            min-width: 80px;
+            text-align: right;
+        }
+
+        #lb-input-area {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        #lb-input-area.active {
+            display: flex;
+        }
+
+        #lb-name-input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid var(--pacman-color);
+            border-radius: 8px;
+            padding: 10px 16px;
+            font-size: 1.1rem;
+            color: #fff;
+            text-align: center;
+            width: 240px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        #lb-name-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        #lb-submit-btn {
+            background: var(--pacman-color);
+            border: none;
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: #000;
+            cursor: pointer;
+            border-radius: 8px;
+            touch-action: manipulation;
+            transition: all 0.2s;
+        }
+
+        #lb-submit-btn:hover {
+            background: #fff;
+        }
+
+        #lb-submit-btn:active {
+            transform: scale(0.95);
+        }
+
+        #lb-close-btn {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 24px;
+            font-size: 0.95rem;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 8px;
+            touch-action: manipulation;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+
+        #lb-close-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        #lb-close-btn:active {
+            transform: scale(0.95);
+        }
+
+        #lb-status {
+            color: #aaa;
+            font-size: 0.85rem;
+            min-height: 1.2em;
         }
 
         h1 {
@@ -227,9 +407,27 @@
         <p>善用強化糖果可反制幽靈</p>
         <button id="start-btn">開始遊戲</button>
     </div>
+
+    <!-- 排行榜遮罩 -->
+    <div id="leaderboard-overlay">
+        <div id="lb-title">🏆 排行榜</div>
+        <div id="lb-list"></div>
+        <div id="lb-input-area">
+            <input type="text" id="lb-name-input" maxlength="12" placeholder="輸入名稱 (最多中文６字/英文12字)" />
+            <button id="lb-submit-btn">送出</button>
+        </div>
+        <div id="lb-status"></div>
+        <button id="lb-close-btn">關閉</button>
+    </div>
 </div>
 
-<script>
+<script type="module">
+// ================= Supabase 配置 =================
+    const SUPABASE_URL = 'https://ctpzyxuezychetfdkftb.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_PqU-ptNARKPSzRWn7wATBg_HS__tcpJ';
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
@@ -554,7 +752,6 @@
         ghosts = [];
         score = 0;
         lives = 3;
-        cy = 1 + "-" + 1;
         totalCleared = 0;
         ghostsEatenCounter = 0;
         scoreEl.innerText = score;
@@ -1008,6 +1205,18 @@
             p.style.whiteSpace = 'pre-line';
             p.innerHTML = "生命耗盡！\n最終分數：" + score + "\n最高分：" + highScore + "\n到達關卡：第" + (Math.floor(totalCleared / LEVEL_MAPS.length) + 1) + "-" + ((totalCleared % LEVEL_MAPS.length) + 1) + "關";
             overlay.appendChild(p);
+
+            // 排行榜按鈕
+            var lbBtn = document.createElement('button');
+            lbBtn.className = 'leaderboard-btn';
+            lbBtn.textContent = '🏆 排行榜';
+            lbBtn.addEventListener('pointerdown', (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
+                showLeaderboard(score, totalCleared);
+            });
+            overlay.appendChild(lbBtn);
+
             resumeState = null;
         } else {
             // 繼續遊戲（保留目前分數）
@@ -1097,6 +1306,18 @@
         p.style.whiteSpace = 'pre-line';
         p.innerHTML = "最終分數：" + score + "\n最高分：" + highScore;
         overlay.appendChild(p);
+
+        // 排行榜按鈕
+        var lbBtn = document.createElement('button');
+        lbBtn.className = 'leaderboard-btn';
+        lbBtn.textContent = '🏆 排行榜';
+        lbBtn.addEventListener('pointerdown', (ev) => {
+            ev.preventDefault();
+            ev.stopPropagation();
+            showLeaderboard(score, totalCleared);
+        });
+        overlay.appendChild(lbBtn);
+
         resumeState = null;
     }
 
@@ -1543,6 +1764,154 @@
     // 初始繪製
     resizeCanvas();
     if (gameRunning) draw();
+
+    // ================= 排行榜功能 =================
+    let currentLeaderboardData = [];
+    let currentSubmitScore = 0;
+    let currentSubmitCleared = 0;
+
+    function showLeaderboard(score, cleared) {
+        currentSubmitScore = score;
+        currentSubmitCleared = cleared;
+        const lbOverlay = document.getElementById('leaderboard-overlay');
+        const lbList = document.getElementById('lb-list');
+        const lbInputArea = document.getElementById('lb-input-area');
+        const lbStatus = document.getElementById('lb-status');
+
+        lbOverlay.classList.add('active');
+        lbList.innerHTML = '';
+        lbInputArea.classList.remove('active');
+        lbStatus.textContent = '讀取中...';
+
+        // 讀取排行榜
+        sb.from('pmleaderboard').select('*').order('score', {ascending: false}).limit(10).then(({data, error}) => {
+            if (error) {
+                lbStatus.textContent = '讀取失敗，請稍後再試';
+                console.error('Leaderboard read error:', error);
+                return;
+            }
+            lbStatus.textContent = '';
+            currentLeaderboardData = data || [];
+            renderLeaderboard(currentLeaderboardData);
+            checkIfInTop10(score);
+        });
+    }
+
+    function renderLeaderboard(entries) {
+        const lbList = document.getElementById('lb-list');
+        lbList.innerHTML = '';
+
+        if (entries.length === 0) {
+            lbList.innerHTML = '<div style="color:#aaa;text-align:center;padding:20px;">尚無紀錄</div>';
+            return;
+        }
+
+        const medals = ['🥇', '🥈', '🥉'];
+        entries.forEach((entry, idx) => {
+            const row = document.createElement('div');
+            row.className = 'lb-row';
+            if (idx === 0) row.classList.add('top1');
+            else if (idx === 1) row.classList.add('top2');
+            else if (idx === 2) row.classList.add('top3');
+
+            const rank = document.createElement('span');
+            rank.className = 'lb-rank';
+            rank.textContent = medals[idx] ? medals[idx] : (idx + 1);
+            row.appendChild(rank);
+
+            const name = document.createElement('span');
+            name.className = 'lb-name';
+            name.textContent = entry.name;
+            row.appendChild(name);
+
+            const score = document.createElement('span');
+            score.className = 'lb-score';
+            score.textContent = entry.score;
+            row.appendChild(score);
+
+            lbList.appendChild(row);
+        });
+    }
+
+    function checkIfInTop10(score) {
+        const lbInputArea = document.getElementById('lb-input-area');
+        const lbStatus = document.getElementById('lb-status');
+        const nameInput = document.getElementById('lb-name-input');
+        const submitBtn = document.getElementById('lb-submit-btn');
+
+        // 如果已有 10 筆，檢查最低分是否比目前分數低
+        if (currentLeaderboardData.length < 10) {
+            // 不足 10 筆，可以直接提交
+            lbInputArea.classList.add('active');
+            lbStatus.textContent = '恭喜進入排行榜！請輸入名稱';
+            nameInput.value = '';
+            setupSubmitHandler();
+        } else if (score > currentLeaderboardData[currentLeaderboardData.length - 1].score) {
+            // 分數高於第 10 名
+            lbInputArea.classList.add('active');
+            lbStatus.textContent = '恭喜進入排行榜！請輸入名稱';
+            nameInput.value = '';
+            setupSubmitHandler();
+        } else {
+            lbStatus.textContent = '未進入前十名';
+        }
+    }
+
+    function setupSubmitHandler() {
+        const nameInput = document.getElementById('lb-name-input');
+        const submitBtn = document.getElementById('lb-submit-btn');
+
+        // 移除舊的事件監聽（建立新元素所以不需要）
+        submitBtn.onclick = function() {
+            const name = nameInput.value.trim();
+            if (!name) {
+                document.getElementById('lb-status').textContent = '請輸入名稱';
+                return;
+            }
+            if (name.length > 12) {
+                document.getElementById('lb-status').textContent = '名稱太長（最多 12 字）';
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = '儲存中...';
+            document.getElementById('lb-status').textContent = '';
+
+            // 插入或更新排行榜
+            sb.from('pmleaderboard').insert({
+                name: name,
+                score: currentSubmitScore,
+                level: currentSubmitCleared
+            }).then(({data, error}) => {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '送出';
+
+                if (error) {
+                    document.getElementById('lb-status').textContent = '儲存失敗：' + error.message;
+                    console.error('Leaderboard insert error:', error);
+                    return;
+                }
+
+                document.getElementById('lb-status').textContent = '儲存成功！';
+                // 重新讀取
+                setTimeout(() => {
+                    sb.from('pmleaderboard').select('*').order('score', {ascending: false}).limit(10).then(({data, error}) => {
+                        if (!error) {
+                            currentLeaderboardData = data || [];
+                            renderLeaderboard(currentLeaderboardData);
+                            document.getElementById('lb-input-area').classList.remove('active');
+                        }
+                    });
+                }, 1000);
+            });
+        };
+    }
+
+    // 關閉排行榜
+    document.getElementById('lb-close-btn').addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        document.getElementById('leaderboard-overlay').classList.remove('active');
+    });
 
 </script>
 </body>
