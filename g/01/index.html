@@ -24,7 +24,7 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 #app{display:none;flex-direction:column;height:100vh}
 #app.a{display:flex}
 .hd{background:var(--bg2);border-bottom:1px solid var(--bor);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
-.ht{color:var(--ac);font-size:1.1rem}.ha{display:flex;gap:8px}.ha .b{padding:6px 14px;font-size:.82rem}
+.ht{color:var(--ac);font-size:1.1rem}.ha{display:flex;gap:6px}.ha .b{padding:6px 10px;font-size:.6rem}
 .ca{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
 .msg{max-width:85%;animation:fi .3s ease}@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .msg.ai{align-self:flex-start}.msg.pl{align-self:flex-end}
@@ -135,8 +135,9 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 <div class="hd">
 <span class="ht" id="hdr-title">江湖模擬器</span>
 <div class="ha">
-<button class="b bs" onclick="doShowSettings()">&#9881;&#65039; 設定</button>
-<button class="b bs" onclick="doReset()">&#128260; 新遊戲</button>
+<button class="b bs" id="btn-scroll" onclick="toggleScroll()">自動滾動</button>
+<button class="b bs" onclick="doShowSettings()">⚙️設定</button>
+<button class="b bs" onclick="doReset()">🔄新遊戲</button>
 </div>
 </div>
 <div class="ca" id="chat-area"></div>
@@ -147,7 +148,7 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 </div>
 
 <script>
-var S={url:'',key:'',model:'',mdUrl:'',sys:'',sid:'',name:'',hist:[],busy:false};
+var S={url:'',key:'',model:'',mdUrl:'',sys:'',sid:'',name:'',hist:[],busy:false,autoScroll:true};
 
 function saveSet(){
 var urlVal=document.getElementById('api-host').value.trim();
@@ -158,9 +159,9 @@ S.url=urlVal||'https://apihub.agnes-ai.com/v1/chat/completions';
 S.key=keyVal||'';
 S.model=modelVal||'agnes-2.0-flash';
 S.mdUrl=mdVal||'https://raw.githubusercontent.com/raingithu/ba24789rfhnuo4/main/g/01';
-try{localStorage.setItem('jh',JSON.stringify({url:S.url,key:S.key,model:S.model,mdUrl:S.mdUrl}))}catch(e){}
+try{localStorage.setItem('jh',JSON.stringify({url:S.url,key:S.key,model:S.model,mdUrl:S.mdUrl,autoScroll:S.autoScroll}))}catch(e){}
 }
-function loadSet(){try{var s=localStorage.getItem('jh');if(s){var d=JSON.parse(s);S.url=d.url||'';S.key=d.key||'';S.model=d.model||'';S.mdUrl=d.mdUrl||''}}catch(e){}}
+function loadSet(){try{var s=localStorage.getItem('jh');if(s){var d=JSON.parse(s);S.url=d.url||'';S.key=d.key||'';S.model=d.model||'';S.mdUrl=d.mdUrl||'';S.autoScroll=s.autoScroll!==false}}catch(e){}}
 function doShowSettings(){document.getElementById('settings-overlay').classList.remove('h');document.getElementById('api-host').value=S.url||'https://apihub.agnes-ai.com/v1/chat/completions';document.getElementById('api-key').value=S.key;document.getElementById('model-name').value=S.model||'agnes-2.0-flash';document.getElementById('md-base-url').value=S.mdUrl||'https://raw.githubusercontent.com/raingithu/ba24789rfhnuo4/main/g/01';}
 
 function showLoad(v,t){document.getElementById('loading-overlay').classList.toggle('h',!v);if(t)document.getElementById('load-text').textContent=t;}
@@ -256,12 +257,13 @@ function addSys(t){if(!t)return;var c=document.getElementById('chat-area');var d
 function showLD(){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.id='ld-msg';d.innerHTML='<div class="mb"><div class="ld"><span></span><span></span><span></span></div></div>';c.appendChild(d);sb();}
 function hidLD(){var e=document.getElementById('ld-msg');if(e)e.remove();}
 function setBusy(v){S.busy=v;document.getElementById('btn-send').disabled=v;if(v)showLD();else hidLD();}
-function sb(){var c=document.getElementById('chat-area');requestAnimationFrame(function(){c.scrollTop=c.scrollHeight;});}
+function sb(){if(S.autoScroll){var c=document.getElementById('chat-area');requestAnimationFrame(function(){c.scrollTop=c.scrollHeight;});}}
 function tm(){var d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
 function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
 function fmt(t){return esc(t).replace(/\n/g,'<br>');}
 function parseWS(t){if(!t)return'';var l=[];var m;t=/所在地[：:]\s*(.+)/.exec(t);if(t)l.push('\ud83d\udccd <span>'+esc(t[1].trim())+'</span>');t=/時間[：:]\s*(.+)/.exec(t);if(t)l.push('\ud83d\udcc5 <span>'+esc(t[1].trim())+'</span>');t=/天氣[：:]\s*(.+)/.exec(t);if(t)l.push('\u26c5 <span>'+esc(t[1].trim())+'</span>');t=/生命[：:]\s*(.+)/.exec(t);if(t)l.push('\u2764\ufe0f <span>'+esc(t[1].trim())+'</span>');t=/內力[：:]\s*(.+)/.exec(t);if(t)l.push('\u2728 <span>'+esc(t[1].trim())+'</span>');t=/體力[：:]\s*(.+)/.exec(t);if(t)l.push('\u26a1 <span>'+esc(t[1].trim())+'</span>');t=/銀兩[：:]\s*(.+)/.exec(t);if(t)l.push('\ud83d\udcb0 <span>'+esc(t[1].trim())+'</span>');return l.join('<br>');}
 function onIK(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}
+function toggleScroll(){S.autoScroll=!S.autoScroll;var b=document.getElementById('btn-scroll');b.textContent=(S.autoScroll?'自動滾動':'手動滑動');try{localStorage.setItem('jh',JSON.stringify({url:S.url,key:S.key,model:S.model,mdUrl:S.mdUrl,autoScroll:S.autoScroll}))}catch(e){}}
 function doReset(){if(!confirm('\u78ba\u5b9a\u8981\u958b\u59cb\u65b0\u904a\u6232\u55ce\uff1f'))return;S.hist=[];document.getElementById('chat-area').innerHTML='';document.getElementById('char-create-overlay').classList.remove('h');document.getElementById('app').classList.remove('a');}
 
 loadSet();
