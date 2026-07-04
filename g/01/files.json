@@ -7,6 +7,8 @@
   "00_system/dice_system.md",
   "00_system/loading_order.md",
   "00_system/simulation_rules.md",
+  "00_system/game_rules.md",
+  "00_system/combat_system.md",
   "00_system/memory_rules.md",
   "00_system/game_start.md",
   "01_world/world_overview.md",
