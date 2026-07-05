@@ -646,17 +646,17 @@
         // 第 10 關
         [
             [2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,2],
-            [1,1,1,5,2,0,0,0,0,0,0,0,0,0,2,4,1,1,1],
-            [1,3,1,1,2,0,1,1,1,1,1,1,1,0,2,1,1,3,1],
-            [1,0,0,1,1,0,0,1,0,1,0,0,0,0,1,1,0,0,1],
-            [1,0,0,0,1,1,0,0,0,0,0,0,1,0,1,0,0,0,1],
+            [1,1,5,2,1,0,0,0,0,0,0,0,0,0,1,2,4,1,1],
+            [1,3,1,2,2,0,1,1,1,1,1,1,1,0,2,2,1,3,1],
+            [1,0,0,1,2,0,0,1,0,1,0,0,0,0,2,1,0,0,1],
+            [1,0,0,0,1,0,0,0,0,0,0,0,1,0,1,0,0,0,1],
             [1,0,1,0,0,1,1,0,1,1,1,1,1,0,0,0,1,0,1],
             [1,0,1,1,0,0,0,0,1,0,0,0,0,0,0,1,1,0,1],
             [1,0,1,0,0,1,1,0,0,1,0,0,1,1,0,0,1,0,1],
             [1,0,1,0,1,1,3,1,2,2,2,1,3,1,1,0,1,0,1],
             [1,0,1,0,4,1,0,2,2,9,2,2,0,1,5,0,1,0,1],
             [1,0,1,0,1,1,0,1,2,1,2,1,0,1,1,0,1,0,1],
-            [1,0,1,0,0,0,0,4,1,1,1,5,0,0,0,0,1,0,1],
+            [1,0,1,0,0,0,0,0,1,1,1,0,0,0,0,0,1,0,1],
             [1,0,0,0,0,0,1,1,1,1,1,1,0,1,0,0,0,0,1],
             [2,1,2,0,1,0,1,3,0,0,0,0,0,0,1,0,2,1,2],
             [1,5,2,1,0,0,0,0,0,0,0,0,1,0,0,1,2,4,1],
@@ -964,27 +964,36 @@
         var pacRow = Math.round((pacman.y - TILE_SIZE/2) / TILE_SIZE);
         var teleported = false;
         // 檢查是否進入鏡射通道
+        // 觸發條件：往右跑碰到 4 的最右側，或往左跑碰到 5 的最左側
         if (pacRow >= 0 && pacRow < ROWS && pacCol >= 0 && pacCol < COLS) {
-            if (map[pacRow][pacCol] === 4) {
-                // 從左側通道進入，跳到右側對應的 5 的右鄰居
-                for (let c = COLS - 1; c >= 0; c--) {
-                    if (map[pacRow][c] === 5) {
-                        // 傳送到 5 的右邊一格，讓 Pac-Man 正常進入遊戲區域
-                        pacman.x = (c + 1) * TILE_SIZE + TILE_SIZE / 2;
-                        pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
-                        teleported = true;
-                        break;
+            if (map[pacRow][pacCol] === 4 && pacman.dir.x > 0) {
+                // 往右跑進入 4，檢查是否觸碰最右側
+                var rightEdge = pacCol * TILE_SIZE + TILE_SIZE;
+                if (pacman.x + pacman.radius >= rightEdge) {
+                    // 從左側通道進入，跳到右側對應的 5
+                    for (let c = COLS - 1; c >= 0; c--) {
+                        if (map[pacRow][c] === 5) {
+                            // 傳送到 5 的格子中心
+                            pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
+                            pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
+                            teleported = true;
+                            break;
+                        }
                     }
                 }
-            } else if (map[pacRow][pacCol] === 5) {
-                // 從右側通道進入，跳到左側對應的 4 的左鄰居
-                for (let c = 0; c < COLS; c++) {
-                    if (map[pacRow][c] === 4) {
-                        // 傳送到 4 的左邊一格，讓 Pac-Man 正常進入遊戲區域
-                        pacman.x = (c - 1) * TILE_SIZE + TILE_SIZE / 2;
-                        pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
-                        teleported = true;
-                        break;
+            } else if (map[pacRow][pacCol] === 5 && pacman.dir.x < 0) {
+                // 往左跑進入 5，檢查是否觸碰最左側
+                var leftEdge = pacCol * TILE_SIZE;
+                if (pacman.x - pacman.radius <= leftEdge) {
+                    // 從右側通道進入，跳到左側對應的 4
+                    for (let c = 0; c < COLS; c++) {
+                        if (map[pacRow][c] === 4) {
+                            // 傳送到 4 的格子中心
+                            pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
+                            pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
+                            teleported = true;
+                            break;
+                        }
                     }
                 }
             }
@@ -1174,22 +1183,28 @@
             var gCol = Math.round((g.x - TILE_SIZE/2) / TILE_SIZE);
             var gRow = Math.round((g.y - TILE_SIZE/2) / TILE_SIZE);
             if (gRow >= 0 && gRow < ROWS && gCol >= 0 && gCol < COLS) {
-                if (map[gRow][gCol] === 4) {
-                    for (let c = COLS - 1; c >= 0; c--) {
-                        if (map[gRow][c] === 5) {
-                            // 傳送到 5 的右邊一格
-                            g.x = (c + 1) * TILE_SIZE + TILE_SIZE / 2;
-                            g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
-                            break;
+                if (map[gRow][gCol] === 4 && g.dir.x > 0) {
+                    // 往右跑進入 4，檢查是否觸碰最右側
+                    var rightEdge = gCol * TILE_SIZE + TILE_SIZE;
+                    if (g.x + GHOST_RADIUS >= rightEdge) {
+                        for (let c = COLS - 1; c >= 0; c--) {
+                            if (map[gRow][c] === 5) {
+                                g.x = c * TILE_SIZE + TILE_SIZE / 2;
+                                g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
+                                break;
+                            }
                         }
                     }
-                } else if (map[gRow][gCol] === 5) {
-                    for (let c = 0; c < COLS; c++) {
-                        if (map[gRow][c] === 4) {
-                            // 傳送到 4 的左邊一格
-                            g.x = (c - 1) * TILE_SIZE + TILE_SIZE / 2;
-                            g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
-                            break;
+                } else if (map[gRow][gCol] === 5 && g.dir.x < 0) {
+                    // 往左跑進入 5，檢查是否觸碰最左側
+                    var leftEdge = gCol * TILE_SIZE;
+                    if (g.x - GHOST_RADIUS <= leftEdge) {
+                        for (let c = 0; c < COLS; c++) {
+                            if (map[gRow][c] === 4) {
+                                g.x = c * TILE_SIZE + TILE_SIZE / 2;
+                                g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
+                                break;
+                            }
                         }
                     }
                 }
