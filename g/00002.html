@@ -372,8 +372,8 @@
             h1 { font-size: 1.8rem; }
             p { font-size: 0.9rem; }
             #message-overlay { 
-                width: 360px;
-                padding: 4px;
+                width: 300px;
+                padding: 10px;
                 margin-top: 15%;
                 transform: translate(-50%, -50%);
             }
@@ -452,20 +452,20 @@
         [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             [1,3,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,3,1],
-            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
+            [1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1],
             [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
             [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
             [1,0,1,1,0,1,0,1,1,1,1,1,0,1,0,1,1,0,1],
             [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
-            [1,1,1,1,0,1,1,1,2,1,2,1,1,1,0,1,1,1,1],
-            [1,1,1,1,0,1,2,2,2,2,2,2,2,1,0,1,1,1,1],
-            [5,2,2,2,0,2,2,1,1,9,1,1,2,2,0,2,2,2,4],
-            [1,1,1,1,0,1,2,1,1,1,1,1,2,1,0,1,1,1,1],
-            [1,1,1,1,0,1,2,2,2,2,2,2,2,1,0,1,1,1,1],
-            [1,0,0,0,0,0,0,1,1,1,1,1,0,0,0,0,0,0,1],
-            [1,0,1,1,0,1,0,0,0,1,0,0,0,1,0,1,1,0,1],
-            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-            [1,1,0,1,0,1,1,1,0,1,0,1,1,1,0,1,0,1,1],
+            [1,1,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,1,1],
+            [5,2,2,2,0,1,0,0,2,2,2,0,0,1,0,2,2,2,4],
+            [1,1,1,1,0,1,1,0,1,9,1,0,1,1,0,1,1,1,1],
+            [1,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,1],
+            [1,0,1,1,0,1,0,1,0,1,0,1,0,1,0,1,1,0,1],
+            [1,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,1],
+            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+            [1,0,0,0,0,1,0,0,0,1,0,0,0,1,0,0,0,0,1],
+            [1,0,1,1,0,1,1,1,0,1,0,1,1,1,0,1,1,0,1],
             [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
         ],
@@ -686,8 +686,13 @@
     let ghostsEatenCounter = 0; // 追蹤吃了多少隻恐懼幽靈，每 10 隻+1 生命
     const GHOST_RELEASE_FRAMES = 300;
 
+    // 預先計算的通道格子位置（用於鏡射通道 teleport，避免每幀掃瞄地圖）
+    let tunnelPositions = []; // [{row, col4, col5}, ...]
+
     // 離線 Canvas 快取 — 牆壁只畫一次
     let wallCache = null;
+    // Pacman 發光快取 — 預先渲染不同 mouthOpen 的發光，避免每幀 shadowBlur
+    let glowCache = {}; // keyed by mouthOpen index
 
     // 關卡配置
     const EAT_SCORE_THRESHOLD = 5000; // 吃到分數達此值以上，恐懼幽靈被吃後會以最短路径回鬼屋
@@ -733,10 +738,17 @@
         return map[row][col] === 1;
     }
 
-    // 檢查格子是否可以通行（牆=1不可通行；4/5 通道視為可通行）
+    // 檢查格子是否可以通行（牆=1不可通行；4/5 通道視為可通行；越界視為可通行供通道穿越）
     function isPassable(col, row) {
-        if (row < 0 || row >= ROWS || col < 0 || col >= COLS) return false;
+        if (row < 0 || row >= ROWS) return false;
         var map = getCurrentMap();
+        if (col < 0 || col >= COLS) {
+            // 越界：檢查同行是否有通道格子，有則可穿越
+            for (let c = 0; c < COLS; c++) {
+                if (map[row][c] === 4 || map[row][c] === 5) return true;
+            }
+            return false;
+        }
         var tile = map[row][col];
         return tile !== 1;
     }
@@ -851,19 +863,98 @@
         cacheCanvas.width = COLS * TILE_SIZE;
         cacheCanvas.height = ROWS * TILE_SIZE;
         const cctx = cacheCanvas.getContext('2d');
-        cctx.fillStyle = '#62AFD0';
-        cctx.strokeStyle = '#A1C6DE';
-        cctx.shadowColor = '#DDF8FD';
-        cctx.shadowBlur = 4;
-        cctx.shadowOffsetY = 2;
-        cctx.lineWidth = 2;
+        const ts = TILE_SIZE;
+        cctx.shadowColor = '#7EC8E3';
+        cctx.shadowBlur = 10;
+
+        // 預先建立單格冰磚貼圖（離線，只算一次）
+        const brick = document.createElement('canvas');
+        brick.width = ts;
+        brick.height = ts;
+        const bctx = brick.getContext('2d');
+
+        // 冰磚基底漸層（模擬冰塊通透感）
+        const grad = bctx.createLinearGradient(0, 0, ts, ts);
+        grad.addColorStop(0, '#7EC8E3');
+        grad.addColorStop(0.3, '#A8DCEF');
+        grad.addColorStop(0.7, '#B8E0F0');
+        grad.addColorStop(1, '#6BB8D8');
+        bctx.fillStyle = grad;
+        bctx.beginPath();
+        bctx.roundRect(1, 1, ts - 2, ts - 2, 2);
+        bctx.fill();
+
+        // 冰磚高光（左上角微弱反光）
+        const hlGrad = bctx.createRadialGradient(3, 3, 0, 3, 3, ts * 0.6);
+        hlGrad.addColorStop(0, 'rgba(255,255,255,0.35)');
+        hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+        bctx.fillStyle = hlGrad;
+        bctx.beginPath();
+        bctx.roundRect(1, 1, ts - 2, ts - 2, 2);
+        bctx.fill();
+
+        // 冰磚縫隙（mortar lines — 模擬磚塊拼接）
+        bctx.strokeStyle = 'rgba(160,200,220,0.6)';
+        bctx.lineWidth = 0.5;
+        bctx.beginPath();
+        bctx.roundRect(1, 1, ts - 2, ts - 2, 2);
+        bctx.stroke();
+
+        // 內部微妙紋理線（冰裂效果）
+        bctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        bctx.lineWidth = 0.4;
+        bctx.beginPath();
+        bctx.moveTo(4, ts * 0.35);
+        bctx.lineTo(ts * 0.6, ts * 0.35);
+        bctx.stroke();
+        bctx.beginPath();
+        bctx.moveTo(ts * 0.5, ts * 0.55);
+        bctx.lineTo(ts - 4, ts * 0.55);
+        bctx.stroke();
+
+        // 逐格貼上冰磚貼圖
         walls.forEach(w => {
-            cctx.beginPath();
-            cctx.roundRect(w.x + 2, w.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, 2);
-            cctx.fill();
-            cctx.stroke();
+            cctx.drawImage(brick, w.x, w.y);
         });
+
         wallCache = cacheCanvas;
+    }
+
+    // 取得 Pacman 發光快取圖（按 mouthOpen 索引緩存，避免每幀 shadowBlur）
+    function getGlowCache(x, y, dirX, dirY, mouthOpenIdx) {
+        if (!glowCache[mouthOpenIdx]) {
+            const c = document.createElement('canvas');
+            ctx.save();
+            ctx.translate(x, y);
+            var angle = Math.atan2(dirY, dirX);
+            ctx.rotate(angle);
+            ctx.fillStyle = '#FFD700';
+            ctx.shadowColor = '#FFD700';
+            ctx.shadowBlur = 10;
+            ctx.beginPath();
+            ctx.arc(0, 0, PACMAN_RADIUS, mouthOpenIdx * Math.PI, (2 - mouthOpenIdx) * Math.PI);
+            ctx.lineTo(-1, -1);
+            ctx.fill();
+            ctx.restore();
+            glowCache[mouthOpenIdx] = c;
+        }
+        return glowCache[mouthOpenIdx];
+    }
+
+    // 預先渲染所有可能的發光幀（避免遊戲中動態創建 canvas 造成 GC 暫停）
+    function prewarmGlowCache() {
+        for (let i = 0; i <= 20; i++) {
+            getGlowCache(i);
+        }
+    }
+
+    // Pac-Man 發光（每幀畫，但用快取避免 shadowBlur 開銷）
+    function drawPacmanGlow(x, y, dirX, dirY, mouthOpenVal) {
+        var idx = Math.round(mouthOpenVal * 20);
+        var cached = glowCache[idx];
+        if (cached) {
+            ctx.drawImage(cached, x - cached.width / 2, y - cached.height / 2);
+        }
     }
 
     function initGame() {
@@ -903,6 +994,19 @@
         pacman.dir = {x: 1, y: 0};
         pacman.nextDir = {x: 1, y: 0};
         pacman.speed = 2;
+
+        // 預先計算通道位置（避免每幀掃瞄 ROWS×COLS）
+        tunnelPositions = [];
+        for (let r = 0; r < ROWS; r++) {
+            var col4 = -1, col5 = -1;
+            for (let c = 0; c < COLS; c++) {
+                if (map[r][c] === 4) col4 = c;
+                else if (map[r][c] === 5) col5 = c;
+            }
+            if (col4 >= 0 && col5 >= 0) {
+                tunnelPositions.push({ row: r, col4: col4, col5: col5 });
+            }
+        }
 
         // 幽靈起始位置（鬼屋出口）
         var ghostStarts = [
@@ -979,52 +1083,82 @@
          }
 
         // 更新 Pac-Man
-        if (pacman.nextDir.x !== 0 || pacman.nextDir.y !== 0) {
-            if (isAligned(pacman.x, pacman.y) && canMoveAt(pacman.x, pacman.y, pacman.nextDir, pacman.radius)) {
-                pacman.dir = {x: pacman.nextDir.x, y: pacman.nextDir.y};
+        var pacCenterX = Math.round((pacman.x - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+        var pacCenterY = Math.round((pacman.y - TILE_SIZE / 2) / TILE_SIZE) * TILE_SIZE + TILE_SIZE / 2;
+        
+        // 計算與網格中心的距離
+        var distToCenter = Math.sqrt(
+            Math.pow(pacman.x - pacCenterX, 2) + 
+            Math.pow(pacman.y - pacCenterY, 2)
+        );
+
+        // 定義「路口區域」：只有非常接近中心時才允許轉向或停頓
+        var snapDistance = 4; 
+
+        if (distToCenter < snapDistance) {
+            // 1. 嘗試應用下一個方向
+            if ((pacman.nextDir.x !== 0 || pacman.nextDir.y !== 0)) {
+                // 計算新方向對應的網格座標
+                var nextCol = Math.round((pacman.x - TILE_SIZE / 2) / TILE_SIZE) + pacman.nextDir.x;
+                var nextRow = Math.round((pacman.y - TILE_SIZE / 2) / TILE_SIZE) + pacman.nextDir.y;
+
+                // 檢查新方向是否可行
+                if (isPassable(nextCol, nextRow)) {
+                    // 關鍵：強制將位置對齊到網格中心，消除累積誤差
+                    pacman.x = pacCenterX;
+                    pacman.y = pacCenterY;
+                    
+                    pacman.dir = {x: pacman.nextDir.x, y: pacman.nextDir.y};
+                    pacman.nextDir = {x: 0, y: 0};
+                }
+            }
+
+            // 2. 檢查當前方向前方是否撞牆（如果在路口）
+            var currentCol = Math.round((pacman.x - TILE_SIZE / 2) / TILE_SIZE);
+            var currentRow = Math.round((pacman.y - TILE_SIZE / 2) / TILE_SIZE);
+            var nextColCurrent = currentCol + pacman.dir.x;
+            var nextRowCurrent = currentRow + pacman.dir.y;
+
+            if (!isPassable(nextColCurrent, nextRowCurrent)) {
+                // 撞牆了，停止移動
+                pacman.dir = {x: 0, y: 0};
             }
         }
 
-        if (canMoveAt(pacman.x, pacman.y, pacman.dir, pacman.radius)) {
-            pacman.x += pacman.dir.x * pacman.speed * t;
-            pacman.y += pacman.dir.y * pacman.speed * t;
+        // 移動
+        pacman.x += pacman.dir.x * pacman.speed * t;
+        pacman.y += pacman.dir.y * pacman.speed * t;
+        
+        if (pacman.dir.x !== 0 || pacman.dir.y !== 0) {
+            pacman.renderDir = {x: pacman.dir.x, y: pacman.dir.y};
         }
 
-        // 左右隧道 / 鏡射通道
-        var map = getCurrentMap();
-        var pacCol = Math.round((pacman.x - TILE_SIZE/2) / TILE_SIZE);
-        var pacRow = Math.round((pacman.y - TILE_SIZE/2) / TILE_SIZE);
+        // 左右隧道 / 鏡射通道（使用預先計算的通道位置列表，避免每幀掃瞄地圖）
         var teleported = false;
-        // 檢查是否進入鏡射通道
-        // 觸發條件：進入通道格子 + 移動超過半格 + 仍朝同一方向
-        if (pacRow >= 0 && pacRow < ROWS && pacCol >= 0 && pacCol < COLS) {
-            if (map[pacRow][pacCol] === 4 && pacman.dir.x > 0) {
-                // 在通道 4 內且往右移動，且 Pac-Man 中心已超過通道左半格
-                var channelLeft = pacCol * TILE_SIZE;
-                var channelRight = pacCol * TILE_SIZE + TILE_SIZE;
-                if (pacman.x > channelLeft + TILE_SIZE / 2) {
-                    // 從左側通道進入，跳到右側對應的 5
-                    for (let c = COLS - 1; c >= 0; c--) {
-                        if (map[pacRow][c] === 5) {
-                            pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
-                            pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
-                            teleported = true;
-                            break;
-                        }
+        if (pacman.dir.x > 0) {
+            // 向右移動：檢查所有 col4 通道
+            for (var ti = 0; ti < tunnelPositions.length; ti++) {
+                var tp = tunnelPositions[ti];
+                if (pacman.y + pacman.radius > tp.row * TILE_SIZE && pacman.y - pacman.radius < (tp.row + 1) * TILE_SIZE) {
+                    if (pacman.x >= tp.col4 * TILE_SIZE && pacman.x < (tp.col4 + 1) * TILE_SIZE) {
+                        pacman.x = tp.col5 * TILE_SIZE + TILE_SIZE * 0.75;
+                        pacman.y = tp.row * TILE_SIZE + TILE_SIZE / 2;
+                        teleported = true;
+                        break;
                     }
                 }
-            } else if (map[pacRow][pacCol] === 5 && pacman.dir.x < 0) {
-                // 在通道 5 內且往左移動，且 Pac-Man 中心已超過通道右半格
-                var channelLeft5 = pacCol * TILE_SIZE;
-                if (pacman.x < channelLeft5 + TILE_SIZE / 2) {
-                    // 從右側通道進入，跳到左側對應的 4
-                    for (let c = 0; c < COLS; c++) {
-                        if (map[pacRow][c] === 4) {
-                            pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
-                            pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
-                            teleported = true;
-                            break;
-                        }
+            }
+        }
+        if (!teleported && pacman.dir.x < 0) {
+            // 向左移動：檢查所有 col5 通道
+            for (var ti = 0; ti < tunnelPositions.length; ti++) {
+                var tp = tunnelPositions[ti];
+                if (pacman.y + pacman.radius > tp.row * TILE_SIZE && pacman.y - pacman.radius < (tp.row + 1) * TILE_SIZE) {
+                    if (pacman.x >= tp.col5 * TILE_SIZE && pacman.x < (tp.col5 + 1) * TILE_SIZE) {
+                        pacman.x = tp.col4 * TILE_SIZE + TILE_SIZE * 0.25;
+                        pacman.y = tp.row * TILE_SIZE + TILE_SIZE / 2;
+                        teleported = true;
+                        break;
                     }
                 }
             }
@@ -1035,12 +1169,13 @@
             else if (pacman.x > COLS * TILE_SIZE + TILE_SIZE/2) pacman.x = -TILE_SIZE/2;
         }
 
-        // 吃能量球
+        // 吃能量球（使用平方距離比較，避免 Math.sqrt）
+        var eatDistSq = (TILE_SIZE / 2) * (TILE_SIZE / 2);
         for (let i = dots.length - 1; i >= 0; i--) {
             var d = dots[i];
             var dx = pacman.x - d.x;
             var dy = pacman.y - d.y;
-            if (Math.sqrt(dx*dx + dy*dy) < TILE_SIZE/2) {
+            if (dx*dx + dy*dy < eatDistSq) {
                 dots.splice(i, 1);
                 score += 10;
                 scoreEl.innerText = score;
@@ -1048,12 +1183,12 @@
             }
         }
 
-        // 吃強化能量球（Power Dot）
+        // 吃強化能量球（Power Dot，使用平方距離比較）
         for (let i = powerDots.length - 1; i >= 0; i--) {
             var pd = powerDots[i];
             var dx = pacman.x - pd.x;
             var dy = pacman.y - pd.y;
-            if (Math.sqrt(dx*dx + dy*dy) < TILE_SIZE/2) {
+            if (dx*dx + dy*dy < eatDistSq) {
                 powerDots.splice(i, 1);
                 score += 50;
                 scoreEl.innerText = score;
@@ -1071,9 +1206,9 @@
         }
 
         // 幽靈 AI
+        var cfg = getConfig();
          for (var gi = 0; gi < ghosts.length; gi++) {
              var g = ghosts[gi];
-             var cfg = getConfig();
 
              // 恐懼計時
              if (g.frightened) {
@@ -1101,16 +1236,17 @@
                      var targetY = next.row * TILE_SIZE + TILE_SIZE / 2;
                      var dx = targetX - g.x;
                      var dy = targetY - g.y;
-                     var dist = Math.sqrt(dx*dx + dy*dy);
-                     var spd = g.speed * 0.6 * t; // 恐懼速度
-                     if (dist <= spd + 1) {
+                     var distSq = dx*dx + dy*dy;
+                     var spdSq = (g.speed * 0.6 * t);
+                     if (distSq <= (spdSq + 1) * (spdSq + 1)) {
                          // 到達目標格子，移除並重新計算路徑
                          g._bfsPath.shift();
                          g.x = targetX;
                          g.y = targetY;
                      } else {
-                         g.x += (dx / dist) * spd;
-                         g.y += (dy / dist) * spd;
+                         var dist = Math.sqrt(distSq);
+                         g.x += (dx / dist) * spdSq;
+                         g.y += (dy / dist) * spdSq;
                      }
                      g.dir = { x: dx >= 0 ? 1 : -1, y: dy >= 0 ? 1 : -1 };
                  } else {
@@ -1209,45 +1345,31 @@
                  g.dir = {x: -g.dir.x, y: -g.dir.y};
              }
 
-            // 左右隧道 / 鏡射通道
+            // 鏡射通道（使用預先計算的位置列表）
             var map = getCurrentMap();
             var gCol = Math.round((g.x - TILE_SIZE/2) / TILE_SIZE);
             var gRow = Math.round((g.y - TILE_SIZE/2) / TILE_SIZE);
-            if (gRow >= 0 && gRow < ROWS && gCol >= 0 && gCol < COLS) {
-                if (map[gRow][gCol] === 4 && g.dir.x > 0) {
-                    // 在通道 4 內且往右移動，且幽靈中心已超過通道左半格
-                    var chLeft = gCol * TILE_SIZE;
-                    if (g.x > chLeft + TILE_SIZE / 2) {
-                        for (let c = COLS - 1; c >= 0; c--) {
-                            if (map[gRow][c] === 5) {
-                                g.x = c * TILE_SIZE + TILE_SIZE / 2;
-                                g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
-                                break;
-                            }
-                        }
-                    }
-                } else if (map[gRow][gCol] === 5 && g.dir.x < 0) {
-                    // 在通道 5 內且往左移動，且幽靈中心已超過通道右半格
-                    var chLeft5 = gCol * TILE_SIZE;
-                    if (g.x < chLeft5 + TILE_SIZE / 2) {
-                        for (let c = 0; c < COLS; c++) {
-                            if (map[gRow][c] === 4) {
-                                g.x = c * TILE_SIZE + TILE_SIZE / 2;
-                                g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
-                                break;
-                            }
-                        }
+            for (var ti = 0; ti < tunnelPositions.length; ti++) {
+                var tp = tunnelPositions[ti];
+                if (tp.row === gRow) {
+                    if (map[gRow][gCol] === 4 && g.dir.x > 0 && g.x > gCol * TILE_SIZE + TILE_SIZE / 2) {
+                        g.x = tp.col5 * TILE_SIZE + TILE_SIZE / 2;
+                        g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
+                    } else if (map[gRow][gCol] === 5 && g.dir.x < 0 && g.x < gCol * TILE_SIZE + TILE_SIZE / 2) {
+                        g.x = tp.col4 * TILE_SIZE + TILE_SIZE / 2;
+                        g.y = gRow * TILE_SIZE + TILE_SIZE / 2;
                     }
                 }
             }
             if (g.x < -TILE_SIZE/2) g.x = COLS * TILE_SIZE + TILE_SIZE/2;
             else if (g.x > COLS * TILE_SIZE + TILE_SIZE/2) g.x = -TILE_SIZE/2;
 
-            // 碰撞檢測
+            // 碰撞檢測（使用平方距離比較）
             var cdx = pacman.x - g.x;
             var cdy = pacman.y - g.y;
             var collisionDist = (pacman.radius + GHOST_RADIUS) * 0.8;
-            if (Math.sqrt(cdx*cdx + cdy*cdy) < collisionDist) {
+            var collisionDistSq = collisionDist * collisionDist;
+            if (cdx*cdx + cdy*cdy < collisionDistSq) {
                 if (g.frightened && !g.dead) {
                     ghostsEatenCounter++;
                     if (score >= EAT_SCORE_THRESHOLD) {
@@ -1510,29 +1632,31 @@
         }
 
         // 能量球（糖果風格）
-        dots.forEach(d => {
+        for (let di = 0; di < dots.length; di++) {
+            var dd = dots[di];
             ctx.fillStyle = '#FFD700';
             ctx.beginPath();
-            ctx.arc(d.x, d.y, 3, 0, Math.PI * 2);
+            ctx.arc(dd.x, dd.y, 3, 0, Math.PI * 2);
             ctx.fill();
-            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.fillStyle = 'rgba(255,255,255,0.6)';
             ctx.beginPath();
-            ctx.arc(d.x - 1, d.y - 1, 1.2, 0, Math.PI * 2);
+            ctx.arc(dd.x - 1, dd.y - 1, 1.2, 0, Math.PI * 2);
             ctx.fill();
-        });
+        }
 
         // 強化能量球（糖果風格 + 脈衝閃爍）
         var pulse = 1 + Math.sin(Date.now() / 200) * 0.2;
-        powerDots.forEach(d => {
+        for (let pi = 0; pi < powerDots.length; pi++) {
+            var pd = powerDots[pi];
             ctx.fillStyle = '#EC5F72';
             ctx.beginPath();
-            ctx.arc(d.x, d.y, 6 * pulse, 0, Math.PI * 2);
+            ctx.arc(pd.x, pd.y, 6 * pulse, 0, Math.PI * 2);
             ctx.fill();
             ctx.fillStyle = 'rgba(255,255,255,0.3)';
             ctx.beginPath();
-            ctx.arc(d.x - 2 * pulse, d.y - 2 * pulse, 2.4 * pulse, 0, Math.PI * 2);
+            ctx.arc(pd.x - 2 * pulse, pd.y - 2 * pulse, 2.4 * pulse, 0, Math.PI * 2);
             ctx.fill();
-        });
+        }
 
         // 幽靈
         for (var gi = 0; gi < ghosts.length; gi++) {
@@ -1578,24 +1702,34 @@
             }
         }
 
-        // 小精靈
-        ctx.fillStyle = '#FFFF52';
+        // 小精靈張嘴
+        var glowMouthOpen = 0.25 + Math.sin(Date.now() / 80) * 0.12;
+        if (glowMouthOpen > 0.37) glowMouthOpen = 0.37;
+        if (glowMouthOpen < 0.13) glowMouthOpen = 0.13;
+        var grx = pacman.renderDir ? pacman.renderDir.x : pacman.dir.x;
+        var gry = pacman.renderDir ? pacman.renderDir.y : pacman.dir.y;
+        if (grx === 0 && gry === 0) { grx = 1; gry = 0; }
+        drawPacmanGlow(pacman.x, pacman.y, grx, gry, glowMouthOpen);
+
+        // 小精靈本體
+        ctx.save();
+        ctx.translate(pacman.x, pacman.y);
+        var rx = pacman.renderDir ? pacman.renderDir.x : pacman.dir.x;
+        var ry = pacman.renderDir ? pacman.renderDir.y : pacman.dir.y;
+        if (rx === 0 && ry === 0) { rx = 1; ry = 0; }
+        var drawAngle = Math.atan2(ry, rx);
+        ctx.rotate(drawAngle);
+
         ctx.beginPath();
-
-        let angle = 0;
-        if (pacman.dir.x === 1) angle = 0;
-        if (pacman.dir.x === -1) angle = Math.PI;
-        if (pacman.dir.y === 1) angle = Math.PI / 2;
-        if (pacman.dir.y === -1) angle = -Math.PI / 2;
-
-        const mouthSize = 0.15 * Math.PI + (Math.sin(Date.now() / 80) * 0.1);
-        ctx.arc(pacman.x, pacman.y, pacman.radius, angle + mouthSize, angle + (2 * Math.PI - mouthSize));
-        ctx.lineTo(pacman.x, pacman.y);
+        ctx.arc(0, 0, pacman.radius, glowMouthOpen * Math.PI, (2 - glowMouthOpen) * Math.PI);
+        ctx.lineTo(0, 0);
+        ctx.fillStyle = '#FFD700';
         ctx.fill();
+        ctx.restore();
 
         // 暫停覆蓋層
         if (isPaused) {
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
             ctx.fillRect(0, 0, COLS * TILE_SIZE, ROWS * TILE_SIZE);
             ctx.fillStyle = '#FFD700';
             ctx.font = 'bold 32px "Microsoft JhengHei", "PingFang TC", sans-serif';
@@ -1647,6 +1781,7 @@
         if (resetScore || !gameStarted) {
             initGame();
             buildWallCache();
+            prewarmGlowCache();
             gameStarted = true;
         } else if (resumeState) {
             // 繼續遊戲：從死亡前的狀態恢復（保留能量球、分數、關卡進度）
@@ -1709,6 +1844,7 @@
             // 清除保存的狀態
             resumeState = null;
             buildWallCache();
+            prewarmGlowCache();
         } else {
             // 正常進入下一關：重建地圖和幽靈
             walls = [];
@@ -1766,6 +1902,7 @@
             justDied = false;
             levelTransition = false;
             buildWallCache();
+            prewarmGlowCache();
         }
 
         gameRunning = true;
