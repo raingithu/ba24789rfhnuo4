@@ -35,8 +35,10 @@
             width: 100%;
             height: 100%;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 10px;
         }
 
         canvas {
@@ -44,20 +46,14 @@
             background-color: #000;
             border-radius: 4px;
             -webkit-user-select: none;
-            margin-top: 10px;
         }
 
         #ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
             pointer-events: none;
             z-index: 10;
-            margin-top: 4px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
         }
 
         #top-bar {
@@ -73,7 +69,6 @@
             font-weight: bold;
             width: 100%;
             max-width: 380px;
-            margin-top: 100px;
         }
 
         #top-bar .left-section {
@@ -138,12 +133,12 @@
             text-align: center;
             background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px);
-            padding: 30px;
+            padding: 20px;
             border: 2px solid var(--pacman-color);
             border-radius: 10px;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 0px;
             z-index: 20;
             box-shadow: 0 0 30px rgba(255, 215, 0, 0.3);
         }
@@ -376,7 +371,6 @@
         @media (max-width: 480px) {
             h1 { font-size: 1.8rem; }
             p { font-size: 0.9rem; }
-            #top-bar {margin-top: 160px; }
             #message-overlay { 
                 width: 360px;
                 padding: 4px;
@@ -408,7 +402,7 @@
 </div>
     <div id="message-overlay">
         <h1>糖果小精靈</h1>
-        <p>PC 操作：使用鍵盤方向鍵</p>
+        <p>PC 操作：使用鍵盤方向鍵(或滑鼠)</p>
         <p>手機操作：螢幕上滑動改變方向</p>
         <p>吃掉所有糖果能量球即可前進關卡！</p>
         <p>善用強化糖果可反制幽靈</p>
