@@ -1630,7 +1630,7 @@
     }
 
     let gameStarted = false;
-    var resumeState = null; // 保存死亡前的遊戲狀態，用於繼續遊戲
+    var resumeState = null; // 保存死亡前的遊戲狀態，用於繼續遊戲（保留能量球和分數）
 
     function startGame(resetScore = true) {
         if (!audioCtx) {
@@ -1647,7 +1647,7 @@
             buildWallCache();
             gameStarted = true;
         } else if (resumeState) {
-            // 繼續遊戲：從死亡前的狀態恢復
+            // 繼續遊戲：從死亡前的狀態恢復（保留能量球、分數、關卡進度）
             walls = [];
             var map = getCurrentMap();
             for (let r = 0; r < ROWS; r++) {
@@ -1664,12 +1664,13 @@
             dots = resumeState.dots;
             powerDots = resumeState.powerDots;
 
-            // 恢復 Pac-Man 位置
-            pacman.x = resumeState.pacman.x;
-            pacman.y = resumeState.pacman.y;
-            pacman.dir = resumeState.pacman.dir;
-            pacman.nextDir = resumeState.pacman.nextDir;
-            pacman.speed = resumeState.pacman.speed;
+            // Pac-Man 從初始位置重生（避免死亡時貼牆導致卡住）
+            var start = findPacmanStart();
+            pacman.x = start.x * TILE_SIZE + TILE_SIZE / 2;
+            pacman.y = start.y * TILE_SIZE + TILE_SIZE / 2;
+            pacman.dir = {x: 1, y: 0};
+            pacman.nextDir = {x: 1, y: 0};
+            pacman.speed = 2;
 
             // 恢復幽靈（重置為鬼屋內）
             ghosts = [];
