@@ -1,9 +1,11 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
 <meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>江湖模擬器</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--bg:#1a1410;--bg2:#2a2018;--bg3:#332820;--bg4:#1e1812;--bor:#5a4a3a;--tx:#e8dcc8;--tx2:#a89880;--tx3:#7a6a58;--ac:#c8a060;--acd:#8a7040}
@@ -50,7 +52,7 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 
 <div id="settings-overlay" class="ov">
 <div class="pnl">
-<h2>&#9881;&#65039; 江湖設定</h2>
+<h2>⚙️江湖設定</h2>
 <label for="api-host">API 位址</label>
 <input type="text" id="api-host" placeholder="https://apihub.agnes-ai.com/v1/chat/completions">
 <p class="hint">LLM API 基礎位址（預設 Agnes AI）</p>
@@ -64,6 +66,7 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 <p class="hint">GitHub raw URL，指向 files.json 和 .md 檔案所在的目錄</p>
 <div class="br">
 <button class="b bp" id="btn-load" onclick="doLoadFiles()">載入必要檔案</button>
+<button class="b bs" id="btn-close-set" onclick="doCloseSettings()" style="display:none">關閉</button>
 </div>
 <div id="file-status" style="margin-top:12px;font-size:.85rem;color:var(--tx3);text-align:center"></div>
 </div>
@@ -79,7 +82,7 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 
 <div id="char-create-overlay" class="ov h">
 <div class="pnl">
-<h2>&#127807; 建立角色</h2>
+<h2>💡建立角色</h2>
 <p style="color:var(--tx3);text-align:center;margin-bottom:24px;font-size:.9rem">踏入這片江湖之前，先讓世界認識你</p>
 <label for="char-name">姓名</label>
 <input type="text" id="char-name" placeholder="你的名字" maxlength="20">
@@ -136,11 +139,35 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 </div>
 </div>
 
+<div id="save-select-overlay" class="ov h">
+<div class="pnl">
+<h2>🗃️選擇存檔</h2>
+<p style="color:var(--tx3);text-align:center;margin-bottom:24px;font-size:.9rem">選擇要繼續的江湖之旅，或開始新的冒險</p>
+<div id="save-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px"></div>
+<div class="br">
+<button class="b bp" onclick="doNewGame()">開始新的江湖</button>
+<button class="b bs" onclick="doCancelSaveSelect()">取消</button>
+</div>
+</div>
+</div>
+
+<div id="overwrite-select-overlay" class="ov h">
+<div class="pnl">
+<h2>💾請選擇要覆蓋的存檔</h2>
+<p style="color:var(--tx3);text-align:center;margin-bottom:24px;font-size:.9rem">所有存檔槽位都已滿，請選擇一個覆寫</p>
+<div id="overwrite-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px"></div>
+<div class="br">
+<button class="b bs" onclick="doCancelOverwrite()">取消</button>
+</div>
+</div>
+</div>
+
 <div id="app">
 <div class="hd">
 <span class="ht" id="hdr-title">江湖模擬器</span>
 <div class="ha">
 <button class="b bs" id="btn-scroll" onclick="toggleScroll()">自動滾動</button>
+<button class="b bs" id="btn-archive" onclick="doArchive()" style="display:none">💾存檔</button>
 <button class="b bs" onclick="doShowSettings()">⚙️設定</button>
 <button class="b bs" onclick="doReset()">🔄新遊戲</button>
 </div>
@@ -153,6 +180,13 @@ body{font-family:"Noto Serif TC","Songti TC","MingLiU",serif;background:var(--bg
 </div>
 
 <script>
+// ================= Supabase 配置 =================
+const SUPABASE_URL = 'https://ctpzyxuezychetfdkftb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PqU-ptNARKPSzRWn7wATBg_HS__tcpJ';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// =================================================
+
 var S={url:'',key:'',model:'',mdUrl:'',sys:'',sid:'',name:'',hist:[],busy:false,autoScroll:true};
 
 function saveSet(){
@@ -167,7 +201,8 @@ S.mdUrl=mdVal||'https://raw.githubusercontent.com/raingithu/ba24789rfhnuo4/main/
 try{localStorage.setItem('jh',JSON.stringify({url:S.url,key:S.key,model:S.model,mdUrl:S.mdUrl,autoScroll:S.autoScroll}))}catch(e){}
 }
 function loadSet(){try{var s=localStorage.getItem('jh');if(s){var d=JSON.parse(s);S.url=d.url||'';S.key=d.key||'';S.model=d.model||'';S.mdUrl=d.mdUrl||'';S.autoScroll=s.autoScroll!==false}}catch(e){}}
-function doShowSettings(){document.getElementById('settings-overlay').classList.remove('h');document.getElementById('api-host').value=S.url||'https://apihub.agnes-ai.com/v1/chat/completions';document.getElementById('api-key').value=S.key;document.getElementById('model-name').value=S.model||'agnes-2.0-flash';document.getElementById('md-base-url').value=S.mdUrl||'https://raw.githubusercontent.com/raingithu/ba24789rfhnuo4/main/g/01';}
+function doShowSettings(){document.getElementById('settings-overlay').classList.remove('h');document.getElementById('api-host').value=S.url||'https://apihub.agnes-ai.com/v1/chat/completions';document.getElementById('api-key').value=S.key;document.getElementById('model-name').value=S.model||'agnes-2.0-flash';document.getElementById('md-base-url').value=S.mdUrl||'https://raw.githubusercontent.com/raingithu/ba24789rfhnuo4/main/g/01';document.getElementById('btn-close-set').style.display=S.sys?'':'none';document.getElementById('btn-load').style.display=S.sys?'none':'';}
+function doCloseSettings(){document.getElementById('settings-overlay').classList.add('h');}
 
 function showLoad(v,t){document.getElementById('loading-overlay').classList.toggle('h',!v);if(t)document.getElementById('load-text').textContent=t;}
 function updProg(d,t){document.getElementById('load-prog').textContent=d+' / '+t;}
@@ -193,7 +228,7 @@ done++;updProg(done,tot);
 S.sys=secs.join('\n\n');
 var kb=(S.sys.length/1024).toFixed(1);
 document.getElementById('file-status').innerHTML='<span style="color:var(--ac)">&#10003;</span> 載入完成：'+done+' 個文件，'+kb+' KB';
-setTimeout(function(){showLoad(false);document.getElementById('settings-overlay').classList.add('h');document.getElementById('char-create-overlay').classList.remove('h')},800);
+setTimeout(function(){showLoad(false);document.getElementById('settings-overlay').classList.add('h');checkAndShowMenu()},800);
 }catch(e){document.getElementById('file-status').innerHTML='<span style="color:#a04040">&#10007;</span> 失敗：'+esc(e.message);showLoad(false);}
 finally{btn.disabled=false;}
 }
@@ -207,9 +242,193 @@ var g=document.getElementById('char-gender').value;
 var bg=document.getElementById('char-background').value.trim();
 var f=document.getElementById('char-faction').value;
 var m=document.getElementById('char-martial').value;
+S.faction=f;
+S.martial=m;
 document.getElementById('char-create-overlay').classList.add('h');
 document.getElementById('app').classList.add('a');
+document.getElementById('btn-archive').style.display='';
 doStart(n,g,age,bg,f,m);
+}
+
+function checkAndShowMenu(){
+var hasSave=false;
+for(var i=1;i<=5;i++){
+var k='Jianghu-Slot'+i;
+var d=localStorage.getItem(k);
+if(d){hasSave=true;break;}
+}
+if(hasSave){
+document.getElementById('save-select-overlay').classList.remove('h');
+renderSaveList();
+}else{
+document.getElementById('char-create-overlay').classList.remove('h');
+}
+}
+
+function renderSaveList(){
+var list=document.getElementById('save-list');
+list.innerHTML='';
+for(var i=1;i<=5;i++){
+var k='Jianghu-Slot'+i;
+var d=localStorage.getItem(k);
+var btn=document.createElement('button');
+btn.className='b bs';
+btn.style.width='100%';
+btn.style.textAlign='left';
+btn.style.padding='12px 16px';
+btn.style.fontSize='.85rem';
+btn.style.lineHeight='1.5';
+if(d){
+var obj=JSON.parse(d);
+var info='存檔 '+i;
+if(obj.player_name)info+='｜'+obj.player_name;
+if(obj.faction)info+='｜'+obj.faction;
+if(obj.martial)info+='｜'+obj.martial;
+if(obj.updated_at){
+var dt=new Date(obj.updated_at);
+info+='｜'+(dt.getMonth()+1)+'/'+dt.getDate()+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+}
+btn.textContent=info;
+btn.onclick=(function(slot,idx){return function(){doLoadFromSlot(slot,idx);}})(k,i);
+}else{
+btn.textContent='存檔 '+i+'（空）';
+btn.style.color='var(--tx3)';
+btn.onclick=(function(slot,idx){return function(){doLoadFromSlot(slot,idx);}})(k,i);
+}
+list.appendChild(btn);
+}
+}
+
+function doNewGame(){
+document.getElementById('save-select-overlay').classList.add('h');
+document.getElementById('char-create-overlay').classList.remove('h');
+}
+
+function doLoadFromSlot(key,idx){
+var d=localStorage.getItem(key);
+if(!d){alert('此存檔槽位為空');return;}
+var obj=JSON.parse(d);
+var uuid=obj.uuid;
+if(!uuid){alert('存檔資料遺失，請重新存檔');return;}
+showLoad(true,'讀取存檔中…');
+document.getElementById('save-select-overlay').classList.add('h');
+sb.from('jianghusaves').select('save_data').eq('id',uuid).single().then(function(res){
+showLoad(false);
+if(res.data&&res.data.save_data){
+doStartWithSave(res.data.save_data,obj.player_name);
+}else{
+alert('找不到存檔資料（uuid:'+uuid+'）');
+}
+}).catch(function(err){
+showLoad(false);
+alert('讀取存檔失敗：'+err.message);
+});
+}
+
+
+
+async function doStartWithSave(saveData,playerName){
+setBusy(true);
+S.name=playerName||'玩家';
+document.getElementById('app').classList.add('a');
+document.getElementById('btn-archive').style.display='';
+try{
+var msgs=[{role:'system',content:S.sys+'\n\n【存檔資料】\n'+saveData},{role:'user',content:'我回來了，請繼續我們的江湖故事。'}];
+var resp=await callLLM(msgs);
+msgs.push({role:'assistant',content:resp});
+addAI(resp);
+addSys(parseWS(resp));
+S.hist=msgs;
+document.getElementById('hdr-title').textContent='\u6c5f\u6e56 \u2014\u2014 '+S.name;
+}catch(e){addSys('\u26a0\ufe0f 載入存檔失敗：'+e.message);console.error(e);}
+finally{setBusy(false);}
+}
+
+async function doArchive(){
+if(S.busy){alert('AI 正在思考中，請稍後再存檔');return;}
+setBusy(true);
+try{
+var archiveMsg='請先幫我總結存檔，給我存檔資訊讓我於下次登入時繼續遊戲。';
+S.hist.push({role:'user',content:archiveMsg});
+var resp=await callLLM(S.hist);
+S.hist.push({role:'assistant',content:resp});
+addAI(resp);
+var saveData=resp;
+var now=new Date().toISOString();
+var saveObj={uuid:null,player_name:S.name,faction:S.faction||'',martial:S.martial||'',updated_at:now};
+var slotKey=null;
+for(var i=1;i<=5;i++){
+var k='Jianghu-Slot'+i;
+var existing=localStorage.getItem(k);
+if(!existing){slotKey=k;break;}
+}
+if(slotKey){
+await doSaveToSupabase(saveData,saveObj,slotKey);
+}else{
+showLoad(false);
+renderOverwriteList(saveData,saveObj);
+document.getElementById('overwrite-select-overlay').classList.remove('h');
+}
+}catch(e){showLoad(false);alert('存檔失敗：'+e.message);console.error(e);}
+finally{setBusy(false);}
+}
+
+async function doSaveToSupabase(saveData,saveObj,slotKey){
+showLoad(true,'儲存至 Supabase…');
+var res=await sb.from('jianghusaves').insert({save_data:saveData,player_name:S.name,faction:S.faction||null,martial:S.martial||null}).select().single();
+if(res.error){throw new Error(res.error.message);}
+saveObj.uuid=res.data.id;
+localStorage.setItem(slotKey,JSON.stringify(saveObj));
+showLoad(false);
+document.getElementById('file-status').innerHTML='<span style="color:var(--ac)">&#10003;</span> 已存至 '+slotKey;
+setTimeout(function(){document.getElementById('file-status').textContent='';},3000);
+}
+
+function renderOverwriteList(saveData,saveObj){
+var list=document.getElementById('overwrite-list');
+list.innerHTML='';
+for(var i=1;i<=5;i++){
+var k='Jianghu-Slot'+i;
+var d=localStorage.getItem(k);
+var btn=document.createElement('button');
+btn.className='b bs';
+btn.style.width='100%';
+btn.style.textAlign='left';
+btn.style.padding='12px 16px';
+btn.style.fontSize='.85rem';
+btn.style.lineHeight='1.5';
+if(d){
+var obj=JSON.parse(d);
+var info='存檔 '+i;
+if(obj.player_name)info+='｜'+obj.player_name;
+if(obj.faction)info+='｜'+obj.faction;
+if(obj.martial)info+='｜'+obj.martial;
+if(obj.updated_at){
+var dt=new Date(obj.updated_at);
+info+='｜'+(dt.getMonth()+1)+'/'+dt.getDate()+' '+dt.getHours().toString().padStart(2,'0')+':'+dt.getMinutes().toString().padStart(2,'0');
+}
+btn.textContent=info;
+btn.onclick=(function(slot,idx,sd,so){return function(){doOverwriteSlot(slot,idx,sd,so);}})(k,i,saveData,saveObj);
+}else{
+btn.textContent='存檔 '+i+'（空）';
+btn.style.color='var(--tx3)';
+btn.onclick=(function(slot,idx,sd,so){return function(){doOverwriteSlot(slot,idx,sd,so);}})(k,i,saveData,saveObj);
+}
+list.appendChild(btn);
+}
+}
+
+function doOverwriteSlot(key,idx,saveData,saveObj){
+document.getElementById('overwrite-select-overlay').classList.add('h');
+doSaveToSupabase(saveData,saveObj,key);
+}
+
+function doCancelOverwrite(){
+document.getElementById('overwrite-select-overlay').classList.add('h');
+}
+
+function doCancelSaveSelect(){
+document.getElementById('save-select-overlay').classList.add('h');
 }
 
 async function callLLM(msgs){
@@ -256,13 +475,13 @@ addSys(parseWS(resp));
 finally{setBusy(false);}
 }
 
-function addPl(t){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message pl';d.innerHTML='<div class="mb">'+esc(t)+'</div><div class="mm">'+tm()+' \u2022 '+S.name+'</div>';c.appendChild(d);sb();}
-function addAI(t){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.innerHTML='<div class="mb">'+fmt(t)+'</div><div class="mm">'+tm()+' \u2022 \u6c5f\u6e56</div>';c.appendChild(d);sb();}
-function addSys(t){if(!t)return;var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.innerHTML='<div class="mb"><div class="sb">'+esc(t)+'</div></div><div class="mm">'+tm()+'</div>';c.appendChild(d);sb();}
-function showLD(){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.id='ld-msg';d.innerHTML='<div class="mb"><div class="ld"><span></span><span></span><span></span></div></div>';c.appendChild(d);sb();}
+function addPl(t){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message pl';d.innerHTML='<div class="mb">'+esc(t)+'</div><div class="mm">'+tm()+' \u2022 '+S.name+'</div>';c.appendChild(d);scrollToChat();}
+function addAI(t){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.innerHTML='<div class="mb">'+fmt(t)+'</div><div class="mm">'+tm()+' \u2022 \u6c5f\u6e56</div>';c.appendChild(d);scrollToChat();}
+function addSys(t){if(!t)return;var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.innerHTML='<div class="mb"><div class="sb">'+esc(t)+'</div></div><div class="mm">'+tm()+'</div>';c.appendChild(d);scrollToChat();}
+function showLD(){var c=document.getElementById('chat-area');var d=document.createElement('div');d.className='message ai';d.id='ld-msg';d.innerHTML='<div class="mb"><div class="ld"><span></span><span></span><span></span></div></div>';c.appendChild(d);scrollToChat();}
 function hidLD(){var e=document.getElementById('ld-msg');if(e)e.remove();}
 function setBusy(v){S.busy=v;document.getElementById('btn-send').disabled=v;if(v)showLD();else hidLD();}
-function sb(){if(S.autoScroll){var c=document.getElementById('chat-area');requestAnimationFrame(function(){c.scrollTop=c.scrollHeight;});}}
+function scrollToChat(){if(S.autoScroll){var c=document.getElementById('chat-area');requestAnimationFrame(function(){c.scrollTop=c.scrollHeight;});}}
 function tm(){var d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');}
 function esc(t){var d=document.createElement('div');d.textContent=t;return d.innerHTML;}
 function fmt(t){return esc(t).replace(/\n/g,'<br>');}
