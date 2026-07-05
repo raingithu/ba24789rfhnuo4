@@ -429,12 +429,11 @@
 </div>
 
 <script type="module">
-// ================= Supabase 參數 =================
+// ================= Supabase 配置 =================
     const SUPABASE_URL = 'https://ctpzyxuezychetfdkftb.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_PqU-ptNARKPSzRWn7wATBg_HS__tcpJ';
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
-// =================================================
 
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
@@ -446,14 +445,14 @@
     const overlay = document.getElementById('message-overlay');
     const overlayTitle = document.querySelector('#message-overlay h1');
 
-    // 遊戲參數
+    // 遊戲配置
     const TILE_SIZE = 20;
     const ROWS = 18;
     const COLS = 19;
     const PACMAN_RADIUS = 8;
     const GHOST_RADIUS = 8;
 
-    // 關卡資料 (1: 牆, 0: 能量球, 2: 鬼屋, 9: 鬼屋內部, 3: 強化能量球(大), 4: 鏡射通道(左), 5: 鏡射通道(右))
+    // 地圖數據 (1: 牆, 0: 能量球, 2: 鬼屋, 9: 鬼屋內部, 3: 強化能量球(大), 4: 鏡射通道(左), 5: 鏡射通道(右))
     const LEVEL_MAPS = [
         // 第 1 關
         [
@@ -541,27 +540,6 @@
         ],
         // 第 5 關
         [
-            [1,1,1,2,2,1,1,1,1,1,1,1,1,1,2,2,1,1,1],
-            [1,3,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,3,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
-            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
-            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-            [1,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1],
-            [1,0,0,1,0,1,0,1,2,2,2,1,0,1,0,1,0,0,1],
-            [1,1,0,1,0,1,0,0,2,9,2,0,0,1,0,1,0,1,1],
-            [1,0,0,1,0,1,0,1,2,1,2,1,0,1,0,1,0,0,1],
-            [1,0,1,1,0,1,0,0,1,3,1,0,0,1,0,1,1,0,1],
-            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
-            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
-            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
-            [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
-            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
-        ],
-        // 第 6 關
-        [
             [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
             [1,0,0,0,1,1,0,0,0,1,0,0,0,1,1,0,0,0,1],
             [1,0,1,0,0,0,0,1,0,1,0,1,0,0,0,0,1,0,1],
@@ -580,6 +558,27 @@
             [1,0,1,1,0,0,1,1,0,1,0,1,1,0,0,1,1,0,1],
             [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
             [5,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,4],
+        ],
+        // 第 6 關
+        [
+            [1,1,1,2,2,1,1,1,1,1,1,1,1,1,2,2,1,1,1],
+            [1,3,1,1,1,1,0,1,0,1,0,1,0,1,1,1,1,3,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,1,0,1,1,1,1,1,1,1,1,1,1,1,1,1,0,1],
+            [1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+            [1,0,1,1,0,1,0,0,1,1,1,0,0,1,0,1,1,0,1],
+            [1,0,0,1,0,1,0,1,2,2,2,1,0,1,0,1,0,0,1],
+            [1,1,0,1,0,1,0,0,2,9,2,0,0,1,0,1,0,1,1],
+            [1,0,0,1,0,1,0,1,2,1,2,1,0,1,0,1,0,0,1],
+            [1,0,1,1,0,1,0,0,1,3,1,0,0,1,0,1,1,0,1],
+            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,1,0,0,1],
+            [1,1,0,1,0,1,0,1,1,1,1,1,0,1,0,1,0,1,1],
+            [1,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [1,0,0,1,1,1,1,1,1,1,1,1,1,1,1,0,1,0,1],
+            [1,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
         ],
         // 第 7 關
         [
@@ -691,18 +690,19 @@
     let ghostReleaseTimer = 0;
     let isPaused = false;
     let ghostsEatenCounter = 0; // 追蹤吃了多少隻恐懼幽靈，每 10 隻+1 生命
+    const GHOST_RELEASE_FRAMES = 300;
 
-    const GHOST_RELEASE_FRAMES = 300; // 幽靈初始 5 秒後釋放
-    const EAT_SCORE_THRESHOLD = 6000; // 吃到分數達此值以上，恐懼幽靈被吃後會以最短路徑回鬼屋
+    // 離線 Canvas 快取 — 牆壁只畫一次
+    let wallCache = null;
 
-    // 通關輪次將提升幽靈強度
+    // 關卡配置
+    const EAT_SCORE_THRESHOLD = 5000; // 吃到分數達此值以上，恐懼幽靈被吃後會以最短路径回鬼屋
     const LEVEL_CONFIGS = [
-        { ghostSpeed: 1.5, releaseDelay: 360, powerDuration: 400 },
-        { ghostSpeed: 1.6, releaseDelay: 320, powerDuration: 360 },
-        { ghostSpeed: 1.7, releaseDelay: 280, powerDuration: 360 },
-        { ghostSpeed: 1.8, releaseDelay: 240, powerDuration: 300 },
-        { ghostSpeed: 1.9, releaseDelay: 200, powerDuration: 300 },
-        { ghostSpeed: 2.0, releaseDelay: 160, powerDuration: 240 },
+        { ghostSpeed: 1.5, releaseDelay: 350, powerDuration: 400 },
+        { ghostSpeed: 1.6, releaseDelay: 300, powerDuration: 360 },
+        { ghostSpeed: 1.7, releaseDelay: 250, powerDuration: 320 },
+        { ghostSpeed: 1.8, releaseDelay: 200, powerDuration: 280 },
+        { ghostSpeed: 1.9, releaseDelay: 150, powerDuration: 240 },
     ];
 
     function getConfig() {
@@ -840,6 +840,27 @@
         canvas.style.height = `${h * scale}px`;
     }
 
+    // 建立牆壁離線快取（只畫一次，大幅降低每幀 shadowBlur 開銷）
+    function buildWallCache() {
+        const cacheCanvas = document.createElement('canvas');
+        cacheCanvas.width = COLS * TILE_SIZE;
+        cacheCanvas.height = ROWS * TILE_SIZE;
+        const cctx = cacheCanvas.getContext('2d');
+        cctx.fillStyle = '#62AFD0';
+        cctx.strokeStyle = '#A1C6DE';
+        cctx.shadowColor = '#DDF8FD';
+        cctx.shadowBlur = 4;
+        cctx.shadowOffsetY = 2;
+        cctx.lineWidth = 2;
+        walls.forEach(w => {
+            cctx.beginPath();
+            cctx.roundRect(w.x + 2, w.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, 2);
+            cctx.fill();
+            cctx.stroke();
+        });
+        wallCache = cacheCanvas;
+    }
+
     function initGame() {
         walls = [];
         dots = [];
@@ -911,12 +932,15 @@
         ghostReleaseTimer = 0;
     }
 
-    function update() {
+    function update(dt) {
         if (levelTransition || dying) return;
+
+        // 以 FIXED_DT 為基準的比例因子（手機 30fps 時約 2x）
+        const t = dt / FIXED_DT;
 
         // 幽靈釋放計時
          if (ghostReleaseTimer < GHOST_RELEASE_FRAMES) {
-             ghostReleaseTimer++;
+             ghostReleaseTimer += t;
              for (var gi = 0; gi < ghosts.length; gi++) {
                  var g = ghosts[gi];
                  if (g.inGhostHouse) {
@@ -928,9 +952,9 @@
                      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
                          // 向出口移動
                          if (Math.abs(dx) > Math.abs(dy)) {
-                             g.x += (dx > 0 ? -1 : 1);
+                             g.x += (dx > 0 ? -1 : 1) * t;
                          } else {
-                             g.y += (dy > 0 ? -1 : 1);
+                             g.y += (dy > 0 ? -1 : 1) * t;
                          }
                      }
                  }
@@ -957,8 +981,8 @@
         }
 
         if (canMoveAt(pacman.x, pacman.y, pacman.dir, pacman.radius)) {
-            pacman.x += pacman.dir.x * pacman.speed;
-            pacman.y += pacman.dir.y * pacman.speed;
+            pacman.x += pacman.dir.x * pacman.speed * t;
+            pacman.y += pacman.dir.y * pacman.speed * t;
         }
 
         // 左右隧道 / 鏡射通道
@@ -967,16 +991,16 @@
         var pacRow = Math.round((pacman.y - TILE_SIZE/2) / TILE_SIZE);
         var teleported = false;
         // 檢查是否進入鏡射通道
-        // 觸發條件：往右跑碰到 4 的最右側，或往左跑碰到 5 的最左側
+        // 觸發條件：進入通道格子 + 移動超過半格 + 仍朝同一方向
         if (pacRow >= 0 && pacRow < ROWS && pacCol >= 0 && pacCol < COLS) {
             if (map[pacRow][pacCol] === 4 && pacman.dir.x > 0) {
-                // 往右跑進入 4，檢查是否觸碰最右側
-                var rightEdge = pacCol * TILE_SIZE + TILE_SIZE;
-                if (pacman.x + pacman.radius >= rightEdge) {
+                // 在通道 4 內且往右移動，且 Pac-Man 中心已超過通道左半格
+                var channelLeft = pacCol * TILE_SIZE;
+                var channelRight = pacCol * TILE_SIZE + TILE_SIZE;
+                if (pacman.x > channelLeft + TILE_SIZE / 2) {
                     // 從左側通道進入，跳到右側對應的 5
                     for (let c = COLS - 1; c >= 0; c--) {
                         if (map[pacRow][c] === 5) {
-                            // 傳送到 5 的格子中心
                             pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
                             pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
                             teleported = true;
@@ -985,13 +1009,12 @@
                     }
                 }
             } else if (map[pacRow][pacCol] === 5 && pacman.dir.x < 0) {
-                // 往左跑進入 5，檢查是否觸碰最左側
-                var leftEdge = pacCol * TILE_SIZE;
-                if (pacman.x - pacman.radius <= leftEdge) {
+                // 在通道 5 內且往左移動，且 Pac-Man 中心已超過通道右半格
+                var channelLeft5 = pacCol * TILE_SIZE;
+                if (pacman.x < channelLeft5 + TILE_SIZE / 2) {
                     // 從右側通道進入，跳到左側對應的 4
                     for (let c = 0; c < COLS; c++) {
                         if (map[pacRow][c] === 4) {
-                            // 傳送到 4 的格子中心
                             pacman.x = c * TILE_SIZE + TILE_SIZE / 2;
                             pacman.y = pacRow * TILE_SIZE + TILE_SIZE / 2;
                             teleported = true;
@@ -1049,7 +1072,7 @@
 
              // 恐懼計時
              if (g.frightened) {
-                 g.frightenedTimer--;
+                 g.frightenedTimer -= t;
                  if (g.frightenedTimer <= 0) {
                      g.frightened = false;
                      g.dir = {x: -g.dir.x, y: -g.dir.y};
@@ -1074,7 +1097,7 @@
                      var dx = targetX - g.x;
                      var dy = targetY - g.y;
                      var dist = Math.sqrt(dx*dx + dy*dy);
-                     var spd = g.speed * 0.6; // 恐懼速度
+                     var spd = g.speed * 0.6 * t; // 恐懼速度
                      if (dist <= spd + 1) {
                          // 到達目標格子，移除並重新計算路徑
                          g._bfsPath.shift();
@@ -1175,8 +1198,8 @@
              if (canMoveAt(g.x, g.y, g.dir, GHOST_RADIUS)) {
                  var spd = g.frightened ? g.speed * 0.6 : g.speed;
                  if (g.dead) spd = g.speed * 1.5;
-                 g.x += g.dir.x * spd;
-                 g.y += g.dir.y * spd;
+                 g.x += g.dir.x * spd * t;
+                 g.y += g.dir.y * spd * t;
              } else {
                  g.dir = {x: -g.dir.x, y: -g.dir.y};
              }
@@ -1187,9 +1210,9 @@
             var gRow = Math.round((g.y - TILE_SIZE/2) / TILE_SIZE);
             if (gRow >= 0 && gRow < ROWS && gCol >= 0 && gCol < COLS) {
                 if (map[gRow][gCol] === 4 && g.dir.x > 0) {
-                    // 往右跑進入 4，檢查是否觸碰最右側
-                    var rightEdge = gCol * TILE_SIZE + TILE_SIZE;
-                    if (g.x + GHOST_RADIUS >= rightEdge) {
+                    // 在通道 4 內且往右移動，且幽靈中心已超過通道左半格
+                    var chLeft = gCol * TILE_SIZE;
+                    if (g.x > chLeft + TILE_SIZE / 2) {
                         for (let c = COLS - 1; c >= 0; c--) {
                             if (map[gRow][c] === 5) {
                                 g.x = c * TILE_SIZE + TILE_SIZE / 2;
@@ -1199,9 +1222,9 @@
                         }
                     }
                 } else if (map[gRow][gCol] === 5 && g.dir.x < 0) {
-                    // 往左跑進入 5，檢查是否觸碰最左側
-                    var leftEdge = gCol * TILE_SIZE;
-                    if (g.x - GHOST_RADIUS <= leftEdge) {
+                    // 在通道 5 內且往左移動，且幽靈中心已超過通道右半格
+                    var chLeft5 = gCol * TILE_SIZE;
+                    if (g.x < chLeft5 + TILE_SIZE / 2) {
                         for (let c = 0; c < COLS; c++) {
                             if (map[gRow][c] === 4) {
                                 g.x = c * TILE_SIZE + TILE_SIZE / 2;
@@ -1247,7 +1270,7 @@
         }
 
         // 檢查是否通關
-        if (dots.length === 0) {
+        if (dots.length === 0 && powerDots.length === 0) {
             nextLevel();
         }
     }
@@ -1472,19 +1495,10 @@
         ctx.fillStyle = '#000';
         ctx.fillRect(0, 0, COLS * TILE_SIZE, ROWS * TILE_SIZE);
 
-        // 牆壁（圓角矩形風格）
-        ctx.fillStyle = '#62AFD0';
-        ctx.strokeStyle = '#A1C6DE';
-        ctx.shadowColor = '#DDF8FD';
-        ctx.shadowBlur = 4;
-        ctx.shadowOffsetY = 2;
-        ctx.lineWidth = 2;
-        walls.forEach(w => {
-            ctx.beginPath();
-            ctx.roundRect(w.x + 2, w.y + 2, TILE_SIZE - 4, TILE_SIZE - 4, 2);
-            ctx.fill();
-            ctx.stroke();
-        });
+        // 牆壁：從離線快取貼上（不再每幀重算 shadowBlur）
+        if (wallCache) {
+            ctx.drawImage(wallCache, 0, 0);
+        }
 
         // 能量球（糖果風格）
         dots.forEach(d => {
@@ -1517,8 +1531,6 @@
             var color = g.frightened ? '#0000FF' : g.dead ? '#888888' : g.color;
 
             ctx.fillStyle = color;
-            ctx.shadowColor = color;
-            ctx.shadowBlur = g.frightened ? 10 : 5;
             ctx.beginPath();
             ctx.arc(g.x, g.y - 2, 8, Math.PI, 0);
             ctx.lineTo(g.x + 8, g.y + 8);
@@ -1530,7 +1542,6 @@
             ctx.fill();
 
             // 眼睛
-            ctx.shadowBlur = 0;
             ctx.fillStyle = '#fff';
             ctx.beginPath();
             ctx.arc(g.x - 3, g.y - 4, 2, 0, Math.PI * 2);
@@ -1560,8 +1571,6 @@
 
         // 小精靈
         ctx.fillStyle = '#FFFF52';
-        ctx.shadowColor = '#FFD700';
-        ctx.shadowBlur = 10;
         ctx.beginPath();
 
         let angle = 0;
@@ -1590,10 +1599,24 @@
         }
     }
 
-    function loop() {
+    // 固定時間步進 — 避免手機端 rAF 幀率跳動導致視覺忽快忽慢
+    let lastFrameTime = 0;
+    const FIXED_DT = 16.6667; // 目標 60fps 步進（ms）
+
+    function loop(timestamp) {
         if (!gameRunning || levelTransition) return;
+        if (!timestamp) timestamp = performance.now();
+        if (lastFrameTime === 0) lastFrameTime = timestamp;
+
+        const delta = timestamp - lastFrameTime;
+        lastFrameTime = timestamp;
+
+        // 限制最大 delta 防止切換 tab 後爆衝
+        const dt = Math.min(delta, FIXED_DT * 3);
+
         if (!isPaused) {
-            update();
+            // 以實際經過時間比例更新（手機 30fps 時 delta 約 33ms → 移動 2x）
+            update(dt);
         }
         draw();
         animationId = requestAnimationFrame(loop);
@@ -1614,6 +1637,7 @@
 
         if (resetScore || !gameStarted) {
             initGame();
+            buildWallCache();
             gameStarted = true;
         } else if (resumeState) {
             // 繼續遊戲：從死亡前的狀態恢復
@@ -1674,6 +1698,7 @@
 
             // 清除保存的狀態
             resumeState = null;
+            buildWallCache();
         } else {
             // 正常進入下一關：重建地圖和幽靈
             walls = [];
@@ -1730,7 +1755,7 @@
             dying = false;
             justDied = false;
             levelTransition = false;
-
+            buildWallCache();
         }
 
         gameRunning = true;
@@ -1788,20 +1813,20 @@
 
     gameContainer.addEventListener('pointermove', e => {
         if (!isTouching || !gameRunning || levelTransition) return;
-        e.preventDefault();
-
+        // 只在真正有位移時才 preventDefault + 設定方向
         const diffX = e.clientX - touchStartX;
         const diffY = e.clientY - touchStartY;
         const distance = Math.sqrt(diffX * diffX + diffY * diffY);
 
         if (distance > TAP_THRESHOLD) {
+            e.preventDefault();
             if (Math.abs(diffX) > Math.abs(diffY)) {
                 pacman.nextDir = diffX > 0 ? {x:1, y:0} : {x:-1, y:0};
             } else {
                 pacman.nextDir = diffY > 0 ? {x:0, y:1} : {x:0, y:-1};
             }
         }
-    }, {passive: false});
+    }, {passive: true});
 
     gameContainer.addEventListener('pointerup', e => {
         isTouching = false;
@@ -1811,13 +1836,15 @@
         isTouching = false;
     }, {passive: false});
 
-    // 防止 container 內的 touch 事件造成頁面滾動
+    // 防止 container 內的 touch 事件造成頁面滾動（僅在遊戲中攔截）
     gameContainer.addEventListener('touchstart', e => {
         if (e.target.id === 'start-btn') return;
         e.preventDefault();
     }, {passive: false});
     gameContainer.addEventListener('touchmove', e => {
-        e.preventDefault();
+        if (gameRunning && !levelTransition) {
+            e.preventDefault();
+        }
     }, {passive: false});
 
     // 暫停/繼續
