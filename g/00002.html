@@ -797,25 +797,33 @@
         return null; // 無路徑
     }
 
-      // 檢查是否可以移動 — 經典 Pac-Man 風格：只檢查前方網格中心
+      // 檢查是否可以移動 — 經典 Pac-Man 風格：檢查前方格子的角落
         function canMoveAt(x, y, dir, radius) {
             var r = radius || PACMAN_RADIUS;
             // 計算物體前方一格的中心點座標
             if (dir.x !== 0) {
                 // 水平移動：檢查前方格子的上下兩個角
                 var fcol = dir.x > 0 ? Math.floor((x + r + 1) / TILE_SIZE) : Math.floor((x - r - 1) / TILE_SIZE);
-                var topRow = Math.floor((y - r + 1) / TILE_SIZE);
-                var botRow = Math.floor((y + r - 1) / TILE_SIZE);
+                // 容差改為 2px（原為 1px），避免速度倍率導致位置偏移而誤判
+                var topRow = Math.floor((y - r + 2) / TILE_SIZE);
+                var botRow = Math.floor((y + r - 2) / TILE_SIZE);
                 if (isTileWall(fcol, topRow)) return false;
                 if (isTileWall(fcol, botRow)) return false;
+                // 額外檢查：確保前方格子本身也不是牆（防止速度倍率導致偏移）
+                var myRow = Math.round((y - TILE_SIZE / 2) / TILE_SIZE);
+                if (isTileWall(fcol, myRow)) return false;
             }
             if (dir.y !== 0) {
                 // 垂直移動：檢查前方格子的左右兩個角
-                var frow = dir.y > 0 ? Math.floor((y + r + 1) / TILE_SIZE) : Math.floor((y - r - 1) / TILE_SIZE);
-                var leftCol = Math.floor((x - r + 1) / TILE_SIZE);
-                var rightCol = Math.floor((x + r - 1) / TILE_SIZE);
+                var frow = dir.y > 0 ? Math.floor((y + r + 2) / TILE_SIZE) : Math.floor((y - r - 2) / TILE_SIZE);
+                // 容差改為 2px（原為 1px），避免速度倍率導致位置偏移而誤判
+                var leftCol = Math.floor((x - r + 2) / TILE_SIZE);
+                var rightCol = Math.floor((x + r - 2) / TILE_SIZE);
                 if (isTileWall(leftCol, frow)) return false;
                 if (isTileWall(rightCol, frow)) return false;
+                // 額外檢查：確保前方格子本身也不是牆（防止速度倍率導致偏移）
+                var myCol = Math.round((x - TILE_SIZE / 2) / TILE_SIZE);
+                if (isTileWall(myCol, frow)) return false;
             }
             return true;
         }
