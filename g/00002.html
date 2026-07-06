@@ -1343,20 +1343,47 @@ function update(dt) {
                     if (g.frightened && !g.dead) {
                         g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
                     } else if (!g.frightened) {
-                        // 追蹤 Pac-Man
-                        var bestDir = validDirs[0];
-                        var bestDist = Infinity;
-                        for (var vi = 0; vi < validDirs.length; vi++) {
-                            var vd = validDirs[vi];
-                            var nx = g.x + vd.x * TILE_SIZE * 5;
-                            var ny = g.y + vd.y * TILE_SIZE * 5;
-                            var dist = Math.abs(nx - pacman.x) + Math.abs(ny - pacman.y);
-                            if (dist < bestDist) {
-                                bestDist = dist;
-                                bestDir = vd;
+                        // 如果 pacman 變身中且距離夠近，幽靈強制恐懼
+                        if (powerMode && powerModeTimer > 0) {
+                            var gx = g.x - pacman.x;
+                            var gy = g.y - pacman.y;
+                            var dist = Math.sqrt(gx * gx + gy * gy);
+                            if (dist < TILE_SIZE * 3) {
+                                g.frightened = true;
+                                g.frightenedTimer = powerModeTimer;
+                                g.dir = validDirs[Math.floor(Math.random() * validDirs.length)];
+                            } else {
+                                // 追蹤 Pac-Man
+                                var bestDir = validDirs[0];
+                                var bestDist = Infinity;
+                                for (var vi = 0; vi < validDirs.length; vi++) {
+                                    var vd = validDirs[vi];
+                                    var nx = g.x + vd.x * TILE_SIZE * 5;
+                                    var ny = g.y + vd.y * TILE_SIZE * 5;
+                                    var d = Math.abs(nx - pacman.x) + Math.abs(ny - pacman.y);
+                                    if (d < bestDist) {
+                                        bestDist = d;
+                                        bestDir = vd;
+                                    }
+                                }
+                                g.dir = bestDir;
                             }
+                        } else {
+                            // 追蹤 Pac-Man
+                            var bestDir = validDirs[0];
+                            var bestDist = Infinity;
+                            for (var vi = 0; vi < validDirs.length; vi++) {
+                                var vd = validDirs[vi];
+                                var nx = g.x + vd.x * TILE_SIZE * 5;
+                                var ny = g.y + vd.y * TILE_SIZE * 5;
+                                var d = Math.abs(nx - pacman.x) + Math.abs(ny - pacman.y);
+                                if (d < bestDist) {
+                                    bestDist = d;
+                                    bestDir = vd;
+                                }
+                            }
+                            g.dir = bestDir;
                         }
-                        g.dir = bestDir;
                     }
                 }
             }
@@ -2252,6 +2279,14 @@ function checkIfInTop10(score) {
     const lbStatus = document.getElementById('lb-status');
     const nameInput = document.getElementById('lb-name-input');
     const submitBtn = document.getElementById('lb-submit-btn');
+
+    // 如果已有同分數記錄，不再顯示輸入框（避免重複提交）
+    for (var i = 0; i < currentLeaderboardData.length; i++) {
+        if (currentLeaderboardData[i].score === score) {
+            lbStatus.textContent = '已進入排行榜';
+            return;
+        }
+    }
 
     // 如果已有 10 筆，檢查最低分是否比目前分數低
     if (currentLeaderboardData.length < 10) {
