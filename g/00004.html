@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Pong Game</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
+body{background:#0a0a1a;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;font-family:'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;overflow:hidden;margin:0;padding:0}
+#game-container{position:relative;width:min(500px,100vw);height:min(700px,100vh);border-radius:0;overflow:hidden}
+#game-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
+
+/* ── UI Overlay Layer ── */
+#ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#ui-layer *{pointer-events:auto}
+
+/* ── HUD (scores, combo) ── */
+#hud{position:absolute;top:0;left:0;width:100%;height:100%;display:none}
+#hud .score{position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;justify-content:center;font:bold 240px 'Segoe UI',sans-serif;text-align:center}
+#hud .score-ai{top:18px;color:rgba(248,113,113,0.1);text-shadow:0 0 10px rgba(248,113,113,0.3)}
+#hud .score-you{bottom:18px;color:rgba(96,165,250,0.1);text-shadow:0 0 10px rgba(96,165,250,0.3)}
+#hud .score .label{font-size:12px;color:rgba(255,255,255,0.4);margin-top:8px}
+#hud .divider{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font:20px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.3)}
+#hud .combo-display{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-weight:bold;text-align:center;pointer-events:none;transition:transform 0.1s}
+
+/* ── Powerup indicators ── */
+#powerup-bar{position:absolute;left:10px;top:60px;display:flex;flex-direction:column;gap:4px}
+.pu-indicator{height:20px;border-radius:6px;background:rgba(255,255,255,0.08);overflow:hidden;position:relative}
+.pu-fill{height:100%;border-radius:6px;transition:width 0.1s linear}
+.pu-label{position:absolute;left:8px;top:0;height:20px;line-height:20px;font-size:11px;color:#fff}
+
+/* ── Pause Button ── */
+#pause-btn{position:absolute;top:8px;left:10px;background:none;border:none;color:rgba(255,255,255,0.6);font:22px sans-serif;cursor:pointer;z-index:20;padding:4px 8px;display:none}
+#pause-btn:hover{color:rgba(255,255,255,0.9)}
+
+/* ── Menu Screen ── */
+#menu-screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(10,10,26,0.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+#menu-screen.hidden{display:none}
+.menu-panel{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);border-radius:16px;padding:30px 24px;width:85%;max-width:400px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.menu-title{font:bold 36px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.9);text-shadow:0 0 10px rgba(255,255,255,0.3)}
+.menu-subtitle{font:14px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.4)}
+.menu-section{font:16px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.6);margin-top:8px}
+
+.diff-btn{width:100%;padding:12px 0;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font:16px 'Segoe UI',sans-serif;cursor:pointer;transition:all 0.15s}
+.diff-btn:hover{filter:brightness(1.2)}
+.diff-btn.active{border-width:2px;font-weight:bold}
+.diff-btn[data-diff="easy"].active{background:rgba(74,222,128,0.2);border-color:#4ade80;color:#4ade80}
+.diff-btn[data-diff="normal"].active{background:rgba(251,191,36,0.2);border-color:#fbbf24;color:#fbbf24}
+.diff-btn[data-diff="hard"].active{background:rgba(249,115,22,0.2);border-color:#f97316;color:#f97316}
+.diff-btn[data-diff="hell"].active{background:rgba(239,68,68,0.2);border-color:#ef4444;color:#ef4444}
+
+.start-btn{width:60%;padding:14px 0;margin-top:12px;border:none;border-radius:12px;background:linear-gradient(135deg,rgba(96,165,250,0.6),rgba(168,85,247,0.6));color:#fff;font:bold 20px 'Segoe UI',sans-serif;cursor:pointer;transition:transform 0.1s,filter 0.15s}
+.start-btn:hover{filter:brightness(1.15)}
+.start-btn:active{transform:scale(0.97)}
+
+.rules{font:15px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.3);text-align:center;line-height:1.8}
+
+/* ── Game Over Screen ── */
+#gameover-screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#gameover-screen.visible{display:flex}
+.go-panel{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:30px 24px;width:80%;max-width:380px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.go-result{font:bold 32px 'Segoe UI',sans-serif;text-shadow:0 0 15px}
+.go-result.win{color:#4ade80;text-shadow:0 0 15px rgba(74,222,128,0.5)}
+.go-result.lose{color:#f87171;text-shadow:0 0 15px rgba(248,113,113,0.5)}
+.go-score{display:flex;align-items:center;gap:12px}
+.go-score-num{font:bold 48px 'Segoe UI',sans-serif}
+.go-score-num.blue{color:#60a5fa}
+.go-score-num.red{color:#f87171}
+.go-score-sep{font:24px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.4)}
+.go-stats{font:14px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.5)}
+.go-btn{width:50%;padding:12px 0;border:none;border-radius:10px;font:18px 'Segoe UI',sans-serif;cursor:pointer;transition:transform 0.1s}
+.go-btn:active{transform:scale(0.97)}
+.go-btn.primary{background:rgba(96,165,250,0.5);color:#fff}
+.go-btn.secondary{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6)}
+</style>
+</head>
+<body>
+<div id="game-container">
+  <canvas id="game-canvas"></canvas>
+  <div id="ui-layer">
+    <!-- HUD -->
+    <div id="hud">
+      <div class="score score-ai"><span id="ai-score">0</span><div class="label"></div></div>
+      <div class="divider">:</div>
+      <div class="score score-you"><span id="player-score">0</span><div class="label"></div></div>
+      <div class="combo-display" id="combo-display"></div>
+      <div id="powerup-bar"></div>
+    </div>
+
+    <!-- Pause Button -->
+    <button id="pause-btn" onclick="togglePause()">⏸</button>
+
+    <!-- Pause Overlay -->
+    <div id="pause-overlay" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);flex-direction:column;align-items:center;justify-content:center;z-index:25">
+      <div style="font:bold 36px 'Segoe UI',sans-serif;color:#fff;margin-bottom:20px">暫停中</div>
+      <button class="start-btn" onclick="togglePause()" style="margin-bottom:12px">繼續遊戲</button>
+      <button class="start-btn" onclick="goToMenu()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);color:rgba(255,255,255,0.6);font-size:16px;padding:10px 24px;border-radius:10px;cursor:pointer">返回主選單</button>
+    </div>
+
+    <!-- Menu -->
+    <div id="menu-screen">
+      <div class="menu-panel">
+        <div class="menu-title">PONG</div>
+        <div class="menu-section">選擇難度</div>
+        <button class="diff-btn" data-diff="easy" onclick="selectDifficulty('easy')">簡單</button>
+        <button class="diff-btn active" data-diff="normal" onclick="selectDifficulty('normal')">一般</button>
+        <button class="diff-btn" data-diff="hard" onclick="selectDifficulty('hard')">困難</button>
+        <button class="diff-btn" data-diff="hell" onclick="selectDifficulty('hell')">地獄</button>
+        <button class="start-btn" onclick="startGame()">開始遊戲</button>
+        <div class="rules">先得 11 分獲勝<br>移動滑鼠／手指觸控</div>
+      </div>
+    </div>
+
+    <!-- Game Over -->
+    <div id="gameover-screen">
+      <div class="go-panel">
+        <div class="go-result" id="go-result"></div>
+        <div class="go-score">
+          <span class="go-score-num blue" id="go-pscore">0</span>
+          <span class="go-score-sep">:</span>
+          <span class="go-score-num red" id="go-ascore">0</span>
+        </div>
+        <div class="go-stats" id="go-stats"></div>
+        <button class="go-btn primary" onclick="startGame()">再玩一次</button>
+        <button class="go-btn secondary" onclick="goToMenu()">返回主選單</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── Canvas Setup ────────────────────────────────────────────
+const container = document.getElementById('game-container');
+const canvas = document.getElementById('game-canvas');
+const ctx = canvas.getContext('2d');
+
+let W, H;
+function resize() {
+  const r = container.getBoundingClientRect();
+  W = Math.round(r.width);
+  H = Math.round(r.height);
+  canvas.width = W;
+  canvas.height = H;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ─── Constants ───────────────────────────────────────────────
+const WIN_SCORE = 11;
+const BASE_PADDLE_W = 100;
+const BASE_PADDLE_H = 14;
+const BALL_R = 8;
+const BASE_BALL_SPEED = 8;
+const MAX_BALL_SPEED = 14;
+const POWERUP_INTERVAL = 6000;
+const POWERUP_DURATION = 9000;
+const POWERUP_LIFETIME = 6000;
+const COMBO_DISPLAY_TIME = 120;
+
+// ─── Difficulty Config ───────────────────────────────────────
+const DIFFICULTY = {
+  easy:   { aiSpeed: 6.0,  errorRate: 0.35, predictInterval: 300 },
+  normal: { aiSpeed: 7.0,  errorRate: 0.15, predictInterval: 200 },
+  hard:   { aiSpeed: 8.0,  errorRate: 0.06, predictInterval: 100 },
+  hell:   { aiSpeed: 10.0, errorRate: 0.02, predictInterval: 50 }
+};
+
+// ─── Powerup Types ───────────────────────────────────────────
+const POWERUPS = [
+  { type:'grow',       emoji:'🟢', color:'#4ade80', label:'加大' },
+  { type:'shrink_opp', emoji:'🔴', color:'#f87171', label:'縮小' },
+  { type:'accelerate', emoji:'⚡', color:'#fbbf24', label:'加速' },
+  { type:'decelerate', emoji:'❄️', color:'#60a5fa', label:'減速' },
+  { type:'reverse',    emoji:'🟣', color:'#c084fc', label:'反彈' }
+];
+
+// ─── Game State ──────────────────────────────────────────────
+let state = 'menu';
+let difficulty = 'normal';
+let servePhase = 0; // 0=轉骰子, 1=顯示點數, 2=發球延遲, 3=正常遊戲
+let serveTimer = 0;
+let serveDirection = 0; // 1=從玩家發, -1=從AI發
+let serveDice = 0;
+let serveLabel = '';
+let displayDice = 0; // 轉骰子時快速變化的臨時點數
+let playerScore = 0;
+let aiScore = 0;
+let combo = 0;
+let maxCombo = 0;
+let comboDisplayTimer = 0;
+let ballTrail = [];
+
+// 擊球者速度倍率 — 道具帶來的速度倍率（加速/減速）
+let playerHitSpeedMult = 1; // 玩家擊球的速度倍率
+let aiHitSpeedMult = 1;     // AI 擊球的速度倍率
+
+// 基礎球速（combo 自然累積）— 與道具倍率分開追蹤
+let baseBallSpeed = BASE_BALL_SPEED;
+let particles = [];
+let powerups = [];
+let powerupItems = [];
+let powerupSpawnTimer = 0;
+let shakeTimer = 0;
+let shakeIntensity = 0;
+let flashAlpha = 0;
+let flashColor = '';
+let winner = '';
+let lastScorer = '';
+let aiTargetX = W / 2;
+let aiReacTimer = 0;
+let rallyCount = 0;
+let lastHitBy = '';
+
+// Paddle positions — tight field so both paddles visible
+const PADDLE_Y_PLAYER_OFFSET = 28;
+const PADDLE_Y_AI_OFFSET = 28;
+
+let player = { x: W / 2, y: 0, w: BASE_PADDLE_W, h: BASE_PADDLE_H, baseW: BASE_PADDLE_W, color: '#60a5fa', glowColor: 'rgba(96,165,250,0.4)' };
+let ai = { x: W / 2, y: 0, w: BASE_PADDLE_W, h: BASE_PADDLE_H, baseW: BASE_PADDLE_W, color: '#f87171', glowColor: 'rgba(248,113,113,0.4)' };
+let ball = { x: W / 2, y: H / 2, vx: 0, vy: 0, speed: BASE_BALL_SPEED, r: BALL_R };
+
+// ─── Utility ─────────────────────────────────────────────────
+function lerp(a, b, t) { return a + (b - a) * t; }
+function clamp(v, mn, mx) { return Math.max(mn, Math.min(mx, v)); }
+function rand(min, max) { return Math.random() * (max - min) + min; }
+function randInt(min, max) { return Math.floor(rand(min, max + 1)); }
+
+// ─── 骰子 ────────────────────────────────────────────────────
+// 骰子各點數的圓心偏移 (相對於骰子中心, 半徑 ~12)
+const DICE_DOTS = {
+  1: [[0, 0]],
+  2: [[-14, -14], [14, 14]],
+  3: [[-14, -14], [0, 0], [14, 14]],
+  4: [[-14, -14], [14, -14], [-14, 14], [14, 14]],
+  5: [[-14, -14], [14, -14], [0, 0], [-14, 14], [14, 14]],
+  6: [[-14, -18], [14, -18], [-14, 0], [14, 0], [-14, 18], [14, 18]]
+};
+
+function getDiceDots(n) { return DICE_DOTS[n] || DICE_DOTS[1]; }
+
+function drawDiceFace(ctx, cx, cy, radius, dotPositions) {
+  // 骰子外框
+  ctx.beginPath();
+  ctx.roundRect(cx - radius, cy - radius, radius * 2, radius * 2, 10);
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // 點數
+  ctx.fillStyle = '#1a1a2e';
+  for (const [dx, dy] of dotPositions) {
+    ctx.beginPath();
+    ctx.arc(cx + dx, cy + dy, 7, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function resetBall(direction, spawnY) {
+  ball.x = W / 2;
+  ball.y = spawnY || H / 2;
+  baseBallSpeed = BASE_BALL_SPEED;
+  ball.speed = BASE_BALL_SPEED;
+  const angle = rand(-0.3, 0.3);
+  ball.vx = Math.sin(angle) * ball.speed;
+  ball.vy = direction * Math.cos(angle) * ball.speed;
+  rallyCount = 0; ballTrail = []; lastHitBy = '';
+}
+
+function resetPositions() {
+  player.x = W / 2; player.y = H - PADDLE_Y_PLAYER_OFFSET; player.w = player.baseW;
+  ai.x = W / 2; ai.y = PADDLE_Y_AI_OFFSET; ai.w = ai.baseW;
+  powerups = []; powerupItems = []; powerupSpawnTimer = 0;
+  playerHitSpeedMult = 1;
+  aiHitSpeedMult = 1;
+  baseBallSpeed = BASE_BALL_SPEED;
+}
+
+function clearPowerupEffects() {
+  powerups = [];
+  player.w = player.baseW;
+  ai.w = ai.baseW;
+  baseBallSpeed = BASE_BALL_SPEED;
+  playerHitSpeedMult = 1;
+  aiHitSpeedMult = 1;
+}
+
+// ─── Particles ───────────────────────────────────────────────
+function spawnParticles(x, y, color, count, spread) {
+  for (let i = 0; i < count; i++) {
+    particles.push({ x, y, vx: rand(-spread, spread), vy: rand(-spread, spread),
+      life: 1, decay: rand(0.015, 0.04), size: rand(2, 5), color });
+  }
+}
+
+function spawnGoalParticles(x, y, scorer) {
+  const color = scorer === 'player' ? '#60a5fa' : '#f87171';
+  for (let i = 0; i < 40; i++) {
+    const angle = rand(0, Math.PI * 2), speed = rand(1, 6);
+    particles.push({ x, y, vx: Math.cos(angle)*speed, vy: Math.sin(angle)*speed,
+      life: 1, decay: rand(0.008, 0.025), size: rand(3, 8), color });
+  }
+}
+
+function updateParticles() {
+  for (let i = particles.length - 1; i >= 0; i--) {
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= 0.98; p.vy *= 0.98;
+    p.life -= p.decay;
+    if (p.life <= 0) particles.splice(i, 1);
+  }
+}
+
+function drawParticles() {
+  for (const p of particles) {
+    ctx.globalAlpha = p.life * 0.8;
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+// ─── Powerup Items ───────────────────────────────────────────
+function spawnPowerupItem() {
+  const pu = POWERUPS[randInt(0, POWERUPS.length - 1)];
+  const margin = 40;
+  const yRange = Math.random() < 0.5
+    ? [H * 0.15, H * 0.4]
+    : [H * 0.6, H * 0.85];
+  powerupItems.push({ x: rand(margin, W - margin), y: rand(yRange[0], yRange[1]), ...pu,
+    lifetime: POWERUP_LIFETIME, age: 0, pulse: 0 });
+}
+
+function updatePowerupItems(dt) {
+  for (let i = powerupItems.length - 1; i >= 0; i--) {
+    const item = powerupItems[i];
+    item.age += dt; item.pulse += dt * 0.005;
+    if (item.age >= item.lifetime) powerupItems.splice(i, 1);
+  }
+}
+
+function drawPowerupItems() {
+  for (const item of powerupItems) {
+    const alpha = item.age > item.lifetime - 800 ? (item.lifetime - item.age) / 800 : 1;
+    const scale = 1 + Math.sin(item.pulse) * 0.1;
+    ctx.globalAlpha = alpha;
+    ctx.save(); ctx.translate(item.x, item.y); ctx.scale(scale, scale);
+    ctx.shadowColor = item.color; ctx.shadowBlur = 15;
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.strokeStyle = item.color; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.roundRect(-18, -18, 36, 36, 8); ctx.fill(); ctx.stroke();
+    ctx.shadowBlur = 0;
+    ctx.font = '20px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(item.emoji, 0, 0);
+    ctx.restore(); ctx.globalAlpha = 1;
+  }
+}
+
+function applyPowerup(item, collector) {
+  const isPlayer = collector === 'player';
+  const target = isPlayer ? ai : player;
+  const self = isPlayer ? player : ai;
+
+  switch (item.type) {
+    case 'grow':
+      self.w = Math.min(self.w + 40, 180); break;
+    case 'shrink_opp':
+      target.w = Math.max(target.w - 30, 50); break;
+    case 'accelerate':
+      // 立即加速當前球速
+      ball.speed = Math.min(ball.speed + 3, MAX_BALL_SPEED);
+      const ang = Math.atan2(ball.vy, ball.vx);
+      ball.vx = Math.cos(ang) * ball.speed;
+      ball.vy = Math.sin(ang) * ball.speed;
+      // 標記該擊球者下次擊球加速（倍率）
+      if (isPlayer) playerHitSpeedMult = 1.3;
+      else aiHitSpeedMult = 1.3;
+      break;
+    case 'decelerate':
+      // 減速：標記對方下次擊球減速（倍率）
+      if (isPlayer) aiHitSpeedMult = 0.7;
+      else playerHitSpeedMult = 0.7;
+      break;
+    case 'reverse':
+      ball.vx = -ball.vx; ball.vy = -ball.vy;
+      spawnParticles(ball.x, ball.y, '#c084fc', 25, 5);
+      shakeTimer = 8; shakeIntensity = 3;
+      flashAlpha = 0.3; flashColor = '#c084fc';
+      showPopupAt('🟣 反彈！', '#c084fc', ball.x, ball.y);
+      return;
+  }
+
+  // 如果時效內已有相同道具，延長剩餘時間而不是新增
+  let extended = false;
+  const now = performance.now();
+  for (const pu of powerups) {
+    if (pu.type === item.type && pu.target === collector) {
+      const remaining = pu.expiryTime - now;
+      if (remaining > 0) {
+        pu.expiryTime = now + POWERUP_DURATION;
+        extended = true;
+        break;
+      }
+    }
+  }
+  if (!extended) {
+    powerups.push({ type: item.type, target: collector,
+      expiryTime: now + POWERUP_DURATION });
+  }
+  spawnParticles(isPlayer ? player.x : ai.x, isPlayer ? player.y : ai.y, item.color, 20, 4);
+  flashAlpha = 0.3; flashColor = item.color;
+}
+
+function updatePowerupEffects(now) {
+  // 移除過期道具
+  for (let i = powerups.length - 1; i >= 0; i--) {
+    if (now >= powerups[i].expiryTime) {
+      powerups.splice(i, 1);
+    }
+  }
+
+  // 從所有活躍道具重新計算球拍大小
+  let playerDelta = 0, aiDelta = 0;
+  for (const pu of powerups) {
+    if (pu.type === 'grow') {
+      if (pu.target === 'player') playerDelta += 40;
+      else aiDelta += 40;
+    } else if (pu.type === 'shrink_opp') {
+      if (pu.target === 'player') aiDelta -= 30;
+      else playerDelta -= 30;
+    }
+  }
+  player.w = Math.max(player.baseW + playerDelta, 50);
+  ai.w = Math.min(ai.baseW + aiDelta, 180);
+
+  // 清理多餘的加速/減速倍率（只保留尚未過期的）
+  let playerHasAccelerate = powerups.some(p => p.type === 'accelerate' && p.target === 'player' && p.expiryTime > now);
+  let aiHasAccelerate = powerups.some(p => p.type === 'accelerate' && p.target === 'ai' && p.expiryTime > now);
+  let playerHasDecelerate = powerups.some(p => p.type === 'decelerate' && p.target === 'player' && p.expiryTime > now);
+  let aiHasDecelerate = powerups.some(p => p.type === 'decelerate' && p.target === 'ai' && p.expiryTime > now);
+
+  if (playerHasAccelerate) playerHitSpeedMult = 1.3; else playerHitSpeedMult = 1;
+  if (aiHasAccelerate) aiHitSpeedMult = 1.3; else aiHitSpeedMult = 1;
+  if (playerHasDecelerate) aiHitSpeedMult = 0.7; else if (!aiHasDecelerate) aiHitSpeedMult = 1;
+  if (aiHasDecelerate) playerHitSpeedMult = 0.7; else if (!playerHasDecelerate) playerHitSpeedMult = 1;
+}
+
+// ─── AI Logic ────────────────────────────────────────────────
+function drawActivePowerups() {
+  const now = performance.now();
+
+  // 道具顯示位置：負面道具（減速/縮小）顯示在對方區域，正面道具顯示在自己區域
+  // 邏輯：target 是取得者，但 shrink_opp 和 decelerate 的效果是套在對方身上
+  const displayPUs = powerups.filter(p => p.expiryTime > now);
+
+  // 左上 = AI 區域：顯示 AI 取得的正面道具 + 玩家取得的負面道具
+  // 左下 = 玩家區域：顯示玩家取得的正面道具 + AI 取得的負面道具
+  const aiAreaPUs = displayPUs.filter(p =>
+    (p.target === 'ai' && !['shrink_opp', 'decelerate'].includes(p.type)) ||
+    (p.target === 'player' && ['shrink_opp', 'decelerate'].includes(p.type))
+  );
+  const playerAreaPUs = displayPUs.filter(p =>
+    (p.target === 'player' && !['shrink_opp', 'decelerate'].includes(p.type)) ||
+    (p.target === 'ai' && ['shrink_opp', 'decelerate'].includes(p.type))
+  );
+
+  // AI 區域 → 左上
+  let yAi = 55;
+  for (const pu of aiAreaPUs) {
+    const remaining = pu.expiryTime - now;
+    const alpha = Math.min(1, remaining / 1000);
+    const barW = 80 * (remaining / POWERUP_DURATION);
+    const color = pu.type === 'grow' ? '#4ade80' :
+                  pu.type === 'shrink_opp' ? '#f87171' :
+                  pu.type === 'accelerate' ? '#fbbf24' : '#60a5fa';
+    const label = pu.type === 'grow' ? '加大' :
+                  pu.type === 'shrink_opp' ? '縮小' :
+                  pu.type === 'accelerate' ? '加速' : '減速';
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.roundRect(10, yAi, 90, 22, 6); ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.roundRect(10, yAi, barW, 22, 6); ctx.fill();
+    ctx.font = '11px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, 18, yAi + 11);
+    ctx.globalAlpha = 1;
+    yAi += 28;
+  }
+
+  // 玩家區域 → 左下
+  let yPl = H - 55 - 22;
+  for (const pu of playerAreaPUs) {
+    const remaining = pu.expiryTime - now;
+    const alpha = Math.min(1, remaining / 1000);
+    const barW = 80 * (remaining / POWERUP_DURATION);
+    const color = pu.type === 'grow' ? '#4ade80' :
+                  pu.type === 'shrink_opp' ? '#f87171' :
+                  pu.type === 'accelerate' ? '#fbbf24' : '#60a5fa';
+    const label = pu.type === 'grow' ? '加大' :
+                  pu.type === 'shrink_opp' ? '縮小' :
+                  pu.type === 'accelerate' ? '加速' : '減速';
+
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); ctx.roundRect(10, yPl, 90, 22, 6); ctx.fill();
+    ctx.fillStyle = color;
+    ctx.beginPath(); ctx.roundRect(10, yPl, barW, 22, 6); ctx.fill();
+    ctx.font = '11px "Segoe UI", sans-serif';
+    ctx.fillStyle = '#fff';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(label, 18, yPl + 11);
+    ctx.globalAlpha = 1;
+    yPl -= 28;
+  }
+}
+
+function checkPowerupCollision() {
+  if (!lastHitBy) return;
+  for (let i = powerupItems.length - 1; i >= 0; i--) {
+    const item = powerupItems[i];
+    const dx = ball.x - item.x, dy = ball.y - item.y;
+    if (dx*dx + dy*dy < (ball.r + 22)**2) {
+      applyPowerup(item, lastHitBy);
+      powerupItems.splice(i, 1);
+    }
+  }
+}
+
+// ─── Ball-Paddle Collision ───────────────────────────────────
+function ballPaddleCollision(paddle, isPlayerPaddle) {
+  const px = paddle.x;
+  const py = paddle.y;
+  const hw = paddle.w / 2;
+
+  if (ball.x + ball.r > px - hw && ball.x - ball.r < px + hw &&
+      ball.y + ball.r > py - paddle.h / 2 && ball.y - ball.r < py + paddle.h / 2) {
+
+    const hitPos = clamp((ball.x - px) / hw, -1, 1);
+    const maxAngle = Math.PI / 3;
+    const angle = hitPos * maxAngle;
+
+    rallyCount++;
+    if (rallyCount > combo) {
+      combo = rallyCount;
+      comboDisplayTimer = COMBO_DISPLAY_TIME;
+      if (combo > maxCombo) maxCombo = combo;
+    }
+
+    // Combo 自然加速：累加到 baseBallSpeed
+    baseBallSpeed = Math.min(baseBallSpeed + 0.15, MAX_BALL_SPEED);
+
+    const dir = isPlayerPaddle ? -1 : 1;
+    // 根據擊球者套用道具倍率
+    const hitter = isPlayerPaddle ? 'player' : 'ai';
+    const hitMult = hitter === 'player' ? playerHitSpeedMult : aiHitSpeedMult;
+    ball.speed = Math.min(baseBallSpeed * hitMult, MAX_BALL_SPEED);
+    ball.vx = Math.sin(angle) * ball.speed;
+    ball.vy = dir * Math.cos(angle) * ball.speed;
+    ball.y = isPlayerPaddle ? py - paddle.h / 2 - ball.r : py + paddle.h / 2 + ball.r;
+
+    const hitColor = isPlayerPaddle ? '#60a5fa' : '#f87171';
+    spawnParticles(ball.x, ball.y, hitColor, 12, 3);
+    shakeTimer = 6; shakeIntensity = 2;
+    lastHitBy = hitter;
+    flashAlpha = 0.1; flashColor = hitColor;
+
+    return true;
+  }
+  return false;
+}
+
+// ─── AI Logic ────────────────────────────────────────────────
+function predictBallX() {
+  let simX = ball.x, simY = ball.y, simVx = ball.vx, simVy = ball.vy;
+  if (simVy >= 0) return W / 2;
+  const steps = 500;
+  for (let i = 0; i < steps; i++) {
+    simX += simVx; simY += simVy;
+    if (simX - ball.r <= 0) { simX = ball.r; simVx = Math.abs(simVx); }
+    if (simX + ball.r >= W) { simX = W - ball.r; simVx = -Math.abs(simVx); }
+    if (simY - ball.r <= 0) break;
+  }
+  return simX;
+}
+
+function updateAI(dt) {
+  const cfg = DIFFICULTY[difficulty];
+
+  if (ball.vy >= 0) {
+    ai.x = lerp(ai.x, W / 2, 0.02);
+    ai.x = clamp(ai.x, ai.w / 2, W - ai.w / 2);
+    return;
+  }
+
+  aiReacTimer += dt;
+  if (aiReacTimer < cfg.predictInterval) return;
+  aiReacTimer = 0;
+
+  const predictedX = predictBallX();
+  const errorRange = cfg.errorRate * W;
+  aiTargetX = predictedX + rand(-errorRange, errorRange);
+  aiTargetX = clamp(aiTargetX, ai.w / 2, W - ai.w / 2);
+  ai.x = lerp(ai.x, aiTargetX, Math.min(cfg.aiSpeed / 10, 1) * 0.15);
+  ai.x = clamp(ai.x, ai.w / 2, W - ai.w / 2);
+}
+
+// ─── Drawing Helpers ─────────────────────────────────────────
+function drawGlassPaddle(paddle, color, glowColor) {
+  const x = paddle.x - paddle.w / 2;
+  const y = paddle.y - paddle.h / 2;
+  const r = 7;
+
+  ctx.shadowColor = glowColor; ctx.shadowBlur = 20;
+  const grad = ctx.createLinearGradient(x, y, x, y + paddle.h);
+  grad.addColorStop(0, 'rgba(255,255,255,0.25)');
+  grad.addColorStop(0.5, 'rgba(255,255,255,0.12)');
+  grad.addColorStop(1, 'rgba(255,255,255,0.06)');
+  ctx.fillStyle = grad; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.roundRect(x, y, paddle.w, paddle.h, r); ctx.fill(); ctx.stroke();
+
+  const hlGrad = ctx.createLinearGradient(x, y, x, y + paddle.h * 0.5);
+  hlGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
+  hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.shadowBlur = 0; ctx.fillStyle = hlGrad;
+  ctx.beginPath(); ctx.roundRect(x + 2, y + 1, paddle.w - 4, paddle.h * 0.45, [r, r, 0, 0]);
+  ctx.fill();
+}
+
+function drawGlassBall(x, y, r, hue) {
+  ctx.shadowColor = `hsl(${hue}, 80%, 60%)`; ctx.shadowBlur = 15;
+  const grad = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
+  grad.addColorStop(0, `hsla(${hue},90%,85%,0.95)`);
+  grad.addColorStop(0.6, `hsla(${hue},80%,65%,0.85)`);
+  grad.addColorStop(1, `hsla(${hue},70%,45%,0.7)`);
+  ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+
+  ctx.shadowBlur = 0;
+  const hlGrad = ctx.createRadialGradient(x-r*0.35, y-r*0.35, 0, x-r*0.35, y-r*0.35, r*0.6);
+  hlGrad.addColorStop(0, 'rgba(255,255,255,0.7)');
+  hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hlGrad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+}
+
+function drawBallTrail() {
+  for (let i = 0; i < ballTrail.length; i++) {
+    const t = ballTrail[i];
+    const alpha = (i / ballTrail.length) * 0.3;
+    const size = (i / ballTrail.length) * ball.r;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = combo >= 5 ? '#fbbf24' : '#e2e8f0';
+    ctx.beginPath(); ctx.arc(t.x, t.y, size, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function drawBackground() {
+  const bg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, H*0.7);
+  bg.addColorStop(0, '#141428'); bg.addColorStop(1, '#0a0a1a');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+
+  ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
+  const gs = 40;
+  for (let x = gs; x < W; x += gs) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for (let y = gs; y < H; y += gs) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+  ctx.setLineDash([8, 12]); ctx.strokeStyle = 'rgba(255,255,255,0.08)'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(0, H/2); ctx.lineTo(W, H/2); ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+// ─── Input Handling ──────────────────────────────────────────
+let mouseX = W / 2;
+
+function handleMove(clientX) {
+  const rect = canvas.getBoundingClientRect();
+  mouseX = clientX - rect.left;
+  mouseX = clamp(mouseX, player.w / 2, W - player.w / 2);
+}
+
+document.addEventListener('mousemove', (e) => {
+  if (state !== 'playing') return;
+  handleMove(e.clientX);
+});
+
+document.addEventListener('touchmove', (e) => {
+  if (state !== 'playing') return;
+  e.preventDefault();
+  if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+}, { passive: false });
+
+document.addEventListener('touchstart', (e) => {
+  if (state !== 'playing') return;
+  e.preventDefault();
+  if (e.touches.length > 0) handleMove(e.touches[0].clientX);
+}, { passive: false });
+
+// ─── UI Functions ────────────────────────────────────────────
+const hud = document.getElementById('hud');
+const menuScreen = document.getElementById('menu-screen');
+const gameoverScreen = document.getElementById('gameover-screen');
+const aiScoreEl = document.getElementById('ai-score');
+const playerScoreEl = document.getElementById('player-score');
+const comboDisplayEl = document.getElementById('combo-display');
+const powerupBar = document.getElementById('powerup-bar');
+const goResult = document.getElementById('go-result');
+const goPScore = document.getElementById('go-pscore');
+const goAScore = document.getElementById('go-ascore');
+const goStats = document.getElementById('go-stats');
+const pauseBtn = document.getElementById('pause-btn');
+const pauseOverlay = document.getElementById('pause-overlay');
+
+function selectDifficulty(d) {
+  difficulty = d;
+  document.querySelectorAll('.diff-btn').forEach(b => b.classList.toggle('active', b.dataset.diff === d));
+}
+
+function showHUD(show) {
+  hud.style.display = show ? 'block' : 'none';
+  pauseBtn.style.display = show ? 'flex' : 'none';
+}
+
+function togglePause() {
+  if (state === 'paused') {
+    state = 'playing';
+    lastFrameTime = 0;
+    pauseOverlay.style.display = 'none';
+    pauseBtn.textContent = '⏸';
+  } else if (state === 'playing') {
+    state = 'paused';
+    pauseOverlay.style.display = 'flex';
+    pauseBtn.textContent = '▶';
+  }
+}
+
+// ─── Floating Popup ──────────────────────────────────────────
+let popups = []; // {text, color, x, y, timer}
+
+function showPopupAt(text, color, x, y) {
+  popups.push({ text, color, x, y, timer: 50 });
+}
+
+function updateHUD() {
+  aiScoreEl.textContent = aiScore;
+  playerScoreEl.textContent = playerScore;
+
+  // Combo
+  if (comboDisplayTimer > 0 && combo >= 2) {
+    const alpha = Math.min(1, comboDisplayTimer / 30);
+    const scale = 1 + (1 - comboDisplayTimer / COMBO_DISPLAY_TIME) * 0.3;
+    comboDisplayEl.style.opacity = alpha;
+    comboDisplayEl.style.transform = `translate(-50%,-50%) scale(${scale})`;
+    const hue = combo >= 10 ? 50 : combo >= 7 ? 30 : 200;
+    // combo 超過 20 後字級固定 44px，不再增大也不縮小
+    const fontSize = combo > 20 ? 44 : 24 + combo;
+    comboDisplayEl.style.fontSize = `${fontSize}px`;
+    comboDisplayEl.style.fontWeight = 'bold';
+    comboDisplayEl.style.color = `hsl(${hue}, 90%, 70%)`;
+    comboDisplayEl.style.textShadow = `0 0 15px hsl(${hue}, 90%, 50%)`;
+    comboDisplayEl.textContent = `${combo} 連擊!`;
+  } else {
+    comboDisplayEl.style.opacity = 0;
+  }
+}
+
+function showGameOver() {
+  const isWin = winner === 'player';
+  goResult.textContent = isWin ? '🎉 獲勝！' : '💀 敗北';
+  goResult.className = 'go-result ' + (isWin ? 'win' : 'lose');
+  goPScore.textContent = playerScore;
+  goAScore.textContent = aiScore;
+  goStats.textContent = `最大連擊: ${maxCombo}`;
+  gameoverScreen.classList.add('visible');
+}
+
+function goToMenu() {
+  state = 'menu';
+  gameoverScreen.classList.remove('visible');
+  menuScreen.classList.remove('hidden');
+  showHUD(false);
+}
+
+// ─── Game Flow ───────────────────────────────────────────────
+function startGame() {
+  state = 'playing';
+  lastFrameTime = 0;
+  playerScore = 0; aiScore = 0; combo = 0; maxCombo = 0;
+  comboDisplayTimer = 0; ballTrail = []; particles = [];
+  powerupItems = []; powerupSpawnTimer = 0; rallyCount = 0; lastHitBy = '';
+  clearPowerupEffects(); resetPositions();
+  ball.vx = 0; ball.vy = 0; ballTrail = [];
+
+  // 骰子決定先攻
+  serveDice = randInt(1, 6);
+  serveDirection = serveDice >= 4 ? 1 : -1; // 4~6=先攻(從玩家發), 1~3=先守(從AI發)
+  serveLabel = serveDirection === 1 ? '先攻！' : '先守！';
+  displayDice = randInt(1, 6); // 初始隨機點數
+  servePhase = 0; // 開始轉骰子
+  serveTimer = 90; // 轉 1.5 秒
+
+  menuScreen.classList.add('hidden');
+  gameoverScreen.classList.remove('visible');
+  showHUD(true);
+}
+
+function scorePoint(scorer) {
+  if (scorer === 'player') { playerScore++; lastScorer = 'player'; }
+  else { aiScore++; lastScorer = 'ai'; }
+
+  spawnGoalParticles(W / 2, scorer === 'player' ? H : 0, scorer);
+  shakeTimer = 12; shakeIntensity = 5;
+  flashAlpha = 0.4;
+  flashColor = scorer === 'player' ? '#60a5fa' : '#f87171';
+
+  combo = 0; comboDisplayTimer = 0; rallyCount = 0;
+  lastHitBy = ''; clearPowerupEffects(); powerupItems = []; popups = [];
+
+  if (playerScore >= WIN_SCORE) { winner = 'player'; state = 'gameover'; showGameOver(); }
+  else if (aiScore >= WIN_SCORE) { winner = 'ai'; state = 'gameover'; showGameOver(); }
+  else {
+    // 得分者發球 — 從得分者那一側發出
+    const spawnY = scorer === 'player' ? H * 0.75 : H * 0.25;
+    resetBall(scorer === 'player' ? -1 : 1, spawnY);
+  }
+}
+
+// ─── Update ──────────────────────────────────────────────────
+// 固定時間步進 — 避免手機端 rAF 幀率跳動導致視覺忽快忽慢
+let lastFrameTime = 0;
+const FIXED_DT = 16.6667; // 目標 60fps 步進（ms）
+
+function update(now) {
+  if (state !== 'playing') return;
+  if (lastFrameTime === 0) lastFrameTime = now;
+
+  const delta = now - lastFrameTime;
+  lastFrameTime = now;
+
+  // 限制最大 delta 防止切換 tab 後爆衝
+  const dt = Math.min(delta, FIXED_DT * 3);
+  const ratio = dt / FIXED_DT; // 30fps 時約 2.0，60fps 時 1.0
+
+  // 轉骰子階段 — 點數快速變化
+  if (servePhase === 0) {
+    serveTimer -= ratio;
+    // 每幀隨機變換骰子點數，營造轉動感
+    if (Math.random() < 0.6) {
+      displayDice = randInt(1, 6);
+    }
+    if (serveTimer <= 0) {
+      displayDice = serveDice; // 鎖定最終結果
+      servePhase = 1;
+      serveTimer = 60; // 顯示點數 1 秒
+    }
+  }
+  // 顯示點數階段
+  else if (servePhase === 1) {
+    serveTimer -= ratio;
+    if (serveTimer <= 0) {
+      servePhase = 2;
+      serveTimer = 30; // 發球延遲 0.5 秒
+      // direction 與 serveDirection 相反：serveDirection=1(先攻)→球往上飛(-1)
+      resetBall(-serveDirection, serveDirection === 1 ? H * 0.75 : H * 0.25);
+    }
+  }
+  // 發球延遲階段
+  else if (servePhase === 2) {
+    serveTimer -= ratio;
+    if (serveTimer <= 0) {
+      servePhase = 3; // 開始正常遊戲
+    }
+  } else {
+    // 正常遊戲邏輯
+    player.x = lerp(player.x, mouseX, 0.25 * ratio);
+  player.x = clamp(player.x, player.w / 2, W - player.w / 2);
+  updateAI(dt);
+
+  ball.x += ball.vx * ratio;
+  ball.y += ball.vy * ratio;
+  ballTrail.push({ x: ball.x, y: ball.y });
+  if (ballTrail.length > 12) ballTrail.shift();
+
+  // Wall
+  if (ball.x - ball.r <= 0) { ball.x = ball.r; ball.vx = Math.abs(ball.vx); spawnParticles(ball.x, ball.y, '#e2e8f0', 6, 2); }
+  if (ball.x + ball.r >= W) { ball.x = W - ball.r; ball.vx = -Math.abs(ball.vx); spawnParticles(ball.x, ball.y, '#e2e8f0', 6, 2); }
+
+  ballPaddleCollision(player, true);
+  ballPaddleCollision(ai, false);
+
+  if (ball.y - ball.r > H) scorePoint('ai');
+  else if (ball.y + ball.r < 0) scorePoint('player');
+
+  // Powerup spawn (combo bonus)
+  const comboBonus = Math.min(combo * 200, 3000);
+  const currentInterval = Math.max(POWERUP_INTERVAL - comboBonus, 2000);
+  powerupSpawnTimer += dt;
+  if (powerupSpawnTimer >= currentInterval && powerupItems.length < 3) {
+    spawnPowerupItem(); powerupSpawnTimer = 0;
+  }
+
+  updatePowerupItems(dt);
+  updatePowerupEffects(now);
+  checkPowerupCollision();
+
+  if (comboDisplayTimer > 0) comboDisplayTimer -= ratio;
+  if (shakeTimer > 0) shakeTimer -= ratio;
+  if (flashAlpha > 0) flashAlpha -= 0.02 * ratio;
+  updateParticles();
+  } // end else (normal game logic)
+}
+
+// ─── Render ──────────────────────────────────────────────────
+function render() {
+  ctx.save();
+
+  if (shakeTimer > 0 && state === 'playing') {
+    const sx = rand(-shakeIntensity, shakeIntensity) * (shakeTimer / 12);
+    const sy = rand(-shakeIntensity, shakeIntensity) * (shakeTimer / 12);
+    ctx.translate(sx, sy);
+  }
+
+  if (state === 'menu') {
+    drawBackground();
+    ctx.restore();
+    return;
+  }
+
+  if (state === 'gameover') {
+    drawBackground();
+    drawParticles();
+    updateHUD();
+    ctx.restore();
+    return;
+  }
+
+  // Playing / Paused
+  drawBackground();
+
+  // 骰子轉動畫面
+  if (servePhase <= 2) {
+    const alpha = servePhase === 0 ? Math.min(1, serveTimer / 20) : 1;
+
+    if (servePhase === 0) {
+      // 轉骰子 — 快速晃動
+      const shakeAmount = 4;
+      const spinAngle = rand(-0.2, 0.2);
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.translate(W / 2 + rand(-shakeAmount, shakeAmount), H / 2 + rand(-shakeAmount, shakeAmount));
+      ctx.rotate(spinAngle);
+      const dotPositions = getDiceDots(displayDice);
+      drawDiceFace(ctx, 0, 0, 50, dotPositions);
+      ctx.restore();
+      ctx.globalAlpha = 1;
+    } else {
+      // 顯示點數 — 穩住
+      const dotPositions = getDiceDots(displayDice);
+      drawDiceFace(ctx, W / 2, H / 2, 50, dotPositions);
+
+      if (servePhase === 1) {
+        // 顯示「先攻！」或「先守！」
+        ctx.font = 'bold 36px "Segoe UI", sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = serveDirection === 1 ? '#60a5fa' : '#f87171';
+        ctx.shadowColor = ctx.fillStyle; ctx.shadowBlur = 15;
+        ctx.fillText(serveLabel, W / 2, H / 2 + 80);
+        ctx.shadowBlur = 0;
+      }
+      // servePhase === 2 時隱藏文字，準備發球
+    }
+  }
+
+  drawBallTrail();
+
+  // 骰子階段不顯示球和球拍
+  if (servePhase >= 2) {
+    const hue = combo >= 5 ? 50 : 210;
+    drawGlassBall(ball.x, ball.y, ball.r, hue);
+  }
+
+  // 骰子階段不顯示球拍（發球延遲時才顯示）
+  if (servePhase >= 1) {
+    drawGlassPaddle(player, player.color, player.glowColor);
+    drawGlassPaddle(ai, ai.color, ai.glowColor);
+  }
+
+  // 骰子轉動時不顯示道具和效果
+  if (servePhase >= 2) {
+    drawPowerupItems();
+    drawActivePowerups();
+  }
+
+  // Floating popups (reverse, etc.) — drawn at ball position
+  if (servePhase >= 2) {
+    for (let i = popups.length - 1; i >= 0; i--) {
+      const p = popups[i];
+      p.timer--;
+      if (p.timer <= 0) { popups.splice(i, 1); continue; }
+      const alpha = Math.min(1, p.timer / 15);
+      const rise = (50 - p.timer) * 0.8; // float upward
+      ctx.globalAlpha = alpha;
+      ctx.font = 'bold 18px "Segoe UI", sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillStyle = p.color;
+      ctx.shadowColor = p.color; ctx.shadowBlur = 10;
+      ctx.fillText(p.text, p.x, p.y - rise);
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    }
+  }
+
+  drawParticles();
+
+  if (flashAlpha > 0) {
+    ctx.globalAlpha = flashAlpha; ctx.fillStyle = flashColor;
+    ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1;
+  }
+
+  updateHUD();
+  ctx.restore();
+}
+
+// ─── Main Loop ───────────────────────────────────────────────
+function gameLoop(now) {
+  update(now);
+  render();
+  requestAnimationFrame(gameLoop);
+}
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
