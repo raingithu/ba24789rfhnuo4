@@ -151,7 +151,7 @@ const WIN_SCORE = 11;
 const BASE_PADDLE_W = 100;
 const BASE_PADDLE_H = 14;
 const BALL_R = 8;
-const BASE_BALL_SPEED = 8;
+const BASE_BALL_SPEED = 6
 const MAX_BALL_SPEED = 14;
 const POWERUP_INTERVAL = 6000;
 const POWERUP_DURATION = 9000;
@@ -160,10 +160,10 @@ const COMBO_DISPLAY_TIME = 120;
 
 // ─── Difficulty Config ───────────────────────────────────────
 const DIFFICULTY = {
-  easy:   { aiSpeed: 6.0,  errorRate: 0.35, predictInterval: 300 },
-  normal: { aiSpeed: 7.0,  errorRate: 0.15, predictInterval: 200 },
-  hard:   { aiSpeed: 8.0,  errorRate: 0.06, predictInterval: 100 },
-  hell:   { aiSpeed: 10.0, errorRate: 0.02, predictInterval: 50 }
+  easy:   { aiSpeed: 7.0,  errorRate: 0.24, predictInterval: 200, speedMod: -2 },
+  normal: { aiSpeed: 8.0,  errorRate: 0.12, predictInterval: 150, speedMod:  0 },
+  hard:   { aiSpeed: 9.0,  errorRate: 0.06, predictInterval: 90,  speedMod: +2 },
+  hell:   { aiSpeed: 10.0, errorRate: 0.02, predictInterval: 60,  speedMod: +4 }
 };
 
 // ─── Powerup Types ───────────────────────────────────────────
@@ -197,6 +197,10 @@ let aiHitSpeedMult = 1;     // AI 擊球的速度倍率
 
 // 基礎球速（combo 自然累積）— 與道具倍率分開追蹤
 let baseBallSpeed = BASE_BALL_SPEED;
+
+function getBaseBallSpeed() {
+  return BASE_BALL_SPEED + DIFFICULTY[difficulty].speedMod;
+}
 let particles = [];
 let powerups = [];
 let powerupItems = [];
@@ -261,8 +265,8 @@ function drawDiceFace(ctx, cx, cy, radius, dotPositions) {
 function resetBall(direction, spawnY) {
   ball.x = W / 2;
   ball.y = spawnY || H / 2;
-  baseBallSpeed = BASE_BALL_SPEED;
-  ball.speed = BASE_BALL_SPEED;
+  baseBallSpeed = getBaseBallSpeed();
+  ball.speed = getBaseBallSpeed();
   const angle = rand(-0.3, 0.3);
   ball.vx = Math.sin(angle) * ball.speed;
   ball.vy = direction * Math.cos(angle) * ball.speed;
@@ -275,14 +279,14 @@ function resetPositions() {
   powerups = []; powerupItems = []; powerupSpawnTimer = 0;
   playerHitSpeedMult = 1;
   aiHitSpeedMult = 1;
-  baseBallSpeed = BASE_BALL_SPEED;
+  baseBallSpeed = getBaseBallSpeed();
 }
 
 function clearPowerupEffects() {
   powerups = [];
   player.w = player.baseW;
   ai.w = ai.baseW;
-  baseBallSpeed = BASE_BALL_SPEED;
+  baseBallSpeed = getBaseBallSpeed();
   playerHitSpeedMult = 1;
   aiHitSpeedMult = 1;
 }
@@ -618,28 +622,63 @@ function drawGlassPaddle(paddle, color, glowColor) {
   const y = paddle.y - paddle.h / 2;
   const r = 7;
 
-  ctx.shadowColor = glowColor; ctx.shadowBlur = 20;
+  // 外发光
+  ctx.shadowColor = glowColor; ctx.shadowBlur = 24;
+
+  // 主体渐变（上下反光玻璃质感）
   const grad = ctx.createLinearGradient(x, y, x, y + paddle.h);
-  grad.addColorStop(0, 'rgba(255,255,255,0.25)');
-  grad.addColorStop(0.5, 'rgba(255,255,255,0.12)');
-  grad.addColorStop(1, 'rgba(255,255,255,0.06)');
-  ctx.fillStyle = grad; ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.lineWidth = 1.5;
+  if (color === player.color) {
+    // 蓝色 — 玩家
+    grad.addColorStop(0, 'rgba(96,165,250,0.55)');
+    grad.addColorStop(0.3, 'rgba(96,165,250,0.35)');
+    grad.addColorStop(0.7, 'rgba(59,130,246,0.25)');
+    grad.addColorStop(1, 'rgba(37,99,235,0.45)');
+  } else {
+    // 红色 — AI
+    grad.addColorStop(0, 'rgba(248,113,113,0.55)');
+    grad.addColorStop(0.3, 'rgba(248,113,113,0.35)');
+    grad.addColorStop(0.7, 'rgba(239,68,68,0.25)');
+    grad.addColorStop(1, 'rgba(185,28,28,0.45)');
+  }
+  ctx.fillStyle = grad;
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.roundRect(x, y, paddle.w, paddle.h, r); ctx.fill(); ctx.stroke();
 
-  const hlGrad = ctx.createLinearGradient(x, y, x, y + paddle.h * 0.5);
-  hlGrad.addColorStop(0, 'rgba(255,255,255,0.3)');
+  ctx.shadowBlur = 0;
+
+  // 顶部高光条（玻璃反光）
+  const hlGrad = ctx.createLinearGradient(x, y, x, y + paddle.h * 0.45);
+  hlGrad.addColorStop(0, 'rgba(255,255,255,0.45)');
   hlGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.shadowBlur = 0; ctx.fillStyle = hlGrad;
-  ctx.beginPath(); ctx.roundRect(x + 2, y + 1, paddle.w - 4, paddle.h * 0.45, [r, r, 0, 0]);
+  ctx.fillStyle = hlGrad;
+  ctx.beginPath(); ctx.roundRect(x + 3, y + 1, paddle.w - 6, paddle.h * 0.42, [r, r, 0, 0]);
+  ctx.fill();
+
+  // 底部暗面（增加立体感）
+  const botGrad = ctx.createLinearGradient(x, y + paddle.h * 0.6, x, y + paddle.h);
+  botGrad.addColorStop(0, 'rgba(0,0,0,0)');
+  botGrad.addColorStop(1, 'rgba(0,0,0,0.15)');
+  ctx.fillStyle = botGrad;
+  ctx.beginPath(); ctx.roundRect(x + 2, y + paddle.h * 0.58, paddle.w - 4, paddle.h * 0.42, [0, 0, r, r]);
   ctx.fill();
 }
 
-function drawGlassBall(x, y, r, hue) {
-  ctx.shadowColor = `hsl(${hue}, 80%, 60%)`; ctx.shadowBlur = 15;
+function drawGlassBall(x, y, r, hue, sat) {
+  if (sat === undefined) sat = 80;
+  const shadowColor = hue === 0 && sat === 0 ? '#e2e8f0' : `hsl(${hue}, ${sat}%, 60%)`;
+  ctx.shadowColor = shadowColor; ctx.shadowBlur = 15;
   const grad = ctx.createRadialGradient(x - r*0.3, y - r*0.3, r*0.1, x, y, r);
-  grad.addColorStop(0, `hsla(${hue},90%,85%,0.95)`);
-  grad.addColorStop(0.6, `hsla(${hue},80%,65%,0.85)`);
-  grad.addColorStop(1, `hsla(${hue},70%,45%,0.7)`);
+  if (hue === 0 && sat === 0) {
+    // 白色球
+    grad.addColorStop(0, 'rgba(255,255,255,0.95)');
+    grad.addColorStop(0.6, 'rgba(226,232,240,0.85)');
+    grad.addColorStop(1, 'rgba(148,163,184,0.7)');
+  } else {
+    grad.addColorStop(0, `hsla(${hue},${sat}%,85%,0.95)`);
+    grad.addColorStop(0.6, `hsla(${hue},${sat}%,65%,0.85)`);
+    grad.addColorStop(1, `hsla(${hue},${sat}%,45%,0.7)`);
+  }
   ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
 
   ctx.shadowBlur = 0;
@@ -649,13 +688,58 @@ function drawGlassBall(x, y, r, hue) {
   ctx.fillStyle = hlGrad; ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
 }
 
+function drawFlameEffect(x, y, r) {
+  const t = performance.now() * 0.008;
+  // 火焰向上燃燒，粒子從球周圍向上飄升
+  const particleCount = 24;
+  for (let i = 0; i < particleCount; i++) {
+    const seed = i * 137.508;
+    const phase = t + seed;
+    const angle = seed * 0.1 + Math.sin(phase * 0.7) * 0.5;
+    const flicker = Math.sin(phase * 2.3 + i) * 0.3;
+    const dist = r * (1.2 + flicker + Math.abs(Math.sin(phase * 1.3)) * 0.8);
+    const upBias = -0.3 - Math.sin(phase * 0.5) * 0.2;
+    const fx = x + Math.cos(angle) * dist * 0.6;
+    const fy = y + Math.sin(angle) * dist * 0.6 + dist * upBias;
+    const lifeCycle = (Math.sin(phase * 0.8) + 1) * 0.5;
+    const flameR = r * (0.4 + lifeCycle * 0.7);
+    const alpha = (1 - lifeCycle * 0.6) * (0.5 + Math.sin(phase * 1.5) * 0.25);
+
+    ctx.globalAlpha = Math.max(0, alpha);
+    const flameGrad = ctx.createRadialGradient(fx, fy, 0, fx, fy, flameR);
+    if (lifeCycle > 0.6) {
+      flameGrad.addColorStop(0, 'rgba(255,255,120,0.95)');
+      flameGrad.addColorStop(0.5, 'rgba(255,200,40,0.7)');
+      flameGrad.addColorStop(1, 'rgba(255,100,0,0)');
+    } else if (lifeCycle > 0.3) {
+      flameGrad.addColorStop(0, 'rgba(255,180,30,0.9)');
+      flameGrad.addColorStop(1, 'rgba(255,60,0,0)');
+    } else {
+      flameGrad.addColorStop(0, 'rgba(255,100,10,0.8)');
+      flameGrad.addColorStop(1, 'rgba(180,20,0,0)');
+    }
+    ctx.fillStyle = flameGrad;
+    ctx.beginPath(); ctx.arc(fx, fy, flameR, 0, Math.PI * 2); ctx.fill();
+  }
+  // 核心熱輻射光暈
+  ctx.globalAlpha = 0.25 + Math.sin(t * 3) * 0.12;
+  const coreGlow = ctx.createRadialGradient(x, y, r * 0.3, x, y, r * 2.8);
+  coreGlow.addColorStop(0, 'rgba(255,220,80,0.7)');
+  coreGlow.addColorStop(0.4, 'rgba(255,140,30,0.35)');
+  coreGlow.addColorStop(0.8, 'rgba(255,60,0,0.1)');
+  coreGlow.addColorStop(1, 'rgba(255,30,0,0)');
+  ctx.fillStyle = coreGlow;
+  ctx.beginPath(); ctx.arc(x, y, r * 2.8, 0, Math.PI * 2); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
 function drawBallTrail() {
   for (let i = 0; i < ballTrail.length; i++) {
     const t = ballTrail[i];
     const alpha = (i / ballTrail.length) * 0.3;
     const size = (i / ballTrail.length) * ball.r;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle = combo >= 5 ? '#fbbf24' : '#e2e8f0';
+    ctx.fillStyle = combo >= 60 ? '#f97316' : combo >= 30 ? '#fbbf24' : '#e2e8f0';
     ctx.beginPath(); ctx.arc(t.x, t.y, size, 0, Math.PI*2); ctx.fill();
   }
   ctx.globalAlpha = 1;
@@ -692,12 +776,14 @@ document.addEventListener('mousemove', (e) => {
 
 document.addEventListener('touchmove', (e) => {
   if (state !== 'playing') return;
+  if (e.target.closest('#pause-btn, #pause-overlay')) return;
   e.preventDefault();
   if (e.touches.length > 0) handleMove(e.touches[0].clientX);
 }, { passive: false });
 
 document.addEventListener('touchstart', (e) => {
   if (state !== 'playing') return;
+  if (e.target.closest('#pause-btn, #pause-overlay')) return;
   e.preventDefault();
   if (e.touches.length > 0) handleMove(e.touches[0].clientX);
 }, { passive: false });
@@ -784,6 +870,8 @@ function goToMenu() {
   state = 'menu';
   gameoverScreen.classList.remove('visible');
   menuScreen.classList.remove('hidden');
+  pauseOverlay.style.display = 'none';
+  pauseBtn.textContent = '⏸';
   showHUD(false);
 }
 
@@ -981,8 +1069,21 @@ function render() {
 
   // 骰子階段不顯示球和球拍
   if (servePhase >= 2) {
-    const hue = combo >= 5 ? 50 : 210;
-    drawGlassBall(ball.x, ball.y, ball.r, hue);
+    // 球顏色：初始白色，30連擊黃色，60連擊橘色+火焰特效
+    let ballHue = 0, ballSat = 0;
+    if (combo >= 60)      { ballHue = 25; ballSat = 90; } // 橘色
+    else if (combo >= 30) { ballHue = 50; ballSat = 90; } // 黃色
+    // 初始白色：hue=0, sat=0
+
+    // 測試用：強制顯示黃色球
+    // ballHue = 50; ballSat = 90;
+
+    drawGlassBall(ball.x, ball.y, ball.r, ballHue, ballSat);
+
+    // 60連擊以上：火焰特效
+    if (combo >= 60) {
+      drawFlameEffect(ball.x, ball.y, ball.r);
+    }
   }
 
   // 骰子階段不顯示球拍（發球延遲時才顯示）
