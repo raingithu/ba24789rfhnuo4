@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>呆呆鳥</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+canvas{display:block;width:100%;height:100%}
+
+/* ── UI 覆蓋層 ── */
+#ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:10}
+#ui-layer *{pointer-events:auto}
+
+/* ── 選單 ── */
+#menu-screen{position:absolute;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.25);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+#menu-screen.hidden{display:none}
+.menu-panel{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px 24px;width:85%;max-width:360px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.menu-title{font:bold 34px 'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;color:#fff;text-shadow:0 0 10px rgba(255,255,255,0.3)}
+.menu-section{font:15px 'Segoe UI','PingFang TC',sans-serif;color:rgba(255,255,255,0.6);margin-top:4px}
+.diff-btn{width:100%;padding:12px 0;border:1px solid rgba(255,255,255,0.15);border-radius:10px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font:16px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:all 0.15s}
+.diff-btn:hover{filter:brightness(1.2)}
+.diff-btn.active{border-width:2px;font-weight:bold}
+.diff-btn[data-diff="easy"].active{background:rgba(74,222,128,0.2);border-color:#4ade80;color:#4ade80}
+.diff-btn[data-diff="normal"].active{background:rgba(251,191,36,0.2);border-color:#fbbf24;color:#fbbf24}
+.diff-btn[data-diff="hard"].active{background:rgba(239,68,68,0.2);border-color:#ef4444;color:#ef4444}
+
+.start-btn{width:60%;padding:14px 0;margin-top:12px;border:none;border-radius:12px;background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;font:bold 20px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:transform 0.1s,filter 0.15s;box-shadow:0 4px 12px rgba(74,222,128,0.3)}
+.start-btn:hover{filter:brightness(1.1)}
+.start-btn:active{transform:scale(0.97)}
+
+.rules{font:15px 'Segoe UI',sans-serif;color:rgba(255,255,255,0.3);text-align:center;line-height:1.8}
+
+/* ── Game Over ── */
+#gameover-screen{position:absolute;top:0;left:0;width:100%;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#gameover-screen.visible{display:flex}
+.go-panel{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:28px 24px;width:80%;max-width:320px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.go-title{font:bold 28px 'Segoe UI','PingFang TC',sans-serif;color:#fff}
+.go-score{font:18px 'Segoe UI','PingFang TC',sans-serif;color:rgba(255,255,255,0.8)}
+.go-best{font:16px 'Segoe UI','PingFang TC',sans-serif;color:rgba(255,255,255,0.5)}
+.go-hint{font:15px 'Segoe UI','PingFang TC',sans-serif;color:rgba(255,255,255,0.6)}
+
+.go-start-btn{width:60%;padding:12px 0;margin-top:8px;border:none;border-radius:10px;background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;font:bold 18px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:transform 0.1s;box-shadow:0 4px 12px rgba(74,222,128,0.3)}
+.go-start-btn:hover{filter:brightness(1.1)}
+.go-start-btn:active{transform:scale(0.97)}
+
+.go-secondary-btn{width:60%;padding:10px 0;margin-top:4px;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font:15px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:transform 0.1s}
+.go-secondary-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+.go-secondary-btn:active{transform:scale(0.97)}
+
+/* ── HUD 分數 ── */
+#hud{position:absolute;top:0;left:0;width:100%;height:100%;display:none;pointer-events:none}
+#hud .score-text{position:absolute;top:60px;left:50%;transform:translateX(-50%);font:bold 48px 'Segoe UI','PingFang TC',sans-serif;color:#fff;text-shadow:0 2px 4px rgba(0,0,0,0.3)}
+
+/* ── 暫停按鈕 ── */
+#pause-btn{position:absolute;top:12px;left:12px;min-width:44px;height:32px;background:rgba(255,255,255,0.12);border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer;display:none;align-items:center;justify-content:center;pointer-events:auto;z-index:15;transition:background 0.15s}
+#pause-btn:hover{background:rgba(255,255,255,0.22)}
+#pause-btn:active{transform:scale(0.95)}
+
+/* ── 暫停遮罩 ── */
+#pause-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20;pointer-events:auto}
+#pause-overlay.visible{display:flex}
+#pause-overlay .pause-text{font:bold 32px 'Segoe UI','PingFang TC',sans-serif;color:#fff;text-shadow:0 0 10px rgba(255,255,255,0.3)}
+
+/* ── 排行榜按鈕 ── */
+.lb-btn{width:60%;padding:10px 0;margin-top:8px;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.7);font:15px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:all 0.15s}
+.lb-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+.lb-btn:active{transform:scale(0.97)}
+
+/* ── 排行榜 Modal ── */
+#lb-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:30;padding:20px;box-sizing:border-box}
+#lb-overlay.visible{display:flex}
+#lb-panel{background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:16px;padding:24px 20px;width:85%;max-width:360px;display:flex;flex-direction:column;gap:12px;max-height:80vh;overflow:hidden}
+#lb-title{font:bold 24px 'Segoe UI','PingFang TC',sans-serif;color:#fff;text-align:center}
+#lb-tabs{display:flex;gap:6px}
+#lb-tabs button{flex:1;padding:8px 0;border:1px solid rgba(255,255,255,0.15);border-radius:8px;background:rgba(255,255,255,0.05);color:rgba(255,255,255,0.6);font:14px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:all 0.15s}
+#lb-tabs button:hover{background:rgba(255,255,255,0.1)}
+#lb-tabs button.active{border-width:2px;font-weight:bold}
+#lb-tabs button[data-tab="easy"].active{background:rgba(74,222,128,0.2);border-color:#4ade80;color:#4ade80}
+#lb-tabs button[data-tab="normal"].active{background:rgba(251,191,36,0.2);border-color:#fbbf24;color:#fbbf24}
+#lb-tabs button[data-tab="hard"].active{background:rgba(239,68,68,0.2);border-color:#ef4444;color:#ef4444}
+#lb-list-wrap{max-height:45vh;overflow-y:auto}
+.lb-row{display:flex;align-items:center;padding:6px 12px;border-radius:8px;margin-bottom:4px;background:rgba(255,255,255,0.05);font-size:14px;color:#fff}
+.lb-row.top1{background:rgba(255,215,0,0.2)}
+.lb-row.top2{background:rgba(192,192,192,0.12)}
+.lb-row.top3{background:rgba(205,127,50,0.12)}
+.lb-rank{width:32px;font-weight:bold;color:#FFD700;text-align:center}
+.lb-name{flex:1;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-score{font-weight:bold;min-width:60px;text-align:right}
+#lb-close-btn{padding:10px 0;border:1px solid rgba(255,255,255,0.2);border-radius:10px;background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.6);font:15px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:all 0.15s}
+#lb-close-btn:hover{background:rgba(255,255,255,0.15);color:#fff}
+#lb-close-btn:active{transform:scale(0.97)}
+
+/* ── 暱稱輸入 ── */
+#lb-input-area{display:none;flex-direction:column;align-items:center;gap:8px;margin-top:8px}
+#lb-input-area.visible{display:flex}
+#lb-name-input{background:rgba(255,255,255,0.1);border:2px solid rgba(255,255,255,0.3);border-radius:8px;padding:10px 16px;font-size:14px;color:#fff;text-align:center;width:80%;outline:none;font-family:inherit}
+#lb-name-input::placeholder{color:rgba(255,255,255,0.4)}
+#lb-submit-btn{padding:10px 24px;border:none;border-radius:10px;background:linear-gradient(135deg,#4ade80,#22c55e);color:#fff;font:bold 16px 'Segoe UI','PingFang TC',sans-serif;cursor:pointer;transition:all 0.15s;box-shadow:0 4px 12px rgba(74,222,128,0.3)}
+#lb-submit-btn:hover{filter:brightness(1.1)}
+#lb-submit-btn:active{transform:scale(0.97)}
+#lb-submit-btn:disabled{opacity:0.5;cursor:not-allowed}
+#lb-status{font-size:13px;color:rgba(255,255,255,0.6);min-height:1.2em;text-align:center}
+#lb-no-data{color:rgba(255,255,255,0.4);text-align:center;padding:20px;font-size:14px}
+
+</style>
+</head>
+<body>
+<div id="ui-layer">
+  <!-- HUD -->
+  <div id="hud">
+    <div class="score-text" id="hud-score">0</div>
+    <button id="pause-btn" title="暫停 (空白鍵)">⏸</button>
+  </div>
+
+  <!-- 暫停遮罩 -->
+  <div id="pause-overlay">
+    <div class="pause-text">遊戲暫停</div>
+    <button class="lb-btn" style="margin-top:16px;width:30%" onclick="togglePause()">繼續</button>
+  </div>
+
+  <!-- 選單 -->
+  <div id="menu-screen">
+    <div class="menu-panel">
+      <div class="menu-title">呆呆鳥</div>
+      <div class="menu-section">選擇難度</div>
+      <button class="diff-btn" data-diff="easy" onclick="selectDifficulty('easy')">簡單</button>
+      <button class="diff-btn active" data-diff="normal" onclick="selectDifficulty('normal')">一般</button>
+      <button class="diff-btn" data-diff="hard" onclick="selectDifficulty('hard')">困難</button>
+      <button class="start-btn" onclick="startFromMenu()">開始遊戲</button>
+      <button class="lb-btn" onclick="showLeaderboard()">🏆 排行榜</button>
+      <div class="rules">點擊滑鼠／手指觸控</div>
+    </div>
+  </div>
+
+  <!-- Game Over -->
+  <div id="gameover-screen">
+    <div class="go-panel">
+      <div class="go-title">遊戲結束</div>
+      <div class="go-score" id="go-score">分數: 0</div>
+      <div class="go-best" id="go-best">最佳分數: 0</div>
+      <button class="go-start-btn" onclick="startFromMenu()">再玩一次</button>
+      <button class="go-secondary-btn" onclick="goToMenu()">回主選單</button>
+      <button class="lb-btn" onclick="showLeaderboard()">🏆 排行榜</button>
+    </div>
+  </div>
+
+  <!-- 排行榜 Modal -->
+  <div id="lb-overlay">
+    <div id="lb-panel">
+      <div id="lb-title">🏆 排行榜 🏆</div>
+      <div id="lb-tabs">
+        <button data-tab="easy" onclick="switchLbTab('easy')">簡單</button>
+        <button data-tab="normal" class="active" onclick="switchLbTab('normal')">一般</button>
+        <button data-tab="hard" onclick="switchLbTab('hard')">困難</button>
+      </div>
+      <div id="lb-list-wrap"></div>
+      <div id="lb-input-area">
+        <input type="text" id="lb-name-input" maxlength="12" placeholder="輸入暱稱（最多12字）" />
+        <button id="lb-submit-btn">送出</button>
+      </div>
+      <div id="lb-status"></div>
+      <button id="lb-close-btn" onclick="hideLeaderboard()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="c"></canvas>
+<script>
+// ======= Supabase 配置 =======
+const SUPABASE_URL = 'https://ctpzyxuezychetfdkftb.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_PqU-ptNARKPSzRWn7wATBg_HS__tcpJ';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+var canvas=document.getElementById("c");
+var ctx=canvas.getContext("2d");
+
+/* ========== 難度設定 ========== */ 
+// gap: 上下水管距離 speed: 飛行速度 spacing: 左右水管間隔
+// gravity: 每幀施加在鳥身上的向下加速度。值越大鳥掉得越快。
+// flap: 每次點擊（拍打翅膀）時鳥的向上速度。負值代表向上，絕對值越大飛得越高。
+/* 簡單難度：gravity 較小（掉得慢）、flap 絕對值較大（飛較高）→ 容易控制 困難難度：gravity 較大（掉得快）、flap 絕對值較大（飛較高，但重力抵消更快）→ 需要更精準操作 */
+/* ============================== */
+var DIFFICULTIES={
+  easy:{gap:164,speed:2.8,gravity:0.36,flap:-6.4,spacing:1.32,label:"簡單"},
+  normal:{gap:128,speed:3.0,gravity:0.36,flap:-6.4,spacing:1.24,label:"一般"},
+  hard:{gap:92,speed:3.5,gravity:0.5,flap:-7.2,spacing:1.16,label:"困難"}
+};
+var CURRENT_DIFF="normal";
+var D=DIFFICULTIES[CURRENT_DIFF];
+var PIPE_GAP=D.gap;
+var PIPE_SPEED_BASE=D.speed;
+var GRAVITY=D.gravity;
+var FLAP_VEL=D.flap;
+var BIRD_RADIUS=16;
+var GROUND_H=80;
+var START_BIRD_X_RATIO=0.28;
+
+/* ========== 水管高度平滑度設定 ==========
+ * pipeHeightSmoothness: 相鄰水管高度變化上限比例（0~1）
+ *   0 = 完全不變化（所有水管同一高度）
+ *   1 = 完全隨機（無限制，原版行為）
+ * 建議值：0.35~0.50，鳥可以平滑跟隨，不會突然跳太高或太低
+ * ======================================== */
+var PIPE_HEIGHT_SMOOTHNESS = 0.8;
+
+/* ========== DOM ========== */
+var menuScreen=document.getElementById("menu-screen");
+var gameoverScreen=document.getElementById("gameover-screen");
+var hud=document.getElementById("hud");
+var hudScore=document.getElementById("hud-score");
+
+/* ========== 狀態 ========== */
+var W,H,scale,birdX,birdY,birdVel,rotation;
+var pipes,groundX,score,bestScore,state,flashTimer,lastTime,isPaused;
+var pipeTimer;
+var lastPipeTopH = null;  // 記錄上一根水管的 topH，用於平滑過渡
+var animFrameId=null;
+
+bestScore=parseInt(localStorage.getItem("fb_best_"+CURRENT_DIFF)||"0",10);
+
+/* ========== 尺寸計算 ========== */
+function resize(){
+  var dpr=Math.min(window.devicePixelRatio||1,2);
+  W=window.innerWidth;
+  H=window.innerHeight;
+  canvas.width=W*dpr;
+  canvas.height=H*dpr;
+  canvas.style.width=W+"px";
+  canvas.style.height=H+"px";
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  scale=Math.min(W/288,H/512);
+  birdX=W*START_BIRD_X_RATIO;
+}
+window.addEventListener("resize",function(){
+  resize();
+  /* 尺寸改變時重建背景緩存 */
+  bgCache=null;
+});
+resize();
+
+/* ========== 難度切換 ========== */
+var diffBtns=[];
+document.addEventListener('DOMContentLoaded',function(){
+  diffBtns=document.querySelectorAll(".diff-btn");
+});
+if(document.readyState==='complete'||document.readyState==='interactive'){
+  diffBtns=document.querySelectorAll(".diff-btn");
+}else{
+  window.addEventListener('load',function(){diffBtns=document.querySelectorAll(".diff-btn");});
+}
+
+window.selectDifficulty=function(diff){
+  CURRENT_DIFF=diff;
+  D=DIFFICULTIES[diff];
+  PIPE_GAP=D.gap;
+  PIPE_SPEED_BASE=D.speed;
+  GRAVITY=D.gravity;
+  FLAP_VEL=D.flap;
+  bestScore=parseInt(localStorage.getItem("fb_best_"+CURRENT_DIFF)||"0",10);
+  /* 更新按鈕樣式（使用快取 DOM） */
+  for(var i=0;i<diffBtns.length;i++){
+    if(diffBtns[i].dataset.diff===diff){
+      diffBtns[i].classList.add("active");
+    }else{
+      diffBtns[i].classList.remove("active");
+    }
+  }
+};
+
+/* ========== 開始遊戲（從選單） ========== */
+window.startFromMenu=function(){
+  initGame();
+  /* 延遲一幀後自動開始，讓 bird 位置先渲染 */
+  setTimeout(function(){
+    startGame();
+  },50);
+};
+
+/* ========== 回主選單 ========== */
+window.goToMenu=function(){
+  state="menu";
+  menuScreen.classList.remove("hidden");
+  gameoverScreen.classList.remove("visible");
+  hud.style.display="none";
+  pipes=[];
+  lastGameScore=0;
+  lastGameDiff="normal";
+};
+
+/* ========== 初始化遊戲 ========== */
+function initGame(){
+  birdY=H*0.4;
+  birdVel=0;
+  rotation=0;
+  pipes=[];
+  groundX=0;
+  score=0;
+  flashTimer=0;
+  pipeTimer=0;
+  lastPipeTopH = null;  // 重置水管高度平滑追蹤
+  isPaused=false;
+  state="ready";
+  lastTime=performance.now();
+  /* UI */
+  menuScreen.classList.add("hidden");
+  gameoverScreen.classList.remove("visible");
+  hud.style.display="none";
+  document.getElementById("pause-btn").style.display="none";
+  document.getElementById("pause-overlay").classList.remove("visible");
+}
+
+/* ========== 開始遊戲 ========== */
+function startGame(){
+  state="playing";
+  birdVel=FLAP_VEL;
+  hudScore.textContent="0";
+  hud.style.display="block";
+  document.getElementById("pause-btn").style.display="flex";
+  isPaused=false;
+}
+
+/* ========== 飛行動畫 ========== */
+function flap(){
+  if(state==="ready"){
+    startGame();
+  }else if(state==="playing"){
+    birdVel=FLAP_VEL;
+  }else if(state==="dead"&&performance.now()-flashTimer>400){
+    initGame();
+  }
+}
+
+/* ========== 暫停/繼續 ========== */
+function togglePause(){
+  if(state!=="playing") return;
+  isPaused=!isPaused;
+  var btn=document.getElementById("pause-btn");
+  var overlay=document.getElementById("pause-overlay");
+  if(isPaused){
+    btn.textContent="▶";
+    btn.title="繼續 (空白鍵)";
+    overlay.classList.add("visible");
+  }else{
+    btn.textContent="⏸";
+    btn.title="暫停 (空白鍵)";
+    overlay.classList.remove("visible");
+  }
+}
+
+/* ========== 碰撞檢測 ========== */
+function hitTest(){
+  var bx=birdX,by=birdY,br=BIRD_RADIUS*scale;
+  if(by+br>H-GROUND_H||by-br<0) return true;
+  for(var i=0;i<pipes.length;i++){
+    var p=pipes[i];
+    if(bx+br>p.x&&bx-br<p.x+p.w){
+      if(by-br<p.topH||by+br>p.topH+PIPE_GAP*scale) return true;
+    }
+  }
+  return false;
+}
+
+/* ========== 離線背景緩存（效能優化） ========== */
+var bgCache=null;
+var bgCacheW=0,bgCacheH=0;
+
+function createBgCache(){
+  var cw=Math.ceil(W);
+  var ch=Math.ceil(H);
+  var c=document.createElement("canvas");
+  c.width=cw; c.height=ch;
+  var cx=c.getContext("2d");
+  bgCache=c; bgCacheW=cw; bgCacheH=ch;
+  drawBgToContext(cx,cw,ch);
+}
+
+/* ========== 背景繪製到指定 Context ========== */
+function drawBgToContext(ctx,cw,ch){
+  var s=scale;
+  /* ── 天空漸層（日落氛圍） ── */
+  var skyG=ctx.createLinearGradient(0,0,0,ch);
+  skyG.addColorStop(0,"#0b3d91");
+  skyG.addColorStop(0.25,"#1a6fc4");
+  skyG.addColorStop(0.5,"#4aacf0");
+  skyG.addColorStop(0.72,"#87ceeb");
+  skyG.addColorStop(0.88,"#c8e8f7");
+  skyG.addColorStop(1,"#e8f5e9");
+  ctx.fillStyle=skyG;
+  ctx.fillRect(0,0,cw,ch);
+
+  /* ── 太陽光暈（多層柔和） ── */
+  var sunX=cw*0.78,sunY=ch*0.1,sunR=45*s;
+  /* 外層大光暈 */
+  var sg1=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*5);
+  sg1.addColorStop(0,"rgba(255,245,200,0.35)");
+  sg1.addColorStop(0.4,"rgba(255,235,150,0.12)");
+  sg1.addColorStop(1,"rgba(255,235,150,0)");
+  ctx.fillStyle=sg1;
+  ctx.fillRect(sunX-sunR*5,sunY-sunR*5,sunR*10,sunR*10);
+  /* 內層亮光 */
+  var sg2=ctx.createRadialGradient(sunX,sunY,0,sunX,sunY,sunR*2);
+  sg2.addColorStop(0,"rgba(255,255,240,0.5)");
+  sg2.addColorStop(1,"rgba(255,255,240,0)");
+  ctx.fillStyle=sg2;
+  ctx.fillRect(sunX-sunR*2,sunY-sunR*2,sunR*4,sunR*4);
+  /* 太陽本體 */
+  var sunG=ctx.createRadialGradient(sunX-3*s,sunY-3*s,0,sunX,sunY,sunR);
+  sunG.addColorStop(0,"#fffde7");
+  sunG.addColorStop(0.7,"#fff176");
+  sunG.addColorStop(1,"#ffee58");
+  ctx.fillStyle=sunG;
+  ctx.beginPath();
+  ctx.arc(sunX,sunY,sunR,0,Math.PI*2);
+  ctx.fill();
+
+  /* ── 多層遠山（3 層+霧效） ── */
+  drawMountains(ctx,cw,ch,s);
+
+  /* ── 城市天際線（3 深度層） ── */
+  drawCityLayer(ctx,cw,ch,s,0.55,"rgba(50,70,90,0.55)",0.6);   // 遠層
+  drawCityLayer(ctx,cw,ch,s,0.75,"rgba(40,60,80,0.7)",0.75);   // 中層
+  drawCityLayer(ctx,cw,ch,s,1.0,"rgba(25,45,65,0.85)",0.9);    // 近層
+}
+
+/* ── 遠山繪製 ── */
+function drawMountains(ctx,cw,ch,s){
+  var baseY=ch*0.65;
+  /* 最遠層（淡藍灰，最高） */
+  ctx.fillStyle="rgba(140,170,200,0.25)";
+  ctx.beginPath();
+  ctx.moveTo(0,baseY);
+  for(var x=0;x<=cw;x+=15){
+    var y=baseY-Math.sin(x*0.003+0.5)*50*s-Math.sin(x*0.007)*25*s-Math.cos(x*0.001)*40*s;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(cw,baseY+60*s);ctx.lineTo(0,baseY+60*s);ctx.closePath();ctx.fill();
+  /* 中間層（綠灰） */
+  ctx.fillStyle="rgba(90,130,100,0.3)";
+  ctx.beginPath();
+  ctx.moveTo(0,baseY+20*s);
+  for(var x=0;x<=cw;x+=12){
+    var y=baseY+20*s-Math.sin(x*0.005+2.0)*40*s-Math.sin(x*0.012)*18*s;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(cw,baseY+80*s);ctx.lineTo(0,baseY+80*s);ctx.closePath();ctx.fill();
+  /* 最近層（深綠，最低） */
+  ctx.fillStyle="rgba(50,90,60,0.35)";
+  ctx.beginPath();
+  ctx.moveTo(0,baseY+40*s);
+  for(var x=0;x<=cw;x+=10){
+    var y=baseY+40*s-Math.sin(x*0.006+1.0)*30*s-Math.sin(x*0.018)*12*s;
+    ctx.lineTo(x,y);
+  }
+  ctx.lineTo(cw,baseY+100*s);ctx.lineTo(0,baseY+100*s);ctx.closePath();ctx.fill();
+  /* 霧效過渡 */
+  var fogG=ctx.createLinearGradient(0,baseY-30*s,0,baseY+50*s);
+  fogG.addColorStop(0,"rgba(200,220,240,0)");
+  fogG.addColorStop(0.5,"rgba(200,220,240,0.2)");
+  fogG.addColorStop(1,"rgba(200,220,240,0)");
+  ctx.fillStyle=fogG;
+  ctx.fillRect(0,baseY-30*s,cw,80*s);
+}
+
+/* ── 城市層繪製 ── */
+function drawCityLayer(ctx,cw,ch,s,opacity,baseAlpha,seedMul){
+  var baseY=ch*0.68;
+  var count=Math.floor(18+seedMul*12);
+  var bw=cw/count;
+  ctx.globalAlpha=opacity;
+  for(var i=0;i<count;i++){
+    var rng=i*7+Math.floor(seedMul*100);
+    var h=(10+(Math.sin(rng*1.3)*0.5+0.5)*65)*s;
+    var w=bw*(0.6+(Math.cos(rng*0.7)*0.5+0.5)*0.5);
+    var x=i*bw+(bw-w)/2;
+    /* 建築主體（漸層增加立體感） */
+    var bG=ctx.createLinearGradient(x,baseY-h,x+w,baseY);
+    bG.addColorStop(0,"rgba(80,100,120,1)");
+    bG.addColorStop(0.5,"rgba(60,80,100,1)");
+    bG.addColorStop(1,"rgba(40,60,80,1)");
+    ctx.fillStyle=bG;
+    ctx.fillRect(x,baseY-h,w,h);
+    /* 頂部高光 */
+    ctx.fillStyle="rgba(180,200,220,0.15)";
+    ctx.fillRect(x,baseY-h,w,2*s);
+    /* 側面陰影 */
+    ctx.fillStyle="rgba(0,0,0,0.08)";
+    ctx.fillRect(x+w*0.7,baseY-h,w*0.3,h);
+    /* 窗戶（隨機亮燈） */
+    if(Math.sin(rng*2.1)*0.5+0.5>0.2){
+      var winSize=2.5*s;
+      var winGapH=7*s;
+      var winGapW=6*s;
+      for(var wy=baseY-h+5*s;wy<baseY-4*s;wy+=winGapH){
+        for(var wx=x+3*s;wx<x+w-3*s;wx+=winGapW){
+          var lit=Math.sin(wx*0.1+wy*0.2+rng)>0.1;
+          if(lit){
+            ctx.fillStyle="rgba(255,235,150,0.35)";
+          }else{
+            ctx.fillStyle="rgba(20,30,50,0.2)";
+          }
+          ctx.fillRect(wx,wy,winSize,winSize);
+        }
+      }
+    }
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ========== 雲朵繪製（帶立體感+視差滾動） ========== */
+function drawClouds(ctx,cw,ch,t){
+  var s=scale;
+  /* 5 組雲，不同大小/速度/高度 */
+  var clouds=[
+    {bx:0.06,by:0.07,sr:0.07,speed:0.15,alpha:0.65},
+    {bx:0.25,by:0.13,sr:0.055,speed:0.22,alpha:0.55},
+    {bx:0.48,by:0.05,sr:0.08,speed:0.12,alpha:0.7},
+    {bx:0.70,by:0.10,sr:0.06,speed:0.28,alpha:0.5},
+    {bx:0.88,by:0.08,sr:0.065,speed:0.18,alpha:0.6}
+  ];
+  for(var ci=0;ci<clouds.length;ci++){
+    var cl=clouds[ci];
+    var cx=((cl.bx*cw+t*cl.speed*cw*0.5)%(cw*1.4))-cw*0.2;
+    var cy=ch*cl.by;
+    var cr=cw*cl.sr;
+    /* 每朵雲由多個交疊圓形組成，帶漸層 */
+    var blobs=[
+      {dx:0,dy:0,r:1.0},
+      {dx:0.7,dy:-0.25,r:0.72},
+      {dx:-0.65,dy:0.08,r:0.65},
+      {dx:0.3,dy:-0.38,r:0.55},
+      {dx:-0.3,dy:-0.15,r:0.68},
+      {dx:0.9,dy:0.05,r:0.45},
+      {dx:-0.85,dy:-0.1,r:0.5}
+    ];
+    /* 外層陰影（柔和） */
+    ctx.save();
+    ctx.globalAlpha=cl.alpha*0.2;
+    for(var bi=0;bi<blobs.length;bi++){
+      var bl=blobs[bi];
+      var grd=ctx.createRadialGradient(cx+bl.dx*cr,cy+bl.dy*cr+3*s,0,cx+bl.dx*cr,cy+bl.dy*cr,cr*bl.r);
+      grd.addColorStop(0,"rgba(0,0,0,0.15)");
+      grd.addColorStop(1,"rgba(0,0,0,0)");
+      ctx.fillStyle=grd;
+      ctx.beginPath();
+      ctx.arc(cx+bl.dx*cr,cy+bl.dy*cr+3*s,cr*bl.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+    /* 主體（漸層白色） */
+    ctx.save();
+    ctx.globalAlpha=cl.alpha;
+    for(var bi=0;bi<blobs.length;bi++){
+      var bl=blobs[bi];
+      var grd=ctx.createRadialGradient(
+        cx+bl.dx*cr-cr*0.1,cy+bl.dy*cr-cr*0.15,cr*bl.r*0.1,
+        cx+bl.dx*cr,cy+bl.dy*cr,cr*bl.r
+      );
+      grd.addColorStop(0,"rgba(255,255,255,1)");
+      grd.addColorStop(0.6,"rgba(255,255,255,0.92)");
+      grd.addColorStop(1,"rgba(240,245,255,0.7)");
+      ctx.fillStyle=grd;
+      ctx.beginPath();
+      ctx.arc(cx+bl.dx*cr,cy+bl.dy*cr,cr*bl.r,0,Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+/* 舊的 cityBuildings / cityWindowRects / mountainPath 不再需要，已整合進 drawBgToContext */
+
+function drawBg(){
+  var t=performance.now()*0.00008;
+  /* ── 檢查是否需要重建緩存 ── */
+  if(!bgCache||bgCacheW!==Math.ceil(W)||bgCacheH!==Math.ceil(H)){
+    createBgCache();
+  }
+  /* 繪製靜態背景緩存 */
+  ctx.drawImage(bgCache,0,0,W,H);
+  /* ── 繪製動態雲朵（每幀重繪） ── */
+  drawClouds(ctx,W,H,t);
+}
+
+/* ========== 地面 ========== */
+function drawGround(){
+  var s=scale;
+  var gy=H-GROUND_H;
+  /* 泥土 */
+  var ng=ctx.createLinearGradient(0,gy,0,H);
+  ng.addColorStop(0,"#8B7355");
+  ng.addColorStop(0.05,"#d4b896");
+  ng.addColorStop(0.3,"#c4a265");
+  ng.addColorStop(1,"#8B7355");
+  ctx.fillStyle=ng;
+  ctx.fillRect(0,gy,W,GROUND_H);
+  /* 草皮 */
+  var gg=ctx.createLinearGradient(0,gy,0,gy+20*s);
+  gg.addColorStop(0,"#5cb85c");
+  gg.addColorStop(0.5,"#4cae4c");
+  gg.addColorStop(1,"#3d8b3d");
+  ctx.fillStyle=gg;
+  ctx.fillRect(0,gy,W,20*s);
+  /* 草皮邊緣 */
+  ctx.strokeStyle="#2d6e2d";
+  ctx.lineWidth=2*s;
+  ctx.beginPath();
+  ctx.moveTo(0,gy+20*s);
+  ctx.lineTo(W,gy+20*s);
+  ctx.stroke();
+  /* 草葉紋理 */
+  ctx.strokeStyle="rgba(92,184,92,0.5)";
+  ctx.lineWidth=1*s;
+  var off=groundX%(12*s);
+  for(var x=-12*s+off;x<W+12*s;x+=12*s){
+    ctx.beginPath();
+    ctx.moveTo(x,gy+20*s);
+    ctx.lineTo(x+3*s,gy+10*s);
+    ctx.stroke();
+  }
+  /* 泥土斑點 */
+  ctx.fillStyle="rgba(139,115,85,0.3)";
+  var dotOff=(groundX*0.3)%30;
+  for(var x=dotOff-30;x<W+30;x+=30){
+    var yy=gy+30*s+((x*7+groundX)%25);
+    if(yy<H-10){
+      ctx.beginPath();
+      ctx.arc(x,yy,2*s,0,Math.PI*2);
+      ctx.fill();
+    }
+  }
+}
+
+/* ========== 水管 ========== */
+function drawPipe(px,ph){
+  var s=scale;
+  var pw=36*s;
+  var capH=22*s;
+  var capExtra=4*s;
+  var sg=ctx.createLinearGradient(px,0,px+pw,0);
+  sg.addColorStop(0,"#5a9e22");
+  sg.addColorStop(0.15,"#73bf2e");
+  sg.addColorStop(0.5,"#8ed64a");
+  sg.addColorStop(0.85,"#73bf2e");
+  sg.addColorStop(1,"#4a8518");
+  ctx.fillStyle=sg;
+  ctx.fillRect(px,0,pw,ph-capH);
+  ctx.fillStyle=sg;
+  ctx.fillRect(px-capExtra,ph-capH,pw+capExtra*2,capH);
+  ctx.strokeStyle="#3a6b12";
+  ctx.lineWidth=2;
+  ctx.strokeRect(px-capExtra,ph-capH,pw+capExtra*2,capH);
+  ctx.strokeRect(px,0,pw,ph-capH);
+  var botY=ph+PIPE_GAP*s;
+  var botH=H-GROUND_H-botY;
+  if(botH>0){
+    ctx.fillStyle=sg;
+    ctx.fillRect(px,botY+capH,pw,botH-capH);
+    ctx.fillStyle=sg;
+    ctx.fillRect(px-capExtra,botY,pw+capExtra*2,capH);
+    ctx.strokeStyle="#3a6b12";
+    ctx.strokeRect(px,botY+capH,pw,botH-capH);
+    ctx.strokeRect(px-capExtra,botY,pw+capExtra*2,capH);
+  }
+}
+
+/* ========== 鳥（高質感） ========== */
+function drawBird(){
+  ctx.save();
+  ctx.translate(birdX,birdY);
+  ctx.rotate(rotation);
+  var s=scale;
+  var bw=28*s,bh=22*s;
+
+  /* 身體陰影 */
+  ctx.fillStyle="rgba(0,0,0,0.12)";
+  ctx.beginPath();
+  ctx.ellipse(2*s,3*s,bw/2+1*s,bh/2+1*s,0,0,Math.PI*2);
+  ctx.fill();
+
+  /* 身體漸層 */
+  var bg=ctx.createRadialGradient(-3*s,-4*s,2*s,0,0,bw*0.65);
+  bg.addColorStop(0,"#ffe566");
+  bg.addColorStop(0.5,"#f5c800");
+  bg.addColorStop(1,"#d4a000");
+  ctx.fillStyle=bg;
+  ctx.beginPath();
+  ctx.ellipse(0,0,bw/2,bh/2,0,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle="#b8860b";
+  ctx.lineWidth=1.5*s;
+  ctx.stroke();
+
+  /* 腹部 */
+  ctx.fillStyle="#fff5cc";
+  ctx.beginPath();
+  ctx.ellipse(2*s,4*s,bw*0.35,bh*0.3,0,0,Math.PI*2);
+  ctx.fill();
+
+  /* 背部羽毛紋理 */
+  ctx.strokeStyle="rgba(184,134,11,0.3)";
+  ctx.lineWidth=0.8*s;
+  for(var i=0;i<3;i++){
+    ctx.beginPath();
+    ctx.arc(-2*s,-bh*0.2+i*4*s,6*s,0.3,Math.PI-0.3);
+    ctx.stroke();
+  }
+
+  /* 翅膀（根據速度動畫） */
+  var wingAngle;
+  var t=performance.now()*0.012;
+  if(state==="playing"){
+    /* 往上飛：快速高角度揮動，往下墜：低角度緩慢扇動 */
+    var baseAngle=Math.max(-0.8,Math.min(0.5,birdVel*0.035));
+    var flapSpeed=birdVel<0?1.2:0.5;
+    var flapAmount=birdVel<0?0.45:0.2;
+    wingAngle=baseAngle+Math.sin(t*flapSpeed)*flapAmount;
+  }else{
+    wingAngle=Math.sin(t*0.5)*0.35;
+  }
+  ctx.save();
+  ctx.translate(-2*s,2*s);
+  ctx.rotate(wingAngle);
+  var wg=ctx.createLinearGradient(0,-6*s,0,6*s);
+  wg.addColorStop(0,"#e8b800");
+  wg.addColorStop(1,"#c49600");
+  ctx.fillStyle=wg;
+  ctx.strokeStyle="#b8860b";
+  ctx.lineWidth=1*s;
+  ctx.beginPath();
+  ctx.ellipse(-6*s,0,10*s,6*s,-0.2,0,Math.PI*2);
+  ctx.fill();
+  ctx.stroke();
+  /* 翅膀羽毛線 */
+  ctx.strokeStyle="rgba(139,105,20,0.4)";
+  ctx.lineWidth=0.6*s;
+  ctx.beginPath();
+  ctx.moveTo(-4*s,-3*s);
+  ctx.quadraticCurveTo(-8*s,0,-4*s,3*s);
+  ctx.stroke();
+  ctx.restore();
+
+  /* 眼睛（眼白） */
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(8*s,-5*s,6*s,0,Math.PI*2);
+  ctx.fill();
+  ctx.strokeStyle="#333";
+  ctx.lineWidth=1.2*s;
+  ctx.stroke();
+
+  /* 虹膜 */
+  ctx.fillStyle="#222";
+  ctx.beginPath();
+  ctx.arc(10*s,-5*s,3*s,0,Math.PI*2);
+  ctx.fill();
+
+  /* 瞳孔高光 */
+  ctx.fillStyle="#fff";
+  ctx.beginPath();
+  ctx.arc(11*s,-6.5*s,1.2*s,0,Math.PI*2);
+  ctx.fill();
+
+  /* 眉毛 */
+  ctx.strokeStyle="rgba(50,30,0,0.5)";
+  ctx.lineWidth=2*s;
+  ctx.beginPath();
+  ctx.moveTo(4*s,-11*s);
+  ctx.quadraticCurveTo(10*s,-13*s,16*s,-10*s);
+  ctx.stroke();
+
+  /* 嘴巴（上顎） */
+  ctx.fillStyle="#e04020";
+  ctx.beginPath();
+  ctx.moveTo(12*s,-2*s);
+  ctx.quadraticCurveTo(24*s,-1*s,26*s,2*s);
+  ctx.quadraticCurveTo(20*s,4*s,12*s,2*s);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle="#b02e10";
+  ctx.lineWidth=1*s;
+  ctx.stroke();
+
+  /* 嘴巴（下顎） */
+  ctx.fillStyle="#f09030";
+  ctx.beginPath();
+  ctx.moveTo(12*s,2*s);
+  ctx.quadraticCurveTo(22*s,3*s,24*s,5*s);
+  ctx.quadraticCurveTo(18*s,7*s,12*s,4*s);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle="#c07020";
+  ctx.lineWidth=0.8*s;
+  ctx.stroke();
+
+  /* 腮紅 */
+  ctx.fillStyle="rgba(255,120,80,0.25)";
+  ctx.beginPath();
+  ctx.ellipse(4*s,5*s,5*s,3*s,0,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/* ========== 遊戲循環 ========== */
+function update(dt){
+  var s=scale;
+  if(state==="ready"){
+    birdY=H*0.4+Math.sin(performance.now()*0.004)*8*s;
+    rotation=0;
+    groundX-=PIPE_SPEED_BASE*dt*60;
+    return;
+  }
+  if(state!=="playing") return;
+  if(isPaused) return;
+
+  birdVel+=GRAVITY*dt*60;
+  birdY+=birdVel*dt*60;
+  rotation=Math.min(birdVel*0.06,Math.PI/2.2);
+
+  for(var i=0;i<pipes.length;i++){
+    pipes[i].x-=PIPE_SPEED_BASE*dt*60;
+  }
+  pipeTimer+=dt;
+  if(pipeTimer>=D.spacing){
+    pipeTimer=0;
+    var minTop=40*s;
+    var maxTop=H-GROUND_H-PIPE_GAP*s-40*s;
+    var range=maxTop-minTop;
+    if(lastPipeTopH!==null){
+      var maxDelta=range*PIPE_HEIGHT_SMOOTHNESS;
+      var delta=(Math.random()*2-1)*maxDelta;
+      topH=Math.max(minTop,Math.min(maxTop,lastPipeTopH+delta));
+    }else{
+      topH=minTop+Math.random()*range;
+    }
+    lastPipeTopH=topH;
+    pipes.push({x:W+10,topH:topH,w:36*s,passed:false});
+  }
+  while(pipes.length>0&&pipes[0].x<-70*s){
+    pipes.shift();
+  }
+  for(var j=0;j<pipes.length;j++){
+    if(!pipes[j].passed&&pipes[j].x+pipes[j].w<birdX){
+      pipes[j].passed=true;
+      score++;
+      hudScore.textContent=score;
+      if(score>bestScore){
+        bestScore=score;
+        localStorage.setItem("fb_best_"+CURRENT_DIFF,bestScore.toString());
+      }
+    }
+  }
+  groundX-=PIPE_SPEED_BASE*dt*60;
+
+  if(hitTest()){
+    state="dead";
+    flashTimer=performance.now();
+    /* 記錄最後一次分數 */
+    lastGameScore=score;
+    lastGameDiff=CURRENT_DIFF;
+    /* Game Over UI */
+    hud.style.display="none";
+    document.getElementById("pause-btn").style.display="none";
+    document.getElementById("pause-overlay").classList.remove("visible");
+    document.getElementById("go-score").textContent="分數: "+score;
+    document.getElementById("go-best").textContent="最佳分數: "+bestScore;
+    gameoverScreen.classList.add("visible");
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  drawBg();
+
+  if(pipes&&pipes.length>0){
+    for(var i=0;i<pipes.length;i++){
+      var p=pipes[i];
+      drawPipe(p.x,p.topH);
+    }
+  }
+
+  if(state!=="menu"){
+    drawGround();
+    drawBird();
+  }
+
+  /* 死亡閃光 */
+  if(state==="dead"&&performance.now()-flashTimer<150){
+    ctx.fillStyle="rgba(255,255,255,0.7)";
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+function loop(now){
+  animFrameId=requestAnimationFrame(loop);
+  var dt=(now-lastTime)/1000;
+  lastTime=now;
+  if(dt>0.032){
+    dt=0.016;
+  }
+  update(dt);
+  render();
+}
+
+/* ========== 輸入處理 ========== */
+function onInput(e){
+  e.preventDefault();
+  if(state==="menu") return;
+  if(state==="dead"&&performance.now()-flashTimer<400) return;
+  flap();
+}
+
+canvas.addEventListener("mousedown",onInput);
+canvas.addEventListener("touchstart",onInput,{passive:false});
+document.addEventListener("keydown",function(e){
+  if(e.code==="Escape"){
+    e.preventDefault();
+    if(state==="playing"){
+      togglePause();
+      return;
+    }
+  }
+  if(e.code==="Space"||e.key===" "){
+    e.preventDefault();
+    if(state==="menu") return;
+    if(state==="dead"&&performance.now()-flashTimer<400) return;
+    flap();
+  }
+});
+
+/* 暫停按鈕 */
+document.getElementById("pause-btn").addEventListener("pointerdown",function(e){
+  e.preventDefault();
+  e.stopPropagation();
+  togglePause();
+});
+
+/* ========== 啟動 ========== */
+state="menu";
+lastTime=performance.now();
+animFrameId=requestAnimationFrame(loop);
+
+/* ========== 排行榜功能 ========== */
+var currentLbDifficulty="normal";
+var currentLbData=[];
+var lastGameScore=0;
+var lastGameDiff="normal";
+
+window.showLeaderboard=function(){
+  /* 確保只有一個 overlay，避免重複 */
+  var overlay=document.getElementById("lb-overlay");
+  if(overlay.classList.contains("visible")){
+    hideLeaderboard();
+    return;
+  }
+  
+  /* 預設顯示當前難度的排行榜 */
+  currentLbDifficulty=CURRENT_DIFF;
+  
+  overlay.classList.add("visible");
+  document.getElementById("lb-input-area").classList.remove("visible");
+  document.getElementById("lb-status").textContent="讀取中...";
+  document.getElementById("lb-list-wrap").innerHTML="";
+  
+  /* 設定 tab 按鈕狀態 */
+  var tabs=document.querySelectorAll("#lb-tabs button");
+  for(var i=0;i<tabs.length;i++){
+    tabs[i].classList.toggle("active",tabs[i].getAttribute("data-tab")===currentLbDifficulty);
+  }
+  
+  loadLeaderboard(currentLbDifficulty);
+};
+
+window.hideLeaderboard=function(){
+  var overlay=document.getElementById("lb-overlay");
+  overlay.classList.remove("visible");
+};
+
+window.switchLbTab=function(diff){
+  currentLbDifficulty=diff;
+  var tabs=document.querySelectorAll("#lb-tabs button");
+  for(var i=0;i<tabs.length;i++){
+    tabs[i].classList.toggle("active",tabs[i].getAttribute("data-tab")===diff);
+  }
+  document.getElementById("lb-input-area").classList.remove("visible");
+  document.getElementById("lb-status").textContent="";
+  loadLeaderboard(diff);
+};
+
+function loadLeaderboard(diff){
+  var listWrap=document.getElementById("lb-list-wrap");
+  listWrap.innerHTML="";
+  
+  sb.from("fbleaderboard").select("*").eq("difficulty",diff).order("score",{ascending:false}).order("created_at",{ascending:true}).limit(10).then(function(result){
+    var data=result.data;
+    var error=result.error;
+    
+    if(error){
+      listWrap.innerHTML='<div id="lb-no-data">讀取失敗</div>';
+      document.getElementById("lb-status").textContent="";
+      console.error("Leaderboard error:",error);
+      return;
+    }
+    
+    currentLbData=data||[];
+    renderLeaderboard(data,listWrap);
+    document.getElementById("lb-status").textContent="";
+    
+    /* 檢查是否該顯示暱稱輸入框 */
+    if(lastGameDiff===diff && lastGameScore>0){
+      checkIfInTop10(lastGameScore,diff);
+    }
+  });
+}
+
+function renderLeaderboard(entries,listWrap){
+  if(!listWrap) listWrap=document.getElementById("lb-list-wrap");
+  listWrap.innerHTML="";
+  
+  if(entries.length===0){
+    listWrap.innerHTML='<div id="lb-no-data">尚無紀錄</div>';
+    return;
+  }
+  
+  var medals=["🥇","🥈","🥉"];
+  for(var i=0;i<entries.length;i++){
+    var entry=entries[i];
+    var row=document.createElement("div");
+    row.className="lb-row";
+    if(i===0) row.classList.add("top1");
+    else if(i===1) row.classList.add("top2");
+    else if(i===2) row.classList.add("top3");
+    
+    var rank=document.createElement("span");
+    rank.className="lb-rank";
+    rank.textContent=medals[i]?medals[i]:(i+1);
+    row.appendChild(rank);
+    
+    var name=document.createElement("span");
+    name.className="lb-name";
+    name.textContent=entry.name;
+    row.appendChild(name);
+    
+    var sc=document.createElement("span");
+    sc.className="lb-score";
+    sc.textContent=entry.score;
+    row.appendChild(sc);
+    
+    listWrap.appendChild(row);
+  }
+}
+
+/* 檢查是否進入前10 */
+function checkIfInTop10(score,diff){
+  var inputArea=document.getElementById("lb-input-area");
+  var status=document.getElementById("lb-status");
+  var nameInput=document.getElementById("lb-name-input");
+  var submitBtn=document.getElementById("lb-submit-btn");
+  
+  /* 檢查是否已有同分記錄 */
+  for(var i=0;i<currentLbData.length;i++){
+    if(currentLbData[i].score===score && currentLbData[i].difficulty===diff){
+      status.textContent="已進入排行榜";
+      return;
+    }
+  }
+  
+  if(currentLbData.length<10){
+    inputArea.classList.add("visible");
+    status.textContent="恭喜進入排行榜！請輸入暱稱";
+    nameInput.value="";
+    setupSubmitHandler(score,diff);
+  }else if(score>currentLbData[currentLbData.length-1].score){
+    inputArea.classList.add("visible");
+    status.textContent="恭喜進入排行榜！請輸入暱稱";
+    nameInput.value="";
+    setupSubmitHandler(score,diff);
+  }else{
+    status.textContent="未進入前十名";
+  }
+}
+
+function setupSubmitHandler(submitScore,submitDiff){
+  var nameInput=document.getElementById("lb-name-input");
+  var submitBtn=document.getElementById("lb-submit-btn");
+  var status=document.getElementById("lb-status");
+  
+  submitBtn.onclick=function(){
+    var name=nameInput.value.trim();
+    if(!name){
+      status.textContent="請輸入暱稱";
+      return;
+    }
+    if(name.length>12){
+      status.textContent="名稱太長（最多12字）";
+      return;
+    }
+    
+    submitBtn.disabled=true;
+    submitBtn.textContent="儲存中...";
+    status.textContent="";
+    
+    sb.from("fbleaderboard").insert({
+      difficulty: submitDiff,
+      name: name,
+      score: submitScore
+    }).then(function(result){
+      submitBtn.disabled=false;
+      submitBtn.textContent="送出";
+      
+      if(result.error){
+        status.textContent="儲存失敗："+result.error.message;
+        console.error("Insert error:",result.error);
+        return;
+      }
+      
+      status.textContent="儲存成功！";
+      /* 重新讀取 */
+      setTimeout(function(){
+        loadLeaderboard(submitDiff);
+        document.getElementById("lb-input-area").classList.remove("visible");
+      },800);
+    });
+  };
+}
+
+</script>
+</body>
+</html>
