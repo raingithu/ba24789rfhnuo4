@@ -346,7 +346,7 @@ canvas {
 
   <div id="gameover-screen">
     <div class="go-panel">
-      <div class="go-title">遊戲結束</div>
+      <div class="go-title">本局結束</div>
       <div class="go-rank" id="go-rank"></div>
       <div class="go-info" id="go-info"></div>
       <button class="start-btn" id="go-next-btn" onclick="nextLevel()" style="display:none">下一關</button>
@@ -443,16 +443,16 @@ const LEVELS = [
     id: 6, name: '方塊', type: 'square',
     grid: [
       [9,9,9,9,9,9,9,9,9],
-      [9,1,1,1,1,1,1,9,9],
-      [9,1,1,1,1,1,1,9,9],
-      [9,1,1,1,0,1,1,9,9],
-      [9,1,1,1,1,1,1,9,9],
-      [9,1,1,1,1,1,1,9,9],
-      [9,1,1,1,1,1,1,9,9],
+      [9,9,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,1,9],
+      [9,9,1,1,0,1,1,1,9],
+      [9,9,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,1,9],
       [9,9,9,9,9,9,9,9,9],
       [9,9,9,9,9,9,9,9,9]
     ],
-    centerRow: 3, centerCol: 4
+    centerRow: 4, centerCol: 4
   },
   {
     id: 7, name: '經典', type: 'square',
@@ -1123,7 +1123,11 @@ function checkGameState() {
   }
   // 無合法移動 → 失敗
   if (getAllValidMoves().length === 0) {
-    showGameOver('fail');
+    if (pegCount === 2) {
+      showGameOver('almost');
+    } else {
+      showGameOver('fail');
+    }
   }
 }
 
@@ -1138,16 +1142,21 @@ function showGameOver(result) {
   const nextBtn = document.getElementById('go-next-btn');
 
   if (result === 'genius') {
-    rankEl.textContent = '\uD83C\uDF1F 天才！\uD83C\uDF1F';
+    rankEl.textContent = '\uD83C\uDF1F天才\uD83C\uDF1F';
     rankEl.className = 'go-rank genius';
-    infoEl.textContent = '用 ' + moveCount + ' 步清除所有棋子！';
+    infoEl.textContent = '用了 ' + moveCount + ' 步完成關卡！';
     markCompleted(currentLevel.id);
     nextBtn.style.display = 'block';
   } else if (result === 'master') {
-    rankEl.textContent = '\uD83D\uDC8E 大師！\uD83D\uDC8E';
+    rankEl.textContent = '\uD83D\uDC8E大師\uD83D\uDC8E';
     rankEl.className = 'go-rank master';
     infoEl.textContent = '剩 1 顆棋子，用了 ' + moveCount + ' 步';
     markCompleted(currentLevel.id);
+    nextBtn.style.display = 'block';
+  } else if (result === 'almost') {
+    rankEl.textContent = '還差一點！';
+    rankEl.className = 'go-rank master';
+    infoEl.textContent = '剩 2 顆棋子，用了 ' + moveCount + ' 步，加油！';
     nextBtn.style.display = 'block';
   } else {
     rankEl.textContent = '\uD83D\uDE35 失敗';
