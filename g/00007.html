@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>孔明棋</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  user-select: none;
+}
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0a0a1a;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+#ui-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 10;
+}
+#ui-layer * {
+  pointer-events: auto;
+}
+#menu-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.3);
+}
+#menu-screen.hidden {
+  display: none;
+}
+.menu-panel {
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 85%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.menu-title {
+  font: bold 30px 'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+.menu-subtitle {
+  font: 12px 'Segoe UI','PingFang TC',sans-serif;
+  color: rgba(255,255,255,0.5);
+  margin-top: 4px;
+}
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+  width: 100%;
+  padding: 4px 0;
+}
+.level-btn {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.7);
+  font: 18px 'Segoe UI','PingFang TC',sans-serif;
+  cursor: pointer;
+  transition: all 0.05s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+.level-btn:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: rgba(255,255,255,0.3);
+}
+.level-btn:active {
+  transform: scale(0.95);
+}
+.level-btn .level-name {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  line-height: 1.1;
+  text-align: center;
+  max-width: 90%;
+  overflow: hidden;
+}
+.level-btn.completed {
+  border-color: rgba(74,222,128,0.4);
+  background: rgba(74,222,128,0.1);
+}
+.level-btn.completed:hover {
+  background: rgba(74,222,128,0.2);
+  border-color: rgba(74,222,128,0.6);
+}
+.level-btn.completed::after {
+  content: '通關';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 8px;
+  color: #4ade80;
+  font-weight: bold;
+  transform: rotate(15deg);
+  border: 1.5px solid #4ade80;
+  border-radius: 3px;
+  padding: 0 2px;
+  line-height: 1.2;
+}
+.start-btn {
+  width: 60%;
+  padding: 14px 0;
+  margin-top: 12px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg,#4ade80,#22c55e);
+  color: #fff;
+  font: bold 20px 'Segoe UI','PingFang TC',sans-serif;
+  cursor: pointer;
+  transition: transform 0.1s, filter 0.15s;
+  box-shadow: 0 4px 12px rgba(74,222,128,0.3);
+}
+.start-btn:hover {
+  filter: brightness(1.1);
+}
+.start-btn:active {
+  transform: scale(0.97);
+}
+.start-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  filter: none;
+}
+.rules {
+  font: 11px 'Segoe UI',sans-serif;
+  color: rgba(255,255,255,0.35);
+  text-align: center;
+  line-height: 1.6;
+  margin-top: 4px;
+  padding: 0 8px;
+}
+#gameover-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.4);
+}
+#gameover-screen.visible {
+  display: flex;
+}
+.go-panel {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 16px;
+  padding: 28px 24px;
+  width: 80%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.go-title {
+  font: bold 28px 'Segoe UI','PingFang TC',sans-serif;
+  color: #fff;
+}
+.go-rank {
+  font: bold 42px 'Segoe UI','PingFang TC',sans-serif;
+  text-shadow: 0 0 20px rgba(255,255,255,0.3);
+}
+.go-rank.genius {
+  color: #fbbf24;
+}
+.go-rank.master {
+  color: #4ade80;
+}
+.go-rank.fail {
+  color: #ef4444;
+}
+.go-info {
+  font: 16px 'Segoe UI','PingFang TC',sans-serif;
+  color: rgba(255,255,255,0.7);
+}
+.go-secondary-btn {
+  width: 60%;
+  padding: 10px 0;
+  margin-top: 4px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.6);
+  font: 15px 'Segoe UI','PingFang TC',sans-serif;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.go-secondary-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+.go-secondary-btn:active {
+  transform: scale(0.97);
+}
+#hud {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: none;
+  pointer-events: none;
+}
+#hud .hud-top {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+#hud .level-name {
+  font: bold 30px 'Segoe UI','PingFang TC',sans-serif;
+  color: rgba(255,255,255,0.8);
+}
+#hud .stats {
+  display: flex;
+  gap: 24px;
+  font: 14px 'Segoe UI','PingFang TC',sans-serif;
+  color: rgba(255,255,255,0.6);
+}
+#hud .stats span {
+  white-space: nowrap;
+}
+#bottom-btns {
+  position: absolute;
+  bottom: 16px;
+  left: 0;
+  width: 100%;
+  display: none;
+  justify-content: center;
+  gap: 16px;
+  pointer-events: auto;
+}
+#bottom-btns button {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font: 14px 'Segoe UI','PingFang TC',sans-serif;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+#bottom-btns button:hover {
+  background: rgba(255,255,255,0.22);
+}
+#bottom-btns button:active {
+  transform: scale(0.95);
+}
+#pause-btn {
+  display: none;
+}
+#pause-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+  pointer-events: auto;
+}
+#pause-overlay.visible {
+  display: flex;
+}
+#pause-overlay .pause-text {
+  font: bold 32px 'Segoe UI','PingFang TC',sans-serif;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255,255,255,0.3);
+}
+#pause-overlay button {
+  margin-top: 16px;
+}
+.lb-btn {
+  width: 60%;
+  padding: 10px 0;
+  margin-top: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.7);
+  font: 15px 'Segoe UI','PingFang TC',sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.lb-btn:hover {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+}
+.lb-btn:active {
+  transform: scale(0.97);
+}
+</style>
+</head>
+<body>
+<div id="ui-layer">
+  <div id="hud">
+    <div class="hud-top">
+      <div class="level-name" id="hud-level-name"></div>
+      <div class="stats">
+        <span id="hud-peg-count"></span>
+        <span id="hud-move-count"></span>
+      </div>
+    </div>
+  </div>
+  <div id="bottom-btns">
+    <button onclick="restartLevel()">重開本局</button>
+    <button onclick="goToMenu()">返回選單</button>
+  </div>
+
+  <div id="menu-screen">
+    <div class="menu-panel">
+      <div class="menu-title">孔明棋</div>
+      <div class="menu-subtitle">選擇關卡</div>
+      <div class="level-grid" id="level-grid"></div>
+      <div class="rules">
+        利用跳躍方式吃子<br>
+        目標：將棋子吃到只剩最後一顆！
+      </div>
+    </div>
+  </div>
+
+  <div id="gameover-screen">
+    <div class="go-panel">
+      <div class="go-title">遊戲結束</div>
+      <div class="go-rank" id="go-rank"></div>
+      <div class="go-info" id="go-info"></div>
+      <button class="start-btn" id="go-next-btn" onclick="nextLevel()" style="display:none">下一關</button>
+      <button class="go-secondary-btn" onclick="restartLevel()">重新開始</button>
+      <button class="go-secondary-btn" onclick="goToMenu()">回主選單</button>
+    </div>
+  </div>
+</div>
+<canvas id="c"></canvas>
+<script>
+// ============================================================
+// 關卡資料 — 用 9x9 矩陣表示
+// 1=有棋格且初始有棋子, 0=初始空格, 9=無棋格
+// type='stagger'=三角錯位(absX奇偶行錯0.5), type='square'=方形
+// centerRow/centerCol=中央位置（用於判斷天才）
+// ============================================================
+const LEVELS = [
+  {
+    id: 1, name: '星星', type: 'stagger',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,0,9,9,9,9],
+      [9,9,1,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,1,1,1,1,9,9,9],
+      [9,9,9,9,1,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 2, centerCol: 4
+  },
+  {
+    id: 2, name: '金字塔', type: 'stagger',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,0,9,9,9,9],
+      [9,9,9,1,1,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,1,1,1,1,9,9,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 3, name: '梯形', type: 'stagger',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,1,1,1,1,9,9,9],
+      [9,9,0,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 4, name: '魚兒', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,0,0,0,0,0,0,0,9],
+      [9,0,1,1,1,1,1,0,9],
+      [9,0,1,1,1,0,1,0,9],
+      [9,0,0,0,1,1,1,0,9],
+      [9,0,1,1,0,1,1,0,9],
+      [9,0,0,1,0,1,1,0,9],
+      [9,0,0,0,0,0,0,0,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 5, name: '靶心', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,1,9,9,9,9],
+      [9,9,9,0,1,0,9,9,9],
+      [9,9,0,1,1,1,0,9,9],
+      [9,0,1,1,0,1,1,0,9],
+      [9,9,0,1,1,1,0,9,9],
+      [9,9,9,0,1,0,9,9,9],
+      [9,9,9,9,1,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 6, name: '方塊', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,0,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 3, centerCol: 4
+  },
+  {
+    id: 7, name: '經典', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,1,1,1,0,1,1,1,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 8, name: '徽章', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,1,1,1,0,1,1,1,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 9, name: '不對稱', type: 'square',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,1,1,1,1,1,1,1,1],
+      [9,1,1,1,0,1,1,1,1],
+      [9,1,1,1,1,1,1,1,1],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9]
+    ],
+    centerRow: 5, centerCol: 4
+  },
+  {
+    id: 10, name: '菱形糕', type: 'stagger',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,0,1,1,1,1,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,9,9,9],
+      [9,1,1,1,1,1,9,9,9],
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,9,9,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 11, name: '大十字', type: 'square',
+    grid: [
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [1,1,1,1,1,1,1,1,1],
+      [1,1,1,1,0,1,1,1,1],
+      [1,1,1,1,1,1,1,1,1],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,1,1,1,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 12, name: '三角', type: 'stagger',
+    grid: [
+      [9,9,9,9,9,9,9,9,9],
+      [9,9,9,1,1,9,9,9,9],
+      [9,9,9,9,1,9,9,9,9],
+      [9,9,9,1,1,9,9,9,9],
+      [9,9,9,1,0,1,9,9,9],
+      [9,9,1,1,1,1,9,9,9],
+      [9,9,1,1,1,1,1,9,9],
+      [1,1,1,1,1,1,1,1,9],
+      [9,1,9,9,9,9,9,1,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 13, name: '鑽石', type: 'square',
+    grid: [
+      [9,9,9,9,1,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,1,1,0,1,1,9,9],
+      [9,1,1,1,1,1,1,1,9],
+      [1,1,1,1,1,1,1,1,1],
+      [9,1,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,9,9,1,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 14, name: '十字弓', type: 'square',
+    grid: [
+      [9,9,9,9,0,9,9,9,9],
+      [9,9,9,1,1,1,9,9,9],
+      [9,9,1,1,0,1,1,9,9],
+      [9,1,1,0,1,0,1,1,9],
+      [1,1,1,1,1,1,1,1,1],
+      [9,0,1,1,1,1,1,0,9],
+      [9,9,0,1,1,1,0,9,9],
+      [9,9,9,0,1,0,9,9,9],
+      [9,9,9,9,1,9,9,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 15, name: '雪花', type: 'stagger',
+    grid: [
+      [9,9,1,1,9,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,9,1,1,1,1,1,9,9],
+      [1,1,1,1,1,1,1,1,9],
+      [1,1,1,1,0,1,1,1,1],
+      [1,1,1,1,1,1,1,1,9],
+      [9,9,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,9,1,1,9,1,1,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  },
+  {
+    id: 16, name: '六邊形', type: 'stagger',
+    grid: [
+      [9,9,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,1,1,1,1,1,1,1,9],
+      [1,1,1,1,1,1,1,1,9],
+      [1,1,1,1,0,1,1,1,1],
+      [1,1,1,1,1,1,1,1,9],
+      [9,1,1,1,1,1,1,1,9],
+      [9,1,1,1,1,1,1,9,9],
+      [9,9,1,1,1,1,1,9,9]
+    ],
+    centerRow: 4, centerCol: 4
+  }
+];
+
+// ============================================================
+// 全域狀態
+// ============================================================
+let numRows = 9, numCols = 9;
+let currentLevel, board = [], selectedRow = -1, selectedCol = -1;
+let pegCount = 0, moveCount = 0, gameState = 'menu';
+let animating = false, animProgress = 0, animData = null;
+let completedLevels = {}, cellRadius = 0, cellSize = 0;
+let boardOX = 0, boardOY = 0, isPaused = false;
+
+// ============================================================
+// 本地存儲：通關記錄
+// ============================================================
+function loadCompleted() {
+  try {
+    const d = localStorage.getItem('peg_solitaire_completed');
+    if (d) completedLevels = JSON.parse(d);
+  } catch (e) {}
+}
+function saveCompleted() {
+  try {
+    localStorage.setItem('peg_solitaire_completed', JSON.stringify(completedLevels));
+  } catch (e) {}
+}
+function markCompleted(id) {
+  completedLevels[id] = true;
+  saveCompleted();
+}
+function isCompleted(id) {
+  return !!completedLevels[id];
+}
+
+// ============================================================
+// 畫布縮放
+// ============================================================
+let W, H, scale;
+function resize() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth;
+  H = window.innerHeight;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  scale = Math.min(W / 500, H / 700);
+}
+
+// ============================================================
+// 關卡按鈕
+// ============================================================
+function buildLevelGrid() {
+  const grid = document.getElementById('level-grid');
+  grid.innerHTML = '';
+  LEVELS.forEach(function(lv) {
+    const btn = document.createElement('button');
+    btn.className = 'level-btn' + (isCompleted(lv.id) ? ' completed' : '');
+    btn.innerHTML = '<span>' + lv.id + '</span><span class="level-name">' + lv.name + '</span>';
+    btn.onclick = function() { startLevel(lv.id - 1); };
+    grid.appendChild(btn);
+  });
+}
+
+// ============================================================
+// 開始關卡
+// ============================================================
+function startLevel(index) {
+  currentLevel = LEVELS[index];
+  selectedRow = -1;
+  selectedCol = -1;
+  moveCount = 0;
+  animating = false;
+  rebuildBoard();
+  document.getElementById('menu-screen').classList.add('hidden');
+  document.getElementById('gameover-screen').classList.remove('visible');
+  document.getElementById('hud').style.display = 'block';
+  document.getElementById('bottom-btns').style.display = 'flex';
+  document.getElementById('hud-level-name').textContent = currentLevel.name;
+  gameState = 'playing';
+  updateHUD();
+}
+
+// ============================================================
+// 重建棋盤
+// ============================================================
+function rebuildBoard() {
+  const lv = currentLevel;
+  board = [];
+  let totalPegs = 0;
+  numRows = 9;
+  numCols = 9;
+  for (let r = 0; r < 9; r++) {
+    board[r] = [];
+    for (let c = 0; c < 9; c++) {
+      if (lv.grid[r][c] === 9) {
+        board[r][c] = -1;
+      } else if (lv.grid[r][c] === 0) {
+        board[r][c] = false;
+      } else {
+        board[r][c] = true;
+        if (board[r][c]) totalPegs++;
+      }
+    }
+  }
+  pegCount = totalPegs;
+  calcBoardGeometry();
+}
+
+// ============================================================
+// 計算棋盤幾何
+// ============================================================
+function calcBoardGeometry() {
+  const margin = 40 * scale;
+  const availW = W - margin * 2;
+  const availH = H - margin * 2;
+  const rawCellSize = Math.min(availW / 9, availH / 9);
+  // 手機端去掉 maxCellSize 限制，讓棋盤更大
+  const isMobile = W < 600;
+  const maxCellSize = isMobile
+    ? rawCellSize
+    : Math.min(availW / 11, availH / 11);
+  cellSize = Math.min(rawCellSize, maxCellSize);
+  cellRadius = cellSize * 0.35;
+  const totalW = 8 * cellSize;
+  const totalH = 8 * cellSize;
+  boardOX = (W - totalW) / 2;
+  boardOY = (H - totalH) / 2;
+}
+
+// ============================================================
+// 取得格子位置
+// ============================================================
+function getCellPos(row, col) {
+  if (currentLevel.type === 'stagger') {
+    return {
+      x: boardOX + col * cellSize + (row % 2) * cellSize * 0.5,
+      y: boardOY + row * cellSize
+    };
+  }
+  return {
+    x: boardOX + col * cellSize,
+    y: boardOY + row * cellSize
+  };
+}
+
+// ============================================================
+// 繪圖
+// ============================================================
+function draw() {
+  // 背景
+  const bg = ctx.createLinearGradient(0, 0, 0, H);
+  bg.addColorStop(0, '#0a0a1a');
+  bg.addColorStop(1, '#1a1a2e');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  if (gameState === 'menu') {
+    drawMenuDeco();
+    return;
+  }
+  if (gameState !== 'playing' && gameState !== 'paused' && gameState !== 'gameover') return;
+
+  // 繪製棋盤
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (board[r][c] < 0) continue;
+      const pos = getCellPos(r, c);
+      if (board[r][c] === false) {
+        drawEmptyCell(pos.x, pos.y, cellRadius);
+      } else {
+        drawPeg(pos.x, pos.y, cellRadius, r === selectedRow && c === selectedCol);
+      }
+    }
+  }
+
+  // 動畫棋子
+  if (animating && animData) drawAnimPeg();
+
+  // 可移動提示
+  if (selectedRow >= 0 && gameState === 'playing' && !animating) {
+    const moves = getValidMoves(selectedRow, selectedCol);
+    moves.forEach(function(m) {
+      const pos = getCellPos(m.toRow, m.toCol);
+      ctx.strokeStyle = 'rgba(74,222,128,0.6)';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, cellRadius + 4, 0, Math.PI * 2);
+      ctx.stroke();
+    });
+  }
+}
+
+// ============================================================
+// 繪製空棋格
+// ============================================================
+function drawEmptyCell(x, y, r) {
+  // 跟 editor 一致的淡綠色背景：rgba(74,222,128,0.3)
+  const g = ctx.createRadialGradient(x, y, r * 0.2, x, y, r);
+  g.addColorStop(0, 'rgba(74,222,128,0.35)');
+  g.addColorStop(1, 'rgba(34,197,94,0.2)');
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.arc(x, y, r * 0.6, 0, Math.PI * 2);
+  ctx.stroke();
+}
+
+// ============================================================
+// 繪製棋子
+// ============================================================
+function drawPeg(x, y, r, sel) {
+  // 跟 Peglevel-editor 一致的棋子外觀
+  // editor: radial-gradient(circle at 35% 35%, ...)
+  // canvas: createRadialGradient(centerX, centerY, startRadius, centerX, centerY, endRadius)
+  const offsetX = x - r * 0.35;
+  const offsetY = y - r * 0.35;
+  
+  if (sel) {
+    // 選中時：黃色高亮
+    const g = ctx.createRadialGradient(offsetX, offsetY, r * 0.1, x, y, r);
+    g.addColorStop(0, 'rgba(255,255,200,0.95)');
+    g.addColorStop(1, 'rgba(251,191,36,0.8)');
+    ctx.save();
+    ctx.shadowColor = 'rgba(251,191,36,0.5)';
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 0;
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  } else {
+    // 一般棋子
+    const g = ctx.createRadialGradient(offsetX, offsetY, r * 0.1, x, y, r);
+    g.addColorStop(0, 'rgba(180,255,200,0.95)');
+    g.addColorStop(1, 'rgba(60,180,100,0.75)');
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 4;
+    ctx.shadowOffsetY = 2;
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ============================================================
+// 繪製動畫棋子
+// ============================================================
+function drawAnimPeg() {
+  const t = easeT(animProgress);
+  const a = animData;
+  const x = (1 - t) * (1 - t) * a.fx + 2 * (1 - t) * t * a.mx + t * t * a.tx;
+  const y = (1 - t) * (1 - t) * a.fy + 2 * (1 - t) * t * a.my + t * t * a.ty;
+  const r = cellRadius * (1 + 0.15 * Math.sin(t * Math.PI));
+  // 動畫中：更亮的綠色，帶光暈
+  const animOffsetX = x - r * 0.35;
+  const animOffsetY = y - r * 0.35;
+  const g = ctx.createRadialGradient(animOffsetX, animOffsetY, r * 0.1, x, y, r);
+  g.addColorStop(0, 'rgba(200,255,220,0.95)');
+  g.addColorStop(1, 'rgba(60,190,120,0.8)');
+  ctx.save();
+  ctx.shadowColor = 'rgba(74,222,128,0.6)';
+  ctx.shadowBlur = 20;
+  ctx.shadowOffsetY = 0;
+  ctx.fillStyle = g;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+  // 高光點
+  const hl = ctx.createRadialGradient(animOffsetX, animOffsetY, 0, animOffsetX, animOffsetY, r * 0.5);
+  hl.addColorStop(0, 'rgba(255,255,255,0.6)');
+  hl.addColorStop(1, 'rgba(255,255,255,0)');
+  ctx.fillStyle = hl;
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+function easeT(t) {
+  return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+// ============================================================
+// 選單裝飾
+// ============================================================
+function drawMenuDeco() {
+  const t = Date.now() * 0.001;
+  for (let i = 0; i < 8; i++) {
+    const x = W * (0.1 + 0.8 * ((i * 0.137 + t * 0.02) % 1));
+    const y = H * (0.1 + 0.8 * ((i * 0.213 + Math.sin(t + i) * 0.1) % 1));
+    const r = 10 + (i % 3) * 5;
+    ctx.save();
+    ctx.globalAlpha = 0.08;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba(100,220,140,1)');
+    g.addColorStop(1, 'rgba(40,150,80,0)');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+
+// ============================================================
+// 遊戲邏輯
+// ============================================================
+function isValidCell(r, c) {
+  return r >= 0 && r < 9 && c >= 0 && c < 9 && board[r][c] >= 0;
+}
+
+function getValidMoves(row, col) {
+  if (board[row][col] !== true) return [];
+  const moves = [];
+  const lv = currentLevel;
+
+  if (lv.type === 'square') {
+    // 方形棋盤：上下左右跳
+    const dirs = [
+      { dr: -2, dc: 0 },
+      { dr: 2, dc: 0 },
+      { dr: 0, dc: -2 },
+      { dr: 0, dc: 2 }
+    ];
+    for (let i = 0; i < dirs.length; i++) {
+      const d = dirs[i];
+      const midR = row + d.dr / 2;
+      const midC = col + d.dc / 2;
+      const toR = row + d.dr;
+      const toC = col + d.dc;
+      if (Number.isInteger(midR) && Number.isInteger(midC) &&
+          Number.isInteger(toR) && Number.isInteger(toC) &&
+          isValidCell(midR, midC) && isValidCell(toR, toC) &&
+          board[midR][midC] === true && board[toR][toC] === false) {
+        moves.push({
+          fromRow: row, fromCol: col,
+          toRow: toR, toCol: toC,
+          midRow: midR, midCol: midC
+        });
+      }
+    }
+    return moves;
+  }
+
+  // 三角錯位棋盤
+  const myAbsX = col + (row % 2) * 0.5;
+  for (let mr = 0; mr < 9; mr++) {
+    for (let mc = 0; mc < 9; mc++) {
+      if (board[mr][mc] < 0) continue;
+      const midAbsX = mc + (mr % 2) * 0.5;
+      const ad = Math.abs(midAbsX - myAbsX);
+      if (ad > 0.4 && ad < 0.6 && Math.abs(mr - row) === 1) {
+        const dir = midAbsX - myAbsX;
+        const targetAbsX = myAbsX + dir * 2;
+        const toR = row + 2 * (mr - row);
+        if (toR >= 0 && toR < 9) {
+          for (let tc = 0; tc < 9; tc++) {
+            const toAbsX = tc + (toR % 2) * 0.5;
+            if (Math.abs(toAbsX - targetAbsX) < 0.01 &&
+                board[mr][mc] === true && board[toR][tc] === false) {
+              moves.push({
+                fromRow: row, fromCol: col,
+                toRow: toR, toCol: tc,
+                midRow: mr, midCol: mc
+              });
+            }
+          }
+        }
+      }
+      if (mr === row) {
+        // 水平移動：只能跳過相鄰的格子（mc 必須是 col±1）
+        if (Math.abs(mc - col) !== 1) continue;
+        const toC = col + (mc - col) * 2;
+        if (toC >= 0 && toC < 9 && isValidCell(row, toC) &&
+            board[row][mc] === true && board[row][toC] === false) {
+          moves.push({
+            fromRow: row, fromCol: col,
+            toRow: row, toCol: toC,
+            midRow: row, midCol: mc
+          });
+        }
+      }
+    }
+  }
+  return moves;
+}
+
+function getAllValidMoves() {
+  const moves = [];
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (board[r][c] === true) {
+        const ms = getValidMoves(r, c);
+        for (let i = 0; i < ms.length; i++) moves.push(ms[i]);
+      }
+    }
+  }
+  return moves;
+}
+
+// ============================================================
+// 點擊處理
+// ============================================================
+function handleClick(mx, my) {
+  if (gameState !== 'playing' || animating) return;
+
+  // 找最近的格子
+  let bestR = -1, bestC = -1, bestDist = Infinity;
+  for (let r = 0; r < 9; r++) {
+    for (let c = 0; c < 9; c++) {
+      if (board[r][c] < 0) continue;
+      const pos = getCellPos(r, c);
+      const dx = mx - pos.x;
+      const dy = my - pos.y;
+      const dist = dx * dx + dy * dy;
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestR = r;
+        bestC = c;
+      }
+    }
+  }
+  if (bestDist > (cellRadius * 2.5) * (cellRadius * 2.5)) return;
+  if (bestR < 0 || bestC < 0) return;
+
+  // 點到棋子
+  if (board[bestR][bestC] !== false) {
+    if (selectedRow >= 0) {
+      const moves = getValidMoves(selectedRow, selectedCol);
+      for (let i = 0; i < moves.length; i++) {
+        if (moves[i].toRow === bestR && moves[i].toCol === bestC) {
+          executeMove(moves[i]);
+          return;
+        }
+      }
+    }
+    selectedRow = bestR;
+    selectedCol = bestC;
+    return;
+  }
+
+  // 點到空格 → 嘗試跳過去
+  if (selectedRow >= 0) {
+    const moves = getValidMoves(selectedRow, selectedCol);
+    for (let i = 0; i < moves.length; i++) {
+      if (moves[i].toRow === bestR && moves[i].toCol === bestC) {
+        executeMove(moves[i]);
+        return;
+      }
+    }
+    selectedRow = -1;
+    selectedCol = -1;
+  }
+}
+
+// ============================================================
+// 執行移動
+// ============================================================
+function executeMove(move) {
+  animating = true;
+  animProgress = 0;
+  const from = getCellPos(move.fromRow, move.fromCol);
+  const to = getCellPos(move.toRow, move.toCol);
+  animData = {
+    fx: from.x, fy: from.y,
+    tx: to.x, ty: to.y,
+    mx: (from.x + to.x) / 2,
+    my: Math.min(from.y, to.y) - 20 * scale
+  };
+  setTimeout(function() {
+    board[move.fromRow][move.fromCol] = false;
+    board[move.midRow][move.midCol] = false;
+    board[move.toRow][move.toCol] = true;
+    pegCount--;
+    moveCount++;
+    selectedRow = -1;
+    selectedCol = -1;
+    animating = false;
+    animData = null;
+    updateHUD();
+    checkGameState();
+  }, 300);
+}
+
+// ============================================================
+// 檢查遊戲狀態
+// ============================================================
+function checkGameState() {
+  // 勝利檢查
+  if (pegCount === 1) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (board[r][c] === true) {
+          const lv = currentLevel;
+          showGameOver(
+            (r === lv.centerRow && c === lv.centerCol) ? 'genius' : 'master'
+          );
+          return;
+        }
+      }
+    }
+  }
+  // 無合法移動 → 失敗
+  if (getAllValidMoves().length === 0) {
+    showGameOver('fail');
+  }
+}
+
+// ============================================================
+// 遊戲結束畫面
+// ============================================================
+function showGameOver(result) {
+  gameState = 'gameover';
+  document.getElementById('hud').style.display = 'none';
+  const rankEl = document.getElementById('go-rank');
+  const infoEl = document.getElementById('go-info');
+  const nextBtn = document.getElementById('go-next-btn');
+
+  if (result === 'genius') {
+    rankEl.textContent = '\uD83C\uDF1F 天才！\uD83C\uDF1F';
+    rankEl.className = 'go-rank genius';
+    infoEl.textContent = '用 ' + moveCount + ' 步清除所有棋子！';
+    markCompleted(currentLevel.id);
+    nextBtn.style.display = 'block';
+  } else if (result === 'master') {
+    rankEl.textContent = '\uD83D\uDC8E 大師！\uD83D\uDC8E';
+    rankEl.className = 'go-rank master';
+    infoEl.textContent = '剩 1 顆棋子，用了 ' + moveCount + ' 步';
+    markCompleted(currentLevel.id);
+    nextBtn.style.display = 'block';
+  } else {
+    rankEl.textContent = '\uD83D\uDE35 失敗';
+    rankEl.className = 'go-rank fail';
+    infoEl.textContent = '剩 ' + pegCount + ' 顆棋子，用了 ' + moveCount + ' 步';
+    nextBtn.style.display = (pegCount <= 3) ? 'block' : 'none';
+  }
+  document.getElementById('gameover-screen').classList.add('visible');
+  buildLevelGrid();
+}
+
+function nextLevel() {
+  const idx = LEVELS.findIndex(function(l) { return l.id === currentLevel.id; });
+  if (idx < LEVELS.length - 1) startLevel(idx + 1);
+}
+
+function restartLevel() {
+  const idx = LEVELS.findIndex(function(l) { return l.id === currentLevel.id; });
+  startLevel(idx);
+}
+
+function updateHUD() {
+  document.getElementById('hud-peg-count').textContent = '棋子：' + pegCount;
+  document.getElementById('hud-move-count').textContent = '步數：' + moveCount;
+}
+
+// ============================================================
+// 返回選單
+// ============================================================
+window.goToMenu = function() {
+  gameState = 'menu';
+  document.getElementById('menu-screen').classList.remove('hidden');
+  document.getElementById('gameover-screen').classList.remove('visible');
+  document.getElementById('hud').style.display = 'none';
+  document.getElementById('bottom-btns').style.display = 'none';
+  selectedRow = -1;
+  selectedCol = -1;
+  buildLevelGrid();
+};
+window.restartLevel = restartLevel;
+window.nextLevel = nextLevel;
+
+// ============================================================
+// 事件監聽
+// ============================================================
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+
+canvas.addEventListener('click', function(e) {
+  const rect = canvas.getBoundingClientRect();
+  handleClick(e.clientX - rect.left, e.clientY - rect.top);
+});
+
+canvas.addEventListener('touchstart', function(e) {
+  e.preventDefault();
+  const touch = e.touches[0];
+  const rect = canvas.getBoundingClientRect();
+  handleClick(touch.clientX - rect.left, touch.clientY - rect.top);
+}, { passive: false });
+
+// ============================================================
+// 遊戲迴圈
+// ============================================================
+let lastTime = 0;
+function gameLoop(time) {
+  const dt = time - lastTime;
+  lastTime = time;
+  if (animating) {
+    animProgress += dt / 300;
+    if (animProgress >= 1) animProgress = 1;
+  }
+  draw();
+  requestAnimationFrame(gameLoop);
+}
+
+// ============================================================
+// 初始化
+// ============================================================
+resize();
+window.addEventListener('resize', function() {
+  resize();
+  if (gameState === 'playing') rebuildBoard();
+});
+loadCompleted();
+buildLevelGrid();
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
