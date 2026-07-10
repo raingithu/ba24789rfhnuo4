@@ -43,7 +43,7 @@
 
   /* 遊戲簡介 */
   --desc-ggsnake: "經典貪食蛇，吃食物變長，別撞到牆和自己！";
-  --desc-ddbird: "操控呆呆鳥穿越水管障礙，能飛多高？";
+  --desc-ddbird: "幫呆呆鳥穿越水管障礙，試試能飛多遠？";
   --desc-candyp: "在迷宮中吃掉所有糖果，小心幽靈追擊！";
   --desc-pingpong: "復古乒乓對戰，向更高難度挑戰！";
   --desc-tetris: "益智方塊，消除連線、挑戰極限！";
@@ -80,6 +80,7 @@
 body {
   font-family: "Microsoft JhengHei", "PingFang TC", "Noto Sans TC", sans-serif;
   background: #0d0d0d;
+  background-image: radial-gradient(circle at 50% 0%, #141a2e 0%, #0d0d0d 60%);
   color: #e0e0e0;
   min-height: 100vh;
 }
@@ -89,21 +90,25 @@ body {
    ============================================================ */
 .page-header {
   text-align: center;
-  padding: 48px 20px 32px;
+  padding: 56px 20px 32px;
 }
 .page-header h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
+  font-size: clamp(2rem, 5vw, 3.25rem);
   font-weight: 800;
-  background: linear-gradient(135deg, #444444, #0f9868, #3b9cf6, #dddddd);
+  background: linear-gradient(135deg, #ffffff, #0f9868, #3b9cf6, #dddddd);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   letter-spacing: 0.05em;
+  text-shadow: 0 0 40px rgba(59, 156, 246, 0.25);
 }
 .page-header p {
-  margin-top: 8px;
+  margin-top: 12px;
   color: #888;
-  font-size: 0.95rem;
+  font-size: 1rem;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
+  animation: fadeIn 0.8s ease forwards;
 }
 
 /* ============================================================
@@ -132,10 +137,12 @@ body {
   display: flex;
   flex-direction: column;
   height: 100%;
+  border: 1px solid #3a3a3a;
+  will-change: transform, box-shadow;
 }
 .game-card:hover {
   transform: scale(1.03);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  box-shadow: 1 8px 32px rgba(0,0,0,0.6);
 }
 
 /* 封面區域 */
@@ -153,7 +160,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 4rem;
+  font-size: 4.5rem;
 }
 
 /* 自訂圖片封面（當有設定圖片時顯示） */
@@ -171,14 +178,14 @@ body {
 }
 
 /* 各遊戲預設漸層 */
-.cover-ggsnake    { background: linear-gradient(135deg, #064e3b, #10b981, #34d399); }
-.cover-ddbird   { background: linear-gradient(135deg, #1e3a5f, #3b82f6, #60a5fa); }
-.cover-candyp   { background: linear-gradient(135deg, #4c1d95, #8b5cf6, #a78bfa); }
-.cover-pingpong     { background: linear-gradient(135deg, #1c1917, #57534e, #d4d4d4); }
-.cover-tetris   { background: linear-gradient(135deg, #7c2d12, #f97316, #fbbf24); }
-.cover-gomoku   { background: linear-gradient(135deg, #451a03, #92400e, #d4a574); }
-.cover-kongming { background: linear-gradient(135deg, #7f1d1d, #dc2626, #f87171); }
-.cover-chickgh    { background: linear-gradient(135deg, #713f12, #eab308, #fde047); }
+.cover-ggsnake     { background: linear-gradient(135deg, #064e3b, #10b981, #34d399); }
+.cover-ddbird      { background: linear-gradient(135deg, #1e3a5f, #3b82f6, #60a5fa); }
+.cover-candyp      { background: linear-gradient(135deg, #4c1d95, #8b5cf6, #a78bfa); }
+.cover-pingpong    { background: linear-gradient(135deg, #1c1917, #57534e, #d4d4d4); }
+.cover-tetris      { background: linear-gradient(135deg, #7c2d12, #f97316, #fbbf24); }
+.cover-gomoku      { background: linear-gradient(135deg, #451a03, #92400e, #d4a574); }
+.cover-kongming    { background: linear-gradient(135deg, #7f1d1d, #dc2626, #f87171); }
+.cover-chickgh     { background: linear-gradient(135deg, #713f12, #eab308, #fde047); }
 
 /* 封面陰影過渡 */
 .card-cover::after {
@@ -187,27 +194,29 @@ body {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 60px;
-  background: linear-gradient(to top, #1a1a1a, transparent);
+  height: 80px;
+  background: linear-gradient(to top, #1a1a1a 10%, transparent);
 }
 
 /* 卡片資訊 */
 .card-info {
-  padding: 16px 20px 20px;
+  padding: 20px 20px 24px;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 .card-info h2 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  color: #f0f0f0;
 }
 .card-info .card-desc {
   font-size: 0.85rem;
-  color: #888;
-  line-height: 1.4;
+  color: #999;
+  line-height: 1.5;
+  margin-bottom: 16px;
 }
 .card-info .play-hint {
   margin-top: 12px;
@@ -221,33 +230,78 @@ body {
    搜尋列
    ============================================================ */
 .search-bar {
-  max-width: 400px;
-  margin: 0 auto 32px;
+  max-width: 480px;
+  margin: 0 auto 40px;
   padding: 0 24px;
 }
 .search-bar input {
   width: 100%;
-  padding: 12px 20px;
-  border-radius: 12px;
+  padding: 14px 20px 14px 48px;
+  border-radius: 16px;
   border: 1px solid #333;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
   color: #e0e0e0;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23888' viewBox='0 0 16 16'%3E%3Cpath d='M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: 16px center;
 }
-.search-bar input::placeholder { color: #555; }
-.search-bar input:focus { border-color: #f59e0b; }
+.search-bar input::placeholder { 
+  color: #666; 
+}
+.search-bar input:focus {
+  background: #222222;
+  border-color: #f59e0b;
+}
+
+/* ============================================================
+   搜尋無結果提示
+   ============================================================ */
+.no-results {
+  text-align: center;
+  padding: 40px 20px;
+  color: #888;
+  font-size: 1rem;
+  grid-column: 1 / -1;
+  opacity: 0;
+  animation: fadeIn 0.3s ease forwards, bounceIn 0.5s ease 0.1s both;
+  background: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid #2a2a2a;
+  border-radius: 20px;
+}
 
 /* ============================================================
    頁尾
    ============================================================ */
 .page-footer {
   text-align: center;
-  padding: 32px 20px;
+  padding: 32px 20px 48px;
   color: #555;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   border-top: 1px solid #222;
+}
+
+/* ============================================================
+   動畫定義
+   ============================================================ */
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes bounceIn {
+  0% { opacity: 0; transform: scale(0.95); }
+  50% { opacity: 1; transform: scale(1.02); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 /* ============================================================
@@ -255,14 +309,14 @@ body {
    ============================================================ */
 @media (max-width: 600px) {
   .game-grid {
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 16px;
     padding: 0 12px 48px;
   }
   .card-info h2 { font-size: 1rem; }
   .card-info .card-desc { font-size: 0.75rem; }
-  .card-cover .default-cover { font-size: 2.5rem; }
-  .page-header { padding: 32px 16px 20px; }
+  .card-cover .default-cover { font-size: 3rem; }
+  .page-header { padding: 40px 16px 24px; }
 }
 </style>
 </head>
@@ -291,12 +345,11 @@ body {
 (function renderGames() {
   var grid = document.getElementById('gameGrid');
   var cs = getComputedStyle(document.documentElement);
-  var idx = 0;
   var names = ['ggsnake','ddbird','candyp','pingpong','tetris','gomoku','kongming','chickgh'];
 
   grid.innerHTML = '';
 
-  names.forEach(function(name) {
+  names.forEach(function(name, index) {
     var link = cs.getPropertyValue('--link-' + name).trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     var cover = cs.getPropertyValue('--cover-' + name).trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
     var gameName = cs.getPropertyValue('--name-' + name).trim().replace(/^"|"$/g, '').replace(/^'|'$/g, '');
@@ -310,6 +363,7 @@ body {
     card.className = 'game-card';
     card.href = link;
     card.setAttribute('data-name', gameName.toLowerCase());
+    card.style.animationDelay = (index * 0.06) + 's';
 
     var coverDiv = document.createElement('div');
     coverDiv.className = 'card-cover';
@@ -317,9 +371,15 @@ body {
     var img = document.createElement('img');
     img.src = cover || '';
     img.alt = gameName + '封面';
+
     if (cover) {
-      img.onload = function() { img.classList.add('loaded'); };
-      if (img.src) img.classList.add('loaded');
+      img.onload = function() { 
+        img.classList.add('loaded'); 
+      };
+      // 修復：使用 img.complete 檢查是否已快取載入
+      if (img.complete) {
+        img.classList.add('loaded');
+      }
     }
 
     var defaultCover = document.createElement('div');
@@ -350,10 +410,29 @@ body {
 document.getElementById('searchInput').addEventListener('input', function(e) {
   var query = e.target.value.trim().toLowerCase();
   var cards = document.querySelectorAll('.game-card');
+  var hasResults = false;
+
   cards.forEach(function(card) {
     var name = card.getAttribute('data-name');
     card.style.display = name.indexOf(query) !== -1 ? '' : 'none';
+    if (card.style.display !== 'none') hasResults = true;
   });
+
+  // 移除或新增無結果提示
+  var noResultsMsg = document.getElementById('noResultsMsg');
+  if (!hasResults) {
+    if (!noResultsMsg) {
+      var msg = document.createElement('div');
+      msg.className = 'no-results';
+      msg.id = 'noResultsMsg';
+      msg.innerHTML = '<span style="font-size:1.5rem; display:block; margin-bottom:8px;">👻</span>目前沒有這個遊戲，試試其他名稱？';
+      document.getElementById('gameGrid').appendChild(msg);
+    }
+  } else {
+    if (noResultsMsg) {
+      noResultsMsg.remove();
+    }
+  }
 });
 </script>
 
