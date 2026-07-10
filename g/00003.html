@@ -380,20 +380,7 @@
             try {
                 const raw = localStorage.getItem(SAVE_KEY);
                 if (!raw) return null;
-                const data = JSON.parse(raw);
-                
-                // 遷移：舊格式 {"highestStage": N, "totalMoves": M} → 新格式
-                if (data && data.highestStage !== undefined && data.resume === undefined && data.best === undefined) {
-                    // 舊格式，自動升級
-                    const upgraded = {
-                        resume: { highestStage: data.highestStage, totalMoves: data.totalMoves },
-                        best: { highestStage: data.highestStage, totalMoves: data.totalMoves }
-                    };
-                    localStorage.setItem(SAVE_KEY, JSON.stringify(upgraded));
-                    return upgraded;
-                }
-                
-                return data;
+                return JSON.parse(raw);
             } catch (e) {}
             return null;
         }
@@ -433,13 +420,15 @@
                     totalMoves: totalMoves || 0
                 };
                 
-                // 如果關卡數比 best 高，也更新 best
-                const best = save.best || { highestStage: 0, totalMoves: Infinity };
-                if (highestStage > best.highestStage) {
-                    save.best = {
-                        highestStage: highestStage,
-                        totalMoves: totalMoves
-                    };
+                // 只有通關最後一關時才更新 best
+                if (highestStage === STAGES.length) {
+                    const best = save.best || { highestStage: 0, totalMoves: Infinity };
+                    if (highestStage > best.highestStage) {
+                        save.best = {
+                            highestStage: highestStage,
+                            totalMoves: totalMoves
+                        };
+                    }
                 }
                 
                 localStorage.setItem(SAVE_KEY, JSON.stringify(save));
@@ -459,6 +448,9 @@
                 if (resume.highestStage >= STAGES.length) {
                     // 繼續進度已通關，顯示最佳紀錄 + 選擇關卡
                     showAllClearModal(best ? best.totalMoves : 0);
+                } else if (best && best.highestStage > resume.highestStage) {
+                    // resume 落後於 best，提供從 best 開始的選項
+                    showResumeModal(resume, best, true);
                 } else {
                     showResumeModal(resume, best);
                 }
@@ -466,22 +458,28 @@
                 // 沒有繼續進度但有最佳紀錄，顯示最佳紀錄 + 重新開始
                 showBestRecordModal(best);
             } else {
+                window._playMode = 'continue';
                 showStageScreen(1);
             }
         }
 
-        function showResumeModal(resume, best) {
+        function showResumeModal(resume, best, showBestOption) {
             const modal = document.getElementById('modal-content');
             const bestText = best && best.highestStage >= STAGES.length 
                 ? `您的最佳通關紀錄：${best.totalMoves} 步` 
                 : (best && best.highestStage >= 1 ? `最佳紀錄：第 ${best.highestStage} 關，${best.totalMoves} 步` : '');
             
+            let buttons = `<button class="btn" id="btn-resume">繼續 (${resume.highestStage + 1} 關起)</button>`;
+            buttons += `<button class="btn" id="btn-restart-new" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">重新開始</button>`;
+            if (showBestOption) {
+                buttons += `<button class="btn" id="btn-best" style="background:linear-gradient(135deg,#f0c050,#e0a030);">從最佳紀錄 (${best.highestStage + 1} 關起)</button>`;
+            }
+            
             modal.innerHTML = `
                 <h2>📂 發現存檔</h2>
                 <p>您上次玩到第 ${resume.highestStage} 關，已用 ${resume.totalMoves} 步。<br>${bestText ? bestText + '<br>' : ''}要繼續闖關還是重新開始？</p>
                 <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                    <button class="btn" id="btn-resume">繼續 (${resume.highestStage + 1} 關起)</button>
-                    <button class="btn" id="btn-restart-new" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">重新開始</button>
+                    ${buttons}
                 </div>
             `;
             showOverlay();
@@ -497,6 +495,14 @@
                 window._totalMoves = 0;
                 showStageScreen(1);
             };
+            if (showBestOption) {
+                document.getElementById('btn-best').onclick = function() {
+                    hideOverlay();
+                    window._playMode = 'continue';
+                    window._totalMoves = best.totalMoves;
+                    showStageScreen(best.highestStage + 1);
+                };
+            }
         }
 
         function showBestRecordModal(best) {
