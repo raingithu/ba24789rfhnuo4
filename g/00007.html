@@ -440,13 +440,13 @@ const LEVELS = [
     id: 4, name: '魚兒', type: 'square',
     grid: [
       [9,9,9,9,9,9,9,9,9],
-      [9,9,9,9,9,9,9,9,9],
-      [9,9,1,1,1,1,1,9,9],
-      [9,9,1,1,1,0,1,9,9],
-      [9,9,0,0,1,1,1,9,9],
-      [9,9,1,1,0,1,1,9,9],
-      [9,9,0,1,0,1,1,9,9],
-      [9,9,9,9,9,9,9,9,9],
+      [9,0,0,0,0,0,0,0,9],
+      [9,0,1,1,1,1,1,0,9],
+      [9,0,1,1,1,0,1,0,9],
+      [9,0,0,0,1,1,1,0,9],
+      [9,0,1,1,0,1,1,0,9],
+      [9,0,0,1,0,1,1,0,9],
+      [9,0,0,0,0,0,0,0,9],
       [9,9,9,9,9,9,9,9,9]
     ],
     centerRow: 4, centerCol: 4
@@ -1256,7 +1256,7 @@ function gameLoop(time) {
 resize();
 window.addEventListener('resize', function() {
   resize();
-  if (gameState === 'playing') rebuildBoard();
+  if (gameState === 'playing' || gameState === 'paused') calcBoardGeometry();
 });
 loadCompleted();
 buildLevelGrid();
