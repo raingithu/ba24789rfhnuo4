@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="robots" content="noindex,nofollow">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>星空五子棋</title>
+    <style>
+        :root {
+            /* 深藍接近黑色背景 */
+            --bg-top: #020014;
+            --bg-mid: #090929;
+            --bg-bottom: #00d4ff; /* 底部帶一點點微光，增加層次 */
+            
+            --board-bg: rgba(255, 255, 255, 0.08); /* 極淡的透明感 */
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --shadow-light: rgba(255, 255, 255, 0.1);
+            --shadow-dark: rgba(0, 0, 0, 0.6);
+            
+            /* 棋盤線顏色：灰色 */
+            --grid-line: rgba(255, 255, 255, 0.25);
+            
+            /* 棋子配色 (Macaron Palette) */
+            --p1-color: #48dbfb; /* 冰藍 */
+            --p1-highlight: #d4f7e6;
+            --p1-shadow: #5c9c82;
+
+            --mark-color: #ff6b6b; /* 淡粉 */
+            --p2-color: #ff6b6b; /* 淡粉 */
+            --p2-highlight: #ffd1d6;
+            --p2-shadow: #b06a6f;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            /* 深藍接近黑色漸層 */
+            background: linear-gradient(135deg, var(--bg-top), var(--bg-mid));
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: white;
+        }
+
+        /* 星空背景 */
+        .stars {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            background-image: 
+                radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
+                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
+                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), rgba(0,0,0,0));
+            background-size: 200px 200px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            /* 深藍接近黑色漸層 */
+            background: linear-gradient(135deg, var(--bg-top), var(--bg-mid));
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: white;
+            position: relative;
+        }
+
+        /* 遊戲容器 */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            padding: 0 50px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background: linear-gradient(to right, var(--p1-color), #fff, var(--p2-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .status {
+            font-size: 0.9rem;
+            padding: 5px 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            border: 1px solid var(--glass-border);
+        }
+
+        /* 棋盤外框 - 透明霧面毛玻璃 */
+        .board-wrapper {
+            position: relative;
+            padding: 15px;
+            /* 極度透明的背景，讓星空透出來 */
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 24px;
+            box-shadow: 
+                0 8px 32px 0 rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.2);
+            border: 1px solid var(--glass-border);
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(15, 1fr);
+            grid-template-rows: repeat(15, 1fr);
+            gap: 0;
+            width: min(85vw, 450px);
+            height: min(85vw, 450px);
+            background-color: transparent;
+            /* 透明效果只套在棋盤上 */
+            backdrop-filter: blur(0px);
+            -webkit-backdrop-filter: blur(0px);
+        }
+
+        .cell {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        /* 棋盤線 */
+        .cell::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 1px;
+            background: var(--grid-line);
+            transform: translateY(-50%);
+            z-index: 0;
+        }
+
+        .cell::after {
+            content: '';
+            position: absolute;
+            left: 50%; top: 0; bottom: 0;
+            width: 1px;
+            background: var(--grid-line);
+            transform: translateX(-50%);
+            z-index: 0;
+        }
+
+        /* 棋子 */
+        .stone {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 1;
+            transform: scale(0);
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .stone.placed {
+            transform: scale(1);
+        }
+
+        /* 玩家 (冰藍) */
+        .stone.p1 {
+            background: radial-gradient(circle at 30% 30%, var(--p1-highlight), var(--p1-color));
+            box-shadow: 
+                2px 4px 6px rgba(0,0,0,0.5),
+                -1px -1px 3px rgba(255,255,255,0.4),
+                inset 2px 2px 5px rgba(255,255,255,0.8);
+        }
+
+        /* 電腦 (淡粉) */
+        .stone.p2 {
+            background: radial-gradient(circle at 30% 30%, var(--p2-highlight), var(--p2-color));
+            box-shadow: 
+                2px 4px 6px rgba(0,0,0,0.5),
+                -1px -1px 3px rgba(255,255,255,0.4),
+                inset 2px 2px 5px rgba(255,255,255,0.8);
+        }
+
+        /* 最後一步標記 */
+        .stone.last-move::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 30%; height: 30%;
+            background: var(--mark-color);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            opacity: 0.8;
+            box-shadow: 0 0 5px white;
+        }
+
+        /* 按鈕 */
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* 彈窗 */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+            z-index: 100;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal-content {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            font-size: 2rem;
+        }
+
+        @media (max-width: 400px) {
+            h1 { font-size: 1.4rem; }
+            .board-wrapper { padding: 8px; border-radius: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="stars"></div>
+
+<div class="game-container">
+    <div class="header">
+        <h1>星空五子棋</h1>
+        <div class="status" id="statusText">你的回合 (冰藍)</div>
+    </div>
+
+    <div class="board-wrapper">
+        <div class="board" id="board"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="resetGame()">重新開始</button>
+        <button onclick="toggleSound()" id="soundBtn">🔊 音效</button>
+    </div>
+</div>
+
+<div class="modal" id="winModal">
+    <div class="modal-content">
+        <h2 id="winnerText">你獲勝了！</h2>
+        <button onclick="closeModalAndReset()">再來一局</button>
+    </div>
+</div>
+
+<script>
+    // --- 遊戲設定 ---
+    const BOARD_SIZE = 15;
+    const EMPTY = 0;
+    const P1 = 1; // 玩家 (冰藍)
+    const P2 = 2; // AI (淡粉)
+
+    let board = [];
+    let currentPlayer = P1;
+    let gameActive = true;
+    let lastMove = null;
+    let isThinking = false;
+
+    // --- 音效系統 ---
+    let audioCtx;
+    let soundEnabled = true;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    function playSound(type) {
+        if (!soundEnabled || !audioCtx) return;
+        
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (type === 'move') {
+            // 清脆的落子聲
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.1);
+        } else if (type === 'win') {
+            // 勝利和弦
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 1);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 1);
+        }
+    }
+
+    function toggleSound() {
+        soundEnabled = !soundEnabled;
+        document.getElementById('soundBtn').innerText = soundEnabled ? "🔊 音效" : "🔇 靜音";
+    }
+
+    // --- 初始化 ---
+    const boardEl = document.getElementById('board');
+    const statusText = document.getElementById('statusText');
+
+    function initGame() {
+        board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(EMPTY));
+        currentPlayer = P1;
+        gameActive = true;
+        lastMove = null;
+        isThinking = false;
+        statusText.innerText = "你的回合 (冰藍)";
+        statusText.style.color = "var(--p1-color)";
+        
+        renderBoard();
+    }
+
+    function renderBoard() {
+        boardEl.innerHTML = '';
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.r = r;
+                cell.dataset.c = c;
+                cell.onclick = () => handleCellClick(r, c);
+                
+                if (board[r][c] !== EMPTY) {
+                    const stone = document.createElement('div');
+                    stone.classList.add('stone');
+                    stone.classList.add(board[r][c] === P1 ? 'p1' : 'p2');
+                    if (lastMove && lastMove.r === r && lastMove.c === c) {
+                        stone.classList.add('last-move');
+                    }
+                    setTimeout(() => stone.classList.add('placed'), 10);
+                    cell.appendChild(stone);
+                }
+                
+                boardEl.appendChild(cell);
+            }
+        }
+    }
+
+    function handleCellClick(r, c) {
+        if (!gameActive || isThinking || board[r][c] !== EMPTY) return;
+        
+        initAudio();
+        makeMove(r, c, P1);
+        
+        if (gameActive) {
+            currentPlayer = P2;
+            statusText.innerText = "電腦思考中...";
+            statusText.style.color = "var(--p2-color)";
+            
+            setTimeout(makeAIMove, 500); 
+        }
+    }
+
+    function makeMove(r, c, player) {
+        board[r][c] = player;
+        lastMove = {r, c};
+        playSound('move');
+        
+        const index = r * BOARD_SIZE + c;
+        const cell = boardEl.children[index];
+        const stone = document.createElement('div');
+        stone.classList.add('stone', player === P1 ? 'p1' : 'p2', 'placed', 'last-move');
+        
+        const prevLast = document.querySelector('.stone.last-move');
+        if (prevLast) prevLast.classList.remove('last-move');
+        
+        cell.appendChild(stone);
+
+        if (checkWin(r, c, player)) {
+            endGame(player);
+            return;
+        }
+
+        if (board.flat().every(cell => cell !== EMPTY)) {
+            endGame(0);
+            return;
+        }
+    }
+
+    function checkWin(r, c, player) {
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+        for (let [dr, dc] of directions) {
+            let count = 1;
+            for (let i = 1; i < 5; i++) {
+                const nr = r + dr * i, nc = c + dc * i;
+                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc] === player) count++;
+                else break;
+            }
+            for (let i = 1; i < 5; i++) {
+                const nr = r - dr * i, nc = c - dc * i;
+                if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE && board[nr][nc] === player) count++;
+                else break;
+            }
+            if (count >= 5) return true;
+        }
+        return false;
+    }
+
+    function endGame(winner) {
+        gameActive = false;
+        playSound('win');
+        const modal = document.getElementById('winModal');
+        const winnerText = document.getElementById('winnerText');
+        
+        if (winner === P1) {
+            winnerText.innerText = "你獲勝了！🎉";
+            winnerText.style.color = "var(--p1-color)";
+        } else if (winner === P2) {
+            winnerText.innerText = "電腦獲勝！🤖";
+            winnerText.style.color = "var(--p2-color)";
+        } else {
+            winnerText.innerText = "和局！🤝";
+            winnerText.style.color = "white";
+        }
+        
+        modal.classList.add('active');
+    }
+
+    function closeModalAndReset() {
+        document.getElementById('winModal').classList.remove('active');
+        resetGame();
+    }
+
+    function resetGame() {
+        initGame();
+    }
+
+    // --- AI 邏輯 ---
+    function makeAIMove() {
+        const move = getBestMove();
+        isThinking = false;
+        makeMove(move.r, move.c, P2);
+        
+        if (gameActive) {
+            currentPlayer = P1;
+            statusText.innerText = "你的回合 (冰藍)";
+            statusText.style.color = "var(--p1-color)";
+        }
+    }
+
+    function getBestMove() {
+        if (board[7][7] === EMPTY) return {r: 7, c: 7};
+
+        let bestScore = -Infinity;
+        let bestMoves = [];
+
+        for (let r = 0; r < BOARD_SIZE; r++) {
+            for (let c = 0; c < BOARD_SIZE; c++) {
+                if (board[r][c] === EMPTY) {
+                    const attackScore = evaluatePosition(r, c, P2);
+                    const defenseScore = evaluatePosition(r, c, P1);
+                    
+                    let totalScore = attackScore * 1.05 + defenseScore;
+
+                    if (lastMove) {
+                        const dist = Math.abs(r - lastMove.r) + Math.abs(c - lastMove.c);
+                        if (dist <= 2) totalScore += 100; 
+                    }
+
+                    if (totalScore > bestScore) {
+                        bestScore = totalScore;
+                        bestMoves = [{r, c}];
+                    } else if (totalScore === bestScore) {
+                        bestMoves.push({r, c});
+                    }
+                }
+            }
+        }
+
+        return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+    }
+
+    function evaluatePosition(r, c, player) {
+        let score = 0;
+        const directions = [[0, 1], [1, 0], [1, 1], [1, -1]];
+
+        for (let [dr, dc] of directions) {
+            let count = 1;
+            let blockedEnds = 0;
+            
+            let i = 1;
+            while (true) {
+                const nr = r + dr * i, nc = c + dc * i;
+                if (nr < 0 || nr >= BOARD_SIZE || nc < 0 || nc >= BOARD_SIZE) {
+                    blockedEnds++;
+                    break;
+                }
+                if (board[nr][nc] === player) count++;
+                else if (board[nr][nc] === EMPTY) break;
+                else { blockedEnds++; break; }
+                i++;
+            }
+
+            let j = 1;
+            while (true) {
+                const nr = r - dr * j, nc = c - dc * j;
+                if (nr < 0 || nr >= BOARD_SIZE || nc < 0 || nc >= BOARD_SIZE) {
+                    blockedEnds++;
+                    break;
+                }
+                if (board[nr][nc] === player) count++;
+                else if (board[nr][nc] === EMPTY) break;
+                else { blockedEnds++; break; }
+                j++;
+            }
+
+            if (count >= 5) score += 100000;
+            else if (count === 4) {
+                if (blockedEnds === 0) score += 10000;
+                else if (blockedEnds === 1) score += 1000;
+            }
+            else if (count === 3) {
+                if (blockedEnds === 0) score += 500;
+                else if (blockedEnds === 1) score += 50;
+            }
+            else if (count === 2) {
+                if (blockedEnds === 0) score += 10;
+            }
+        }
+
+        if (score < 500) { 
+             const neighbors = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+             for(let [nr, nc] of neighbors) {
+                 if(board[r+nr] && board[r+nr][c+nc] === player) score += 5;
+             }
+        }
+
+        return score;
+    }
+
+    initGame();
+
+</script>
+</body>
+</html>
