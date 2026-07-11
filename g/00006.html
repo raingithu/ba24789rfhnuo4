@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="robots" content="noindex,nofollow">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>星空五子棋</title>
     <style>
@@ -17,8 +16,8 @@
             --shadow-light: rgba(255, 255, 255, 0.1);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             
-            /* 棋盤線顏色：灰色 */
-            --grid-line: rgba(255, 255, 255, 0.25);
+            /* 棋盤線顏色：金色發光 */
+            --grid-line: rgba(255, 230, 160, 0.4);
             
             /* 棋子配色 (Macaron Palette) */
             --p1-color: #48dbfb; /* 冰藍 */
@@ -53,18 +52,12 @@
             color: white;
         }
 
-        /* 星空背景 */
-        .stars {
+        /* 星空背景 Canvas */
+        #starCanvas {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none;
             z-index: 0;
-            background-image: 
-                radial-gradient(2px 2px at 20px 30px, #fff, rgba(0,0,0,0)),
-                radial-gradient(2px 2px at 40px 70px, rgba(255,255,255,0.8), rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 90px 40px, #fff, rgba(0,0,0,0)),
-                radial-gradient(1px 1px at 130px 80px, rgba(255,255,255,0.6), rgba(0,0,0,0));
-            background-size: 200px 200px;
         }
 
         body {
@@ -93,6 +86,7 @@
             padding: 20px;
             width: 100%;
             max-width: 600px;
+            z-index: 1;
         }
 
         .header {
@@ -101,6 +95,7 @@
             align-items: center;
             width: 100%;
             padding: 0 50px;
+            z-index: 1;
         }
 
         h1 {
@@ -121,17 +116,64 @@
             border: 1px solid var(--glass-border);
         }
 
-        /* 棋盤外框 - 透明霧面毛玻璃 */
+        /* 棋盤外框 - 厚實水晶玻璃邊框，完整封閉框線 */
         .board-wrapper {
             position: relative;
-            padding: 15px;
-            /* 極度透明的背景，讓星空透出來 */
-            background: rgba(255, 255, 255, 0.04);
-            border-radius: 24px;
-            box-shadow: 
-                0 8px 32px 0 rgba(0, 0, 0, 0.5),
-                inset 0 0 20px rgba(255, 255, 255, 0.2);
-            border: 1px solid var(--glass-border);
+            /* 外框厚度約 1.5 格寬 */
+            padding: 4.5%;
+            /* 圓角 */
+            border-radius: 12px;
+            /* 外框材質：深藍紫星雲漸層 */
+            background:
+                linear-gradient(180deg, rgba(40, 20, 100, 0.12) 0%, rgba(200,200,200, 0.1) 20%),
+                linear-gradient(0deg, rgba(40, 20, 100, 0.3) 0%, rgba(200,200,200, 0.1) 20%),
+                rgba(255,255,255,0.02);
+            /* 外框最外圈封閉金線 */
+                backdrop-filter: blur(0px);
+            border: 2px solid rgba(255, 230, 160, 0.35);
+            /* 立體厚度感 */
+            box-shadow:
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 2px 4px rgba(255, 255, 255, 0.15),
+                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+                inset 2px 0 4px rgba(255, 255, 255, 0.06),
+                inset -2px 0 4px rgba(255, 255, 255, 0.06);
+        }
+
+        /* 外框與棋盤之間的中間層：深藍紫模糊發光 */
+        .board-wrapper::after {
+            content: '';
+            position: absolute;
+            top: calc(4.5% + 2px);
+            left: calc(4.5% + 2px);
+            right: calc(4.5% + 2px);
+            bottom: calc(4.5% + 2px);
+            border-radius: 2px;
+            background:
+                linear-gradient(180deg, rgba(30, 20, 80, 0.25) 0%, rgba(0, 0, 0, 0.2) 20%),
+                linear-gradient(0deg, rgba(30, 20, 80, 0.25) 0%, rgba(0, 0, 0, 0.2) 20%);
+            box-shadow:
+                0 0 12px rgba(100, 80, 200, 0.15),
+                0 0 24px rgba(100, 80, 200, 0.12);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 內層封閉外框：金色線 + 發光 */
+        .board-wrapper::before {
+            content: '';
+            position: absolute;
+            top: calc(4.5% + 2px);
+            left: calc(4.5% + 2px);
+            right: calc(4.5% + 2px);
+            bottom: calc(4.5% + 2px);
+            border: 2px solid rgba(255, 230, 160, 0.3);
+            border-radius: 2px;
+            pointer-events: none;
+            z-index: 2;
+            box-shadow:
+                0 0 6px rgba(255, 230, 160, 0.12),
+                inset 0 0 6px rgba(255, 230, 160, 0.08);
         }
 
         .board {
@@ -139,12 +181,9 @@
             grid-template-columns: repeat(15, 1fr);
             grid-template-rows: repeat(15, 1fr);
             gap: 0;
-            width: min(85vw, 450px);
-            height: min(85vw, 450px);
+            width: calc(min(85vw, 450px) - 4px);
+            height: calc(min(85vw, 450px) - 4px);
             background-color: transparent;
-            /* 透明效果只套在棋盤上 */
-            backdrop-filter: blur(0px);
-            -webkit-backdrop-filter: blur(0px);
         }
 
         .cell {
@@ -182,7 +221,7 @@
             height: 80%;
             border-radius: 50%;
             position: absolute;
-            z-index: 1;
+            z-index: 10;
             transform: scale(0);
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
@@ -193,20 +232,32 @@
 
         /* 玩家 (冰藍) */
         .stone.p1 {
-            background: radial-gradient(circle at 30% 30%, var(--p1-highlight), var(--p1-color));
-            box-shadow: 
-                2px 4px 6px rgba(0,0,0,0.5),
-                -1px -1px 3px rgba(255,255,255,0.4),
-                inset 2px 2px 5px rgba(255,255,255,0.8);
+            background:
+                /* 頂部高光 */
+                radial-gradient(circle at 35% 25%, var(--p1-highlight), var(--p1-color)),
+                /* 中間凸起主色 */
+                radial-gradient(circle at 50% 50%, var(--p1-color) 50%, var(--p1-shadow) 100%);
+            /* 白色環線 - 凸起邊緣 */
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow:
+                2px 4px 8px rgba(0,0,0,0.5),
+                inset 0 1px 3px rgba(255,255,255,0.3),
+                inset 0 -1px 3px rgba(0,0,0,0.3);
         }
 
         /* 電腦 (淡粉) */
         .stone.p2 {
-            background: radial-gradient(circle at 30% 30%, var(--p2-highlight), var(--p2-color));
-            box-shadow: 
-                2px 4px 6px rgba(0,0,0,0.5),
-                -1px -1px 3px rgba(255,255,255,0.4),
-                inset 2px 2px 5px rgba(255,255,255,0.8);
+            background:
+                /* 頂部高光 */
+                radial-gradient(circle at 35% 25%, var(--p2-highlight), var(--p2-color)),
+                /* 中間凸起主色 */
+                radial-gradient(circle at 50% 50%, var(--p2-color) 50%, var(--p2-shadow) 100%);
+            /* 白色環線 - 凸起邊緣 */
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            box-shadow:
+                2px 4px 8px rgba(0,0,0,0.5),
+                inset 0 1px 3px rgba(255,255,255,0.3),
+                inset 0 -1px 3px rgba(0,0,0,0.3);
         }
 
         /* 最後一步標記 */
@@ -291,7 +342,7 @@
 </head>
 <body>
 
-<div class="stars"></div>
+<canvas id="starCanvas"></canvas>
 
 <div class="game-container">
     <div class="header">
@@ -606,6 +657,86 @@
 
         return score;
     }
+
+    // --- 自然星空背景 ---
+    function drawStars() {
+        const canvas = document.getElementById('starCanvas');
+        const ctx = canvas.getContext('2d');
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+        ctx.scale(dpr, dpr);
+
+        // 深藍漸層背景（與 body 一致）
+        const bg = ctx.createLinearGradient(0, 0, w, h);
+        bg.addColorStop(0, '#020014');
+        bg.addColorStop(1, '#090929');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0, 0, w, h);
+
+        // 淡淡星雲
+        function drawNebula(cx, cy, rx, ry, color) {
+            const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, Math.max(rx, ry));
+            g.addColorStop(0, color.replace(')', ',0.04)').replace('rgb', 'rgba'));
+            g.addColorStop(0.5, color.replace(')', ',0.015)').replace('rgb', 'rgba'));
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.save();
+            ctx.translate(cx, cy);
+            ctx.scale(1, ry / rx);
+            ctx.beginPath();
+            ctx.arc(0, 0, rx, 0, Math.PI * 2);
+            ctx.fillStyle = g;
+            ctx.fill();
+            ctx.restore();
+        }
+        drawNebula(w * 0.2, h * 0.3, 250, 180, 'rgb(80, 40, 160)');
+        drawNebula(w * 0.75, h * 0.6, 200, 250, 'rgb(30, 60, 140)');
+        drawNebula(w * 0.5, h * 0.8, 180, 150, 'rgb(60, 20, 120)');
+
+        // 偽隨機數生成器
+        let rng = Date.now() * 2654435761 >>> 0;
+        function rand() {
+            rng = (rng * 1664525 + 1013904223) >>> 0;
+            return rng / 4294967296;
+        }
+
+        // 星星：稀疏、自然分布、大小亮度各不相同
+        for (let i = 0; i < 120; i++) {
+            const x = rand() * w;
+            const y = rand() * h;
+            const size = 0.3 + rand() * 1.2;
+            const alpha = 0.1 + rand() * 0.35;
+
+            // 色溫
+            const temp = rand();
+            let r, g, b;
+            if (temp < 0.7) {
+                r = 200 + Math.floor(rand() * 55);
+                g = 210 + Math.floor(rand() * 45);
+                b = 230 + Math.floor(rand() * 25);
+            } else if (temp < 0.9) {
+                r = 160 + Math.floor(rand() * 40);
+                g = 180 + Math.floor(rand() * 40);
+                b = 230 + Math.floor(rand() * 25);
+            } else {
+                r = 230 + Math.floor(rand() * 25);
+                g = 190 + Math.floor(rand() * 40);
+                b = 160 + Math.floor(rand() * 40);
+            }
+
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(${r},${g},${b},${alpha})`;
+            ctx.fill();
+        }
+    }
+
+    window.addEventListener('resize', drawStars);
+    drawStars();
 
     initGame();
 
