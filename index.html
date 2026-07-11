@@ -85,6 +85,21 @@ body {
   min-height: 100vh;
 }
 
+html,
+body {
+    overflow-y: auto;
+    /* Firefox */
+    scrollbar-width: none;
+    /* IE */
+    -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+}
+
 /* ============================================================
    頁面標題
    ============================================================ */
@@ -425,7 +440,7 @@ document.getElementById('searchInput').addEventListener('input', function(e) {
       var msg = document.createElement('div');
       msg.className = 'no-results';
       msg.id = 'noResultsMsg';
-      msg.innerHTML = '<span style="font-size:1.5rem; display:block; margin-bottom:8px;">👻</span>目前沒有這個遊戲，試試其他名稱？';
+      msg.innerHTML = '<span style="font-size:1.5rem; display:block; margin-bottom:8px;">👻</span>目前沒有這個遊戲';
       document.getElementById('gameGrid').appendChild(msg);
     }
   } else {
