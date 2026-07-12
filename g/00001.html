@@ -1,248 +1,263 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="robots" content="noindex,nofollow">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>曲線吞噬者</title>
-    <style>
-        :root {
-            --bg-color: #1a1a1a;
-            --grid-color: #2a2a2a;
-            --snake-color: #00ffcc;
-            --snake-head-color: #ccff00;
-            --food-color: #ff3366;
-            --text-color: #ffffff;
-            --ui-bg: rgba(255, 255, 255, 0.1);
-        }
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>曲線吞噬者</title>
+<style>
+:root {
+    --bg-color: #1a1a1a;
+    --grid-color: #2a2a2a;
+    --snake-color: #00ffcc;
+    --snake-head-color: #ccff00;
+    --food-color: #ff3366;
+    --text-color: #ffffff;
+    --ui-bg: rgba(255, 255, 255, 0.1);
+}
 
-        * {
-            box-sizing: border-box;
-            touch-action: none;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
+* {
+    box-sizing: border-box;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
 
-        body {
-             margin: 0;
-             padding: 10px;
-             background-color: var(--bg-color);
-             color: var(--text-color);
-             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-             height: 100vh;
-             height: 100dvh;
-             display: flex;
-             flex-direction: column;
-             align-items: center;
-             overflow: hidden;
-         }
+body {
+     margin: 0;
+     padding: 10px;
+     background-color: var(--bg-color);
+     color: var(--text-color);
+     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+     height: 100vh;
+     height: 100dvh;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     overflow: hidden;
+ }
 
-         /* UI 資訊列 - 在遊戲視窗外面 */
-         .ui-bar {
-             width: 100%;
-             max-width: 500px;
-             display: flex;
-             align-items: center;
-             gap: 8px;
-             padding: 10px 12px;
-         }
+ /* UI 資訊列 - 在遊戲視窗外面 */
+ .ui-bar {
+     width: 100%;
+     max-width: 500px;
+     display: flex;
+     align-items: center;
+     justify-content: space-between;
+     gap: 16px;
+     padding: 10px 12px;
+ }
 
-         .ui-left {
-             display: flex;
-             align-items: center;
-             gap: 8px;
-         }
+ .ui-left {
+     display: flex;
+     align-items: center;
+ }
 
-         .ui-right {
-             margin-left: auto;
-             display: flex;
-             align-items: center;
-             gap: 8px;
-         }
+ .ui-center {
+     display: flex;
+     align-items: baseline;
+     gap: 12px;
+ }
 
-         /* 暫停按鈕 - 圓角方形 */
-         #pause-btn {
-             min-width: 44px;
-             height: 36px;
-             padding: 0 12px;
-             border: none;
-             border-radius: 8px;
-             background: rgba(255, 255, 255, 0.08);
-             color: rgba(255, 255, 255, 0.7);
-             font-size: 0.85rem;
-             font-weight: 500;
-             cursor: pointer;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 6px;
-             transition: all 0.2s ease;
-             white-space: nowrap;
-             user-select: none;
-         }
+ .ui-right {
+     display: flex;
+     align-items: center;
+ }
 
-         #pause-btn:hover {
-             background: rgba(255, 255, 255, 0.15);
-             color: #fff;
-         }
+ /* 難度徽章 */
+ .difficulty-badge {
+     padding: 4px 12px;
+     border-radius: 12px;
+     font-size: 0.8rem;
+     font-weight: 600;
+     background: linear-gradient(135deg, rgba(204, 255, 0, 0.15), rgba(204, 255, 0, 0.05));
+     color: var(--snake-head-color);
+     border: 1px solid rgba(204, 255, 0, 0.2);
+     white-space: nowrap;
+ }
 
-         #pause-btn:active {
-             transform: scale(0.96);
-         }
+ /* 分數 */
+ .score-board {
+     display: flex;
+     align-items: baseline;
+     gap: 12px;
+ }
 
-         #pause-btn.paused {
-             background: rgba(0, 255, 204, 0.15);
-             color: var(--snake-color);
-         }
+ .score-board .label {
+     font-size: 1.2rem;
+     color: var(--snake-head-color);
+ }
 
-         /* 難度徽章 */
-         .difficulty-badge {
-             padding: 4px 12px;
-             border-radius: 12px;
-             font-size: 0.8rem;
-             font-weight: 600;
-             background: linear-gradient(135deg, rgba(204, 255, 0, 0.15), rgba(204, 255, 0, 0.05));
-             color: var(--snake-head-color);
-             border: 1px solid rgba(204, 255, 0, 0.2);
-             white-space: nowrap;
-         }
+ .score-board span {
+     font-size: 1.5rem;
+     font-weight: 700;
+     color: var(--snake-color);
+     font-variant-numeric: tabular-nums;
+ }
 
-         .score-board {
-             display: flex;
-             align-items: baseline;
-             gap: 8px;
-         }
+ /* 暫停按鈕 - 與難度徽章同風格 */
+ #pause-btn {
+     padding: 4px 12px;
+     border-radius: 12px;
+     font-size: 0.8rem;
+     font-weight: 600;
+     background: linear-gradient(135deg, rgba(204, 255, 0, 0.15), rgba(204, 255, 0, 0.05));
+     color: var(--snake-head-color);
+     border: 1px solid rgba(0, 255, 204, 0.2);
+     cursor: pointer;
+     white-space: nowrap;
+     user-select: none;
+     transition: all 0.2s ease;
+ }
 
-         .score-board .label {
-             font-size: 0.85rem;
-             color: rgba(255, 255, 255, 0.5);
-         }
+ #pause-btn:hover {
+     background: linear-gradient(135deg, rgba(0, 255, 204, 0.25), rgba(0, 255, 204, 0.1));
+     color: #fff;
+ }
 
-         .score-board span {
-             font-size: 1.3rem;
-             font-weight: 700;
-             color: var(--snake-color);
-             font-variant-numeric: tabular-nums;
-             min-width: 2ch;
-             text-align: right;
-         }
+ #pause-btn:active {
+     transform: scale(0.96);
+ }
 
-        /* 遊戲區域容器 */
-         #game-container {
-             position: relative;
-             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-             border-radius: 12px;
-             overflow: hidden;
-             border: 1px solid #333;
-             width: 0;
-             height: 0;
-         }
+ #pause-btn.paused {
+     background: linear-gradient(135deg, rgba(0, 255, 204, 0.15), rgba(0, 255, 204, 0.05));
+     color: var(--snake-color);
+     border-color: rgba(204, 255, 0, 0.2);
+ }
 
-        canvas {
-              display: block;
-              background-color: var(--bg-color);
-          }
+/* 遊戲區域容器 - 吞噬者主題外框 */
+ #game-container {
+     position: relative;
+     border-radius: 20px;
+     box-shadow:
+         0 8px 32px rgba(0, 0, 0, 0.7),
+         0 0 60px rgba(0, 255, 204, 0.15),
+         inset 0 2px 0 rgba(255, 255, 255, 0.2);
+     width: 0;
+     height: 0;
+ }
 
-        /* 遊戲覆蓋層 */
-        #overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(4px);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 10;
-            transition: opacity 0.3s;
-        }
+ #game-container::before {
+     content: '';
+     position: absolute;
+     top: 0;
+     left: 0;
+     right: 0;
+     bottom: 0;
+     border-radius: 20px;
+     background: linear-gradient(135deg, #00ffcc, #ccff00, #00ffcc, #ccff00, #00ffcc);
+     z-index: 0;
+ }
 
-        #overlay h1 {
-            font-size: 3rem;
-            margin: 0 0 20px 0;
-            color: var(--snake-color);
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px var(--snake-color);
-        }
+canvas {
+     display: block;
+     border-radius: 14px;
+     background-color: #1a1a1a;
+ }
 
-        #overlay p {
-            font-size: 1.2rem;
-            color: #ddd;
-            margin-bottom: 30px;
-        }
+/* 遊戲覆蓋層 */
+#overlay {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(4px);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+    transition: opacity 0.3s;
+    border-radius: 14px;
+}
 
-        .btn {
-            padding: 12px 30px;
-            font-size: 1.2rem;
-            background: linear-gradient(45deg, var(--snake-color), #00cc99);
-            color: #000;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
-            transition: transform 0.1s, box-shadow 0.1s;
-            font-weight: bold;
-        }
+#overlay h1 {
+    font-size: 3rem;
+    margin: 0 0 20px 0;
+    color: var(--snake-color);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    text-shadow: 0 0 20px var(--snake-color);
+}
 
-        .btn:active {
-            transform: scale(0.95);
-            box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
-        }
+#overlay p {
+    font-size: 1.2rem;
+    color: #ddd;
+    margin-bottom: 30px;
+}
 
-        .hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+.btn {
+    padding: 12px 30px;
+    font-size: 1.2rem;
+    background: linear-gradient(45deg, var(--snake-color), #00cc99);
+    color: #000;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
+    font-weight: bold;
+}
 
-        /* 難度提升提示 */
-        #difficulty-toast {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0, 255, 204, 0.5);
-            color: #000;
-            padding: 10px 10px;
-            border-radius: 10px;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            pointer-events: none;
-            z-index: 20;
-        }
+.btn:active {
+    transform: scale(0.95);
+    box-shadow: 0 0 10px rgba(0, 255, 204, 0.4);
+}
 
-        #difficulty-toast.show {
-            opacity: 1;
-        }
+.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
 
-        #swipe-hint {
-            position: fixed;
-            bottom: 18px;
-            width: 100%;
-            text-align: center;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.9rem;
-            pointer-events: none;
-        }
-    </style>
+/* 難度提升提示 */
+#difficulty-toast {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(0, 255, 204, 0.5);
+    color: #000;
+    padding: 10px 10px;
+    border-radius: 10px;
+    font-weight: bold;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 20;
+}
+
+#difficulty-toast.show {
+    opacity: 1;
+}
+
+#swipe-hint {
+    position: fixed;
+    bottom: 18px;
+    width: 100%;
+    text-align: center;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 0.9rem;
+    pointer-events: none;
+}
+</style>
 </head>
 <body>
 
     <div class="ui-bar">
          <div class="ui-left">
-             <div class="difficulty-badge">難度：天堂</div>
+             <button id="pause-btn" title="暫停 (空白鍵)">⏸ 暫停</button>
          </div>
-         <div class="ui-right">
+         <div class="ui-center">
              <div class="score-board">
                  <span class="label">分數</span>
                  <span id="score">0</span>
-             <button id="pause-btn" title="暫停 (空白鍵)">⏸ 暫停</button>
              </div>
+         </div>
+         <div class="ui-right">
+             <div class="difficulty-badge">難度：天堂</div>
          </div>
      </div>
 
@@ -251,13 +266,13 @@
         
         <div id="overlay">
             <h1 id="status-text">曲線吞噬者</h1>
-            <p id="final-score">觸控滑動來改變吞噬者的移動方向</p>
+            <p id="final-score">　改變吞噬者的移動方向吃掉蘋果！<br>手機觸控滑動／PC支援鍵盤與滑鼠操作</p>
             <button class="btn" id="start-btn">開始遊戲</button>
         </div>
     </div>
 
     <div id="difficulty-toast">難度提升！</div>
-    <div id="swipe-hint">請在視窗內任意位置滑動，PC端支援鍵盤方向鍵和WASD操作</div>
+    <div id="swipe-hint"></div>
 
 <script>
 
@@ -310,7 +325,6 @@ function init() {
     ctx = canvas.getContext('2d');
     
     resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
     
     // 確保 ctx 初始 scale 為 1（避免高 DPI 疊加）
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -329,10 +343,10 @@ function init() {
     });
 
     const container = document.getElementById('game-container');
-    container.addEventListener('pointerdown', handleTouchStart, { passive: false });
-    container.addEventListener('pointermove', handleTouchMove, { passive: false });
-    container.addEventListener('pointerup', handleTouchEnd, { passive: false });
-    container.addEventListener('pointercancel', handleTouchEnd, { passive: false });
+    document.addEventListener('pointerdown', handleTouchStart, { passive: false });
+    document.addEventListener('pointermove', handleTouchMove, { passive: false });
+    document.addEventListener('pointerup', handleTouchEnd, { passive: false });
+    document.addEventListener('pointercancel', handleTouchEnd, { passive: false });
     
     container.addEventListener('touchstart', (e) => e.preventDefault(), { passive: false });
     container.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
@@ -370,54 +384,65 @@ function resizeCanvas() {
     const container = document.getElementById('game-container');
 
     // 計算可用空間
-    const uiBarHeight = 48;
-    const hintHeight = 24;
-    const padding = 8;
+    const uiBarHeight = 56;
+    const hintHeight = 30;
+    const padding = 20;
 
-    const maxWidth = window.innerWidth - padding * 2;
-    const maxHeight = window.innerHeight - uiBarHeight - hintHeight - padding * 2;
+    const maxWidth = window.innerWidth - padding;
+    const maxHeight = window.innerHeight - uiBarHeight - hintHeight - padding;
 
-    // 固定的格子像素大小（不受螢幕大小影響），最小 52px、最大 104px
-    const targetCellSize = Math.min(52, Math.max(104, Math.floor(maxHeight / 20)));
-    const canvasHeight = Math.floor(maxHeight / targetCellSize) * targetCellSize;
-    const rows = Math.floor(canvasHeight / targetCellSize);
-    const canvasWidth = Math.min(Math.floor(maxWidth / targetCellSize) * targetCellSize, 600);
-    const cols = Math.floor(canvasWidth / targetCellSize);
+    // 格子大小由寬度決定（COLS=20 固定），這樣 32 行的高度在任何螢幕都一致
+    let targetCellSize = Math.floor(maxWidth / 20);
+    let CELL_SIZE = Math.max(15, Math.min(40, targetCellSize));
+    const COLS = 20;
+    const ROWS = 32;
+    let canvasWidth = COLS * CELL_SIZE;
+    let canvasHeight = ROWS * CELL_SIZE;
 
-    config.gridSize = targetCellSize;
+    // 如果高度超出螢幕，縮小格子大小直到能容納
+    while (canvasHeight > maxHeight && CELL_SIZE > 10) {
+        CELL_SIZE--;
+        canvasWidth = COLS * CELL_SIZE;
+        canvasHeight = ROWS * CELL_SIZE;
+    }
+
+    config.gridSize = CELL_SIZE;
 
     // 高 DPI 支援
     const dpr = window.devicePixelRatio || 1;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    container.style.width = canvasWidth + 'px';
-    container.style.height = canvasHeight + 'px';
+    const BORDER = 10;
+    container.style.width = (canvasWidth + BORDER * 2) + 'px';
+    container.style.height = (canvasHeight + BORDER * 2) + 'px';
 
     canvas.width = canvasWidth * dpr;
     canvas.height = canvasHeight * dpr;
     canvas.style.width = canvasWidth + 'px';
     canvas.style.height = canvasHeight + 'px';
-    ctx.scale(dpr, dpr);
+    canvas.style.position = 'absolute';
+    canvas.style.top = BORDER + 'px';
+    canvas.style.left = BORDER + 'px';
 
     draw();
 }
 
 function handleTouchStart(e) {
     if (!isPlaying) return;
+    // 排除按鈕和覆寫層
+    if (e.target.closest('#overlay, #start-btn, #pause-btn')) return;
     e.preventDefault(); 
     
     isTouching = true;
-    const point = e.pointerType === 'touch' ? e : e;
-    touchStartX = point.clientX;
-    touchStartY = point.clientY;
+    touchStartX = e.clientX;
+    touchStartY = e.clientY;
 }
 
 function handleTouchMove(e) {
     if (!isPlaying || !isTouching) return;
     e.preventDefault();
 
-    const point = e.pointerType === 'touch' ? e : e;
-    const diffX = point.clientX - touchStartX;
-    const diffY = point.clientY - touchStartY;
+    const diffX = e.clientX - touchStartX;
+    const diffY = e.clientY - touchStartY;
 
     const distance = Math.sqrt(diffX*diffX + diffY*diffY);
 
@@ -490,8 +515,10 @@ function resetGame() {
     btn.innerText = '⏸ 暫停';
     btn.classList.remove('paused');
 
-    const centerX = Math.floor(canvas.width / config.gridSize / 2);
-    const centerY = Math.floor(canvas.height / config.gridSize / 2);
+    const COLS = 20;
+    const ROWS = 32;
+    const centerX = Math.floor(COLS / 2);
+    const centerY = Math.floor(ROWS / 2);
 
     snake = [
         { x: centerX, y: centerY },
@@ -546,13 +573,13 @@ function gameLoop() {
     head.x += direction.x;
     head.y += direction.y;
 
-    const cols = Math.floor(canvas.width / config.gridSize);
-    const rows = Math.floor(canvas.height / config.gridSize);
+    const COLS = 20;
+    const ROWS = 32;
 
-    if (head.x < 0) head.x = cols - 1;
-    if (head.x >= cols) head.x = 0;
-    if (head.y < 0) head.y = rows - 1;
-    if (head.y >= rows) head.y = 0;
+    if (head.x < 0) head.x = COLS - 1;
+    if (head.x >= COLS) head.x = 0;
+    if (head.y < 0) head.y = ROWS - 1;
+    if (head.y >= ROWS) head.y = 0;
 
     // 碰撞障礙物（僅在牆面完全關閉後生效）
     if (config.wallClosed) {
@@ -589,16 +616,16 @@ function gameLoop() {
 }
 
 function placeFood() {
-    const cols = Math.floor(canvas.width / config.gridSize);
-    const rows = Math.floor(canvas.height / config.gridSize);
+    const COLS = 20;
+    const ROWS = 32;
     
     let valid = false;
     while (!valid) {
-        food.x = Math.floor(Math.random() * cols);
-        food.y = Math.floor(Math.random() * rows);
+        food.x = Math.floor(Math.random() * COLS);
+        food.y = Math.floor(Math.random() * ROWS);
         
         // 避免食物出現在最外圍四週（防止死局）
-        if (config.wallClosing && (food.x === 0 || food.x === cols - 1 || food.y === 0 || food.y === rows - 1)) {
+        if (config.wallClosing && (food.x === 0 || food.x === COLS - 1 || food.y === 0 || food.y === ROWS - 1)) {
             continue;
         }
         
@@ -680,13 +707,13 @@ function showDifficultyToast(levelName) {
 }
 
 function addRandomObstacle() {
-    const cols = Math.floor(canvas.width / config.gridSize);
-    const rows = Math.floor(canvas.height / config.gridSize);
+    const COLS = 20;
+    const ROWS = 32;
     
     let attempts = 0;
     while (attempts < 100) {
-        const x = Math.floor(Math.random() * cols);
-        const y = Math.floor(Math.random() * rows);
+        const x = Math.floor(Math.random() * COLS);
+        const y = Math.floor(Math.random() * ROWS);
         
         // 不能出現在已有牆上
         let onWall = false;
@@ -729,27 +756,27 @@ function addRandomObstacle() {
 
 // 牆面關閉動畫
 function startWallClosure() {
-    const cols = Math.floor(canvas.width / config.gridSize);
-    const rows = Math.floor(canvas.height / config.gridSize);
+    const COLS = 20;
+    const ROWS = 32;
 
     config.wallClosing = true;
     // 收集四週格子：12點鐘順時針
     const perimeter = [];
     
     // 上方行 (row 0): 左 → 右
-    for (let x = 0; x < cols; x++) {
+    for (let x = 0; x < COLS; x++) {
         perimeter.push({ x, y: 0 });
     }
-    // 右方行 (col cols-1): top+1 → bottom
-    for (let y = 1; y < rows; y++) {
-        perimeter.push({ x: cols - 1, y });
+    // 右方行 (col COLS-1): top+1 → bottom
+    for (let y = 1; y < ROWS; y++) {
+        perimeter.push({ x: COLS - 1, y });
     }
-    // 下方行 (row rows-1): right-1 → left
-    for (let x = cols - 2; x >= 0; x--) {
-        perimeter.push({ x, y: rows - 1 });
+    // 下方行 (row ROWS-1): right-1 → left
+    for (let x = COLS - 2; x >= 0; x--) {
+        perimeter.push({ x, y: ROWS - 1 });
     }
     // 左方行 (col 0): bottom-1 → 1
-    for (let y = rows - 2; y > 0; y--) {
+    for (let y = ROWS - 2; y > 0; y--) {
         perimeter.push({ x: 0, y });
     }
     
@@ -778,40 +805,71 @@ function startWallClosure() {
 }
 
 function draw() {
+    const displayWidth = canvas.width / (window.devicePixelRatio || 1);
+    const displayHeight = canvas.height / (window.devicePixelRatio || 1);
+    
+    ctx.save();
+    ctx.scale(window.devicePixelRatio || 1, window.devicePixelRatio || 1);
+    
     ctx.fillStyle = config.colors.bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillRect(0, 0, displayWidth, displayHeight);
 
-    // 繪製格線（使用 fillRect 代替 stroke，效能更好）
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-    for (let x = 0; x <= canvas.width; x += config.gridSize) {
-        ctx.fillRect(x, 0, 0.6, canvas.height);
+    // 繪製單一綠色背景 + 淡綠色格線
+    const cs = config.gridSize;
+    ctx.fillStyle = 'rgba(34, 120, 50, 0.25)';
+    ctx.fillRect(0, 0, displayWidth, displayHeight);
+
+    // 淡綠色格線（虛線）
+    ctx.strokeStyle = 'rgba(100, 200, 120, 0.2)';
+    ctx.lineWidth = 0.5;
+    ctx.setLineDash([4, 4]);
+    for (let gx = 0; gx <= displayWidth; gx += cs) {
+        ctx.beginPath();
+        ctx.moveTo(gx + 0.5, 0);
+        ctx.lineTo(gx + 0.5, displayHeight);
+        ctx.stroke();
     }
-    for (let y = 0; y <= canvas.height; y += config.gridSize) {
-        ctx.fillRect(0, y, canvas.width, 0.6);
+    for (let gy = 0; gy <= displayHeight; gy += cs) {
+        ctx.beginPath();
+        ctx.moveTo(0, gy + 0.5);
+        ctx.lineTo(displayWidth, gy + 0.5);
+        ctx.stroke();
     }
+    ctx.setLineDash([]);
+
+    // 邊界暈影（圖片的 vignette 效果，讓中心更聚焦）
+    const vignetteGrad = ctx.createRadialGradient(
+        displayWidth / 2, displayHeight / 2, Math.min(displayWidth, displayHeight) * 0.3,
+        displayWidth / 2, displayHeight / 2, Math.max(displayWidth, displayHeight) * 0.7
+    );
+    vignetteGrad.addColorStop(0, 'rgba(0, 0, 0, 0)');
+    vignetteGrad.addColorStop(1, 'rgba(0, 0, 0, 0.2)');
+    ctx.fillStyle = vignetteGrad;
+    ctx.fillRect(0, 0, displayWidth, displayHeight);
     
     if (snake.length > 0) {
-         // 繪製食物（單一 shadow，避免頻繁切換）
-         ctx.shadowBlur = 15;
-         ctx.shadowColor = config.colors.food;
-         ctx.fillStyle = config.colors.food;
-         drawCircle(food.x, food.y, config.gridSize * 0.4);
-     }
+         // 繪製蘋果食物
+         drawApple(food.x, food.y, config.gridSize);
+    }
     
     // 繪製牆面
-    ctx.shadowBlur = 8;
-    ctx.shadowColor = '#FF6644';
-    ctx.fillStyle = '#FF6644';
+    ctx.shadowBlur = 6;
+    ctx.shadowColor = 'rgba(142, 102, 72, 0.3)';
     for (let w of config.walls) {
         const size = config.gridSize * 0.7;
         const offset = (config.gridSize - size) / 2;
-        drawRoundRect(
-            w.x * config.gridSize + offset,
-            w.y * config.gridSize + offset,
-            size, size,
-            3
-        );
+        const wx = w.x * config.gridSize + offset;
+        const wy = w.y * config.gridSize + offset;
+
+        // 牆壁漸層
+        const grad = ctx.createLinearGradient(wx, wy, wx + size, wy + size);
+        grad.addColorStop(0, '#888A70');   // 較亮
+        grad.addColorStop(0.5, '#886644'); // 主色
+        grad.addColorStop(1, '#664422');   // 較深
+        ctx.fillStyle = grad;
+        drawRoundRect(wx, wy, size, size, 3);
     }
+    ctx.shadowBlur = 0;
     
     // 蛇身（單一 shadow 批次繪製）
     ctx.shadowBlur = 0;
@@ -837,8 +895,9 @@ function draw() {
              size, size, 
              4
          );
-     }
+    }
     ctx.shadowBlur = 0;
+    ctx.restore();
 }
 
 function drawRoundRect(x, y, width, height, radius) {
@@ -854,6 +913,75 @@ function drawRoundRect(x, y, width, height, radius) {
     ctx.quadraticCurveTo(x, y, x + radius, y);
     ctx.closePath();
     ctx.fill();
+}
+
+function drawApple(cx, cy, cellSize) {
+    // 與蛇身同風格：圓角矩形 + 漸層 + 陰影，但加入食物特徵
+    const size = cellSize * 0.72;
+    const offset = (cellSize - size) / 2;
+    const x = cx * cellSize + offset;
+    const y = cy * cellSize + offset;
+
+    // 陰影
+    ctx.save();
+    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(255, 50, 80, 0.5)';
+
+    // 主體漸層（紅色系）
+    const grad = ctx.createLinearGradient(x, y, x + size, y + size);
+    grad.addColorStop(0, '#ff6688');
+    grad.addColorStop(0.5, '#ee2244');
+    grad.addColorStop(1, '#aa1133');
+    ctx.fillStyle = grad;
+    drawRoundRect(x, y, size, size, 4);
+    ctx.restore();
+
+    // 左上高光（橢圓形光斑）
+    ctx.save();
+    const hlX = x + size * 0.28;
+    const hlY = y + size * 0.28;
+    ctx.beginPath();
+    ctx.ellipse(hlX, hlY, size * 0.18, size * 0.12, -0.4, 0, Math.PI * 2);
+    const hlGrad = ctx.createRadialGradient(hlX, hlY, 0, hlX, hlY, size * 0.18);
+    hlGrad.addColorStop(0, 'rgba(255, 255, 255, 0.45)');
+    hlGrad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+    ctx.fillStyle = hlGrad;
+    ctx.fill();
+    ctx.restore();
+
+    // 右上角小梗（細短线段）
+    ctx.save();
+    ctx.strokeStyle = '#5a3520';
+    ctx.lineWidth = Math.max(1.5, cellSize * 0.06);
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x + size * 0.5, y + size * 0.08);
+    ctx.quadraticCurveTo(x + size * 0.55, y - size * 0.05, x + size * 0.62, y - size * 0.08);
+    ctx.stroke();
+    ctx.restore();
+
+    // 小葉子（深綠，附著在梗旁）
+    ctx.save();
+    ctx.translate(x + size * 0.52, y + size * 0.02);
+    ctx.rotate(-0.6);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.bezierCurveTo(size * 0.12, -size * 0.15, size * 0.35, -size * 0.12, size * 0.38, size * 0.02);
+    ctx.bezierCurveTo(size * 0.25, size * 0.06, size * 0.1, size * 0.06, 0, 0);
+    const leafGrad = ctx.createLinearGradient(0, 0, size * 0.38, 0);
+    leafGrad.addColorStop(0, '#3a9a3a');
+    leafGrad.addColorStop(1, '#2a7a2a');
+    ctx.fillStyle = leafGrad;
+    ctx.fill();
+    ctx.restore();
+
+    // 右下角暗面（增強立體感）
+    ctx.save();
+    ctx.beginPath();
+    ctx.ellipse(x + size * 0.65, y + size * 0.65, size * 0.25, size * 0.18, 0.5, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(60, 5, 10, 0.2)';
+    ctx.fill();
+    ctx.restore();
 }
 
 function drawCircle(x, y, radius) {
