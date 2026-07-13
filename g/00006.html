@@ -16,8 +16,8 @@
             --shadow-light: rgba(255, 255, 255, 0.1);
             --shadow-dark: rgba(0, 0, 0, 0.6);
             
-            /* 棋盤線顏色：金色發光 */
-            --grid-line: rgba(255, 230, 160, 0.4);
+            /* 棋盤線顏色：灰白色發光 */
+            --grid-line: rgba(100, 100, 120, 0.9);
             
             /* 棋子配色 (Macaron Palette) */
             --p1-color: #48dbfb; /* 冰藍 */
@@ -109,38 +109,49 @@
 
         .status {
             font-size: 0.9rem;
-            padding: 5px 15px;
-            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 18px;
+            /* 白色壓克力風格 */
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.08) 100%
+            );
             border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow:
+                inset 1px 1px 4px rgba(255, 255, 255, 0.1),
+                inset -1px -1px 4px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(4px);
-            border: 1px solid var(--glass-border);
         }
 
-        /* 棋盤外框 - 厚實水晶玻璃邊框，完整封閉框線 */
+        /* 棋盤外框 - 白色壓克力風格，半透明反光 */
         .board-wrapper {
             position: relative;
             /* 外框厚度約 1.5 格寬 */
             padding: 4.5%;
             /* 圓角 */
-            border-radius: 12px;
-            /* 外框材質：深藍紫星雲漸層 */
-            background:
-                linear-gradient(180deg, rgba(40, 20, 100, 0.12) 0%, rgba(200,200,200, 0.1) 20%),
-                linear-gradient(0deg, rgba(40, 20, 100, 0.3) 0%, rgba(200,200,200, 0.1) 20%),
-                rgba(255,255,255,0.02);
-            /* 外框最外圈封閉金線 */
-                backdrop-filter: blur(0px);
-            border: 2px solid rgba(255, 230, 160, 0.35);
-            /* 立體厚度感 */
+            border-radius: 16px;
+            /* 白色壓克力材質：上半部較亮（模擬光源反射），下半部較暗 */
+            background: linear-gradient(
+                160deg,
+                rgba(255, 255, 255, 0.18) 0%,
+                rgba(255, 255, 255, 0.10) 30%,
+                rgba(255, 255, 255, 0.06) 60%,
+                rgba(255, 255, 255, 0.02) 100%
+            );
+            /* 白色發光邊框 */
+            border: 2px solid rgba(255, 255, 255, 0.35);
+            /* 壓克力反光效果：外部柔光 + 內部高光模擬光源 */
             box-shadow:
-                0 8px 32px rgba(0, 0, 0, 0.5),
-                inset 0 2px 4px rgba(255, 255, 255, 0.15),
-                inset 0 -2px 4px rgba(0, 0, 0, 0.2),
-                inset 2px 0 4px rgba(255, 255, 255, 0.06),
-                inset -2px 0 4px rgba(255, 255, 255, 0.06);
+                /* 外部白光 */
+                0 0 15px rgba(255, 255, 255, 0.06),
+                /* 左上高光 - 模擬光源反射 */
+                inset 3px 3px 12px rgba(255, 255, 255, 0.15),
+                /* 右下暗面 */
+                inset -3px -3px 12px rgba(0, 0, 0, 0.08);
         }
 
-        /* 外框與棋盤之間的中間層：深藍紫模糊發光 */
+        /* 外框與棋盤之間的中間層：深色背景填充棋盤區域 */
         .board-wrapper::after {
             content: '';
             position: absolute;
@@ -149,17 +160,12 @@
             right: calc(4.5% + 2px);
             bottom: calc(4.5% + 2px);
             border-radius: 2px;
-            background:
-                linear-gradient(180deg, rgba(30, 20, 80, 0.25) 0%, rgba(0, 0, 0, 0.2) 20%),
-                linear-gradient(0deg, rgba(30, 20, 80, 0.25) 0%, rgba(0, 0, 0, 0.2) 20%);
-            box-shadow:
-                0 0 12px rgba(100, 80, 200, 0.15),
-                0 0 24px rgba(100, 80, 200, 0.12);
+            background: rgba(0, 0, 0, 0.15);
             pointer-events: none;
             z-index: 1;
         }
 
-        /* 內層封閉外框：金色線 + 發光 */
+        /* 內層封閉外框：灰白線 + 發光 */
         .board-wrapper::before {
             content: '';
             position: absolute;
@@ -167,7 +173,7 @@
             left: calc(4.5% + 2px);
             right: calc(4.5% + 2px);
             bottom: calc(4.5% + 2px);
-            border: 2px solid rgba(255, 230, 160, 0.3);
+            border: 2px solid rgba(100, 100, 120, 0.9);
             border-radius: 2px;
             pointer-events: none;
             z-index: 2;
@@ -280,19 +286,31 @@
         }
 
         button {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
+            /* 白色壓克力風格 */
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.15) 0%,
+                rgba(255, 255, 255, 0.08) 100%
+            );
+            border: 1px solid rgba(255, 255, 255, 0.3);
             color: white;
             padding: 10px 20px;
             border-radius: 12px;
             font-size: 1rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            box-shadow:
+                inset 1px 1px 4px rgba(255, 255, 255, 0.1),
+                inset -1px -1px 4px rgba(0, 0, 0, 0.1);
             backdrop-filter: blur(5px);
         }
 
         button:hover {
-            background: rgba(255, 255, 255, 0.25);
+            background: linear-gradient(
+                135deg,
+                rgba(255, 255, 255, 0.25) 0%,
+                rgba(255, 255, 255, 0.12) 100%
+            );
             transform: translateY(-2px);
         }
 
