@@ -237,6 +237,16 @@ h1 {
     transform: scale(1);
 }
 
+/* 星位點 */
+.star-point {
+    position: absolute;
+    width: 25%;
+    height: 25%;
+    background: rgba(100, 100, 120, 0.85);
+    border-radius: 50%;
+    z-index: 5;
+}
+
 /* 玩家 (冰藍) */
 .stone.p1 {
     background:
@@ -461,6 +471,10 @@ function initGame() {
 
 function renderBoard() {
     boardEl.innerHTML = '';
+    // 星位點座標 (0-indexed)
+    const starPoints = [[3,3], [3,11], [7,7], [11,3], [11,11]];
+    const starSet = new Set(starPoints.map(([r,c]) => `${r},${c}`));
+
     for (let r = 0; r < BOARD_SIZE; r++) {
         for (let c = 0; c < BOARD_SIZE; c++) {
             const cell = document.createElement('div');
@@ -468,7 +482,14 @@ function renderBoard() {
             cell.dataset.r = r;
             cell.dataset.c = c;
             cell.onclick = () => handleCellClick(r, c);
-            
+
+            // 星位點
+            if (starSet.has(`${r},${c}`)) {
+                const star = document.createElement('div');
+                star.classList.add('star-point');
+                cell.appendChild(star);
+            }
+
             if (board[r][c] !== EMPTY) {
                 const stone = document.createElement('div');
                 stone.classList.add('stone');
