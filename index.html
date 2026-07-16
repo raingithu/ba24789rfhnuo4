@@ -23,6 +23,7 @@
   --cover-tetris: "g/covers/00008.jpg";
   --cover-gomoku: "g/covers/00006.jpg";
   --cover-kongming: "g/covers/00007.jpg";
+  --cover-2048: "g/covers/00009.jpg";
   --cover-chickgh: "g/covers/00003.jpg";
 
   /* 遊戲連結路徑 */
@@ -33,6 +34,7 @@
   --link-tetris: "g/00008.html";
   --link-gomoku: "g/00006.html";
   --link-kongming: "g/00007.html";
+  --link-2048: "g/00009.html";
   --link-chickgh: "g/00003.html";
 
   /* 遊戲名稱 */
@@ -43,16 +45,18 @@
   --name-tetris: "糖果俄羅斯";
   --name-gomoku: "星空五子棋";
   --name-kongming: "孔明棋";
+  --name-2048: "２０４８";
   --name-chickgh: "小雞回家";
 
   /* 遊戲簡介 */
-  --desc-ggsnake: "經典貪食蛇，吃食物變長，別撞到牆和自己！";
+  --desc-ggsnake: "經典貪食蛇，吃了蘋果變長，別撞到牆和自己！";
   --desc-ddbird: "幫呆呆鳥穿越水管障礙，試試能飛多遠？";
   --desc-candyp: "在迷宮中吃掉所有糖果，小心幽靈追擊！";
   --desc-pingpong: "復古乒乓對戰，向更高難度挑戰！";
   --desc-tetris: "益智方塊，消除連線、挑戰極限！";
   --desc-gomoku: "黑白交錯，五子連珠即勝的策略遊戲。";
   --desc-kongming: "跳躍消除益智遊戲，最後只剩一顆棋子！";
+  --desc-2048: "來試試看合併數字，合出2048！";
   --desc-chickgh: "來幫助小雞穿過障礙，安全回到雞舍！";
 
   /* 封面 emoji（無圖片時的替代圖示）*/
@@ -63,6 +67,7 @@
   --emoji-tetris: "🧩";
   --emoji-gomoku: "⚫";
   --emoji-kongming: "🔴";
+  --emoji-2048: "🔢";
   --emoji-chickgh: "🐥";
 
   /* 漸層類別 */
@@ -73,6 +78,7 @@
   --grad-tetris: "cover-tetris";
   --grad-gomoku: "cover-gomoku";
   --grad-kongming: "cover-kongming";
+  --grad-2048: "cover-2048";
   --grad-chickgh: "cover-chickgh";
 }
 
@@ -204,6 +210,7 @@ body::-webkit-scrollbar {
 .cover-tetris      { background: linear-gradient(135deg, #7c2d12, #f97316, #fbbf24); }
 .cover-gomoku      { background: linear-gradient(135deg, #451a03, #92400e, #d4a574); }
 .cover-kongming    { background: linear-gradient(135deg, #7f1d1d, #dc2626, #f87171); }
+.cover-2048        { background: linear-gradient(135deg, #f4e2b8, #f2b94b, #e67e22); }
 .cover-chickgh     { background: linear-gradient(135deg, #713f12, #eab308, #fde047); }
 
 /* 封面陰影過渡 */
@@ -364,7 +371,7 @@ body::-webkit-scrollbar {
 (function renderGames() {
   var grid = document.getElementById('gameGrid');
   var cs = getComputedStyle(document.documentElement);
-  var names = ['ggsnake','ddbird','candyp','pingpong','tetris','gomoku','kongming','chickgh'];
+  var names = ['ggsnake','ddbird','candyp','pingpong','tetris','gomoku','kongming','2048','chickgh'];
 
   grid.innerHTML = '';
 
