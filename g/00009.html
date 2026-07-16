@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>2048</title>
+<style>
+/* ===== 全域變數 ===== */
+:root {
+  --bg-color: #111;
+  --accent-color: #FFD700;
+  --text-color: #fff;
+  --grid-bg: #1a1a1a;
+  --cell-bg: #2a2a2a;
+  --cell-border: rgba(200, 200, 200, 0.1);
+  --tile-2: #2d2d2d;
+  --tile-4: #5e5050;
+  --tile-8: #53c68e;
+  --tile-16: #1aa0b6;
+  --tile-32: #af8f68;
+  --tile-64: #8caf68;
+  --tile-128: #a16ec3;
+  --tile-256: #c18b1b;
+  --tile-512: #98decd;
+  --tile-1024: #216b59;
+  --tile-2048: #8a092a;
+  --tile-super: #e9829c;
+  --tile-text-light: #fff;
+  --tile-text-dark: #ccc;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+}
+
+/* ===== 遊戲容器 ===== */
+#game-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ===== 頂部列 ===== */
+#top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  max-width: 500px;
+  padding: 0 2px;
+}
+
+#top-bar .title {
+  font-size: 56px;
+  font-weight: bold;
+  color: var(--accent-color);
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+  letter-spacing: 2px;
+}
+
+.scores-container {
+  display: flex;
+  gap: 4px;
+}
+
+.score-box {
+  position: relative;
+  background: #333;
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  padding: 6px 14px;
+  text-align: center;
+  min-width: 70px;
+}
+
+.score-box .label {
+  font-size: 10px;
+  color: #aaa;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-box .value {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--accent-color);
+}
+
+.score-addition {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 215, 0, 0.7);
+  font-size: 18px;
+  font-weight: bold;
+  animation: move-up 600ms ease-in forwards;
+  opacity: 0;
+}
+
+@keyframes move-up {
+  0% { opacity: 1; transform: translateY(-50%) translateY(0); }
+  100% { opacity: 0; transform: translateY(-50%) translateY(-20px); }
+}
+
+.game-intro {
+  font-size: 13px;
+  color: #aaa;
+}
+
+.game-intro strong {
+  color: var(--accent-color);
+}
+
+#restart-btn {
+  background: var(--accent-color);
+  border: none;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+}
+
+#restart-btn:hover {
+  transform: scale(1);
+  background: #fff;
+}
+
+#restart-btn:active {
+  transform: scale(0.9);
+}
+
+/* ===== 遊戲區域 ===== */
+.game-wrapper {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  background: var(--grid-bg);
+  border: 2px solid #FFD700;
+  border-radius: 8px;
+  padding: 15px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+}
+
+.grid-container {
+  position: absolute;
+  z-index: 1;
+}
+
+.grid-row {
+  display: flex;
+  margin-bottom: 15px;
+}
+
+.grid-row:last-child {
+  margin-bottom: 0;
+}
+
+.grid-cell {
+  width: 106.25px;
+  height: 106.25px;
+  margin-right: 15px;
+  border-radius: 5px;
+  background: var(--cell-bg);
+  border: 2px dashed var(--cell-border);
+}
+
+.grid-cell:last-child {
+  margin-right: 0;
+}
+
+.tile-container {
+  position: absolute;
+  z-index: 2;
+}
+
+/* ===== 方塊 ===== */
+.tile {
+  position: absolute;
+  width: 107px;
+  height: 107px;
+  line-height: 107px;
+  transition: 100ms ease-in-out;
+  transition-property: transform;
+  border: 2px dashed var(--cell-border);
+  border-radius: 5px;
+}
+
+.tile .tile-inner {
+  border-radius: 5px;
+  text-align: center;
+  font-weight: bold;
+  z-index: 10;
+  font-size: 55px;
+  width: 100%;
+  height: 100%;
+  line-height: 107px;
+  transition: background 100ms ease, color 100ms ease;
+}
+
+/* 位置 */
+.tile-position-1-1 { transform: translate(0px, 0px); }
+.tile-position-1-2 { transform: translate(0px, 121px); }
+.tile-position-1-3 { transform: translate(0px, 242px); }
+.tile-position-1-4 { transform: translate(0px, 363px); }
+.tile-position-2-1 { transform: translate(121px, 0px); }
+.tile-position-2-2 { transform: translate(121px, 121px); }
+.tile-position-2-3 { transform: translate(121px, 242px); }
+.tile-position-2-4 { transform: translate(121px, 363px); }
+.tile-position-3-1 { transform: translate(242px, 0px); }
+.tile-position-3-2 { transform: translate(242px, 121px); }
+.tile-position-3-3 { transform: translate(242px, 242px); }
+.tile-position-3-4 { transform: translate(242px, 363px); }
+.tile-position-4-1 { transform: translate(363px, 0px); }
+.tile-position-4-2 { transform: translate(363px, 121px); }
+.tile-position-4-3 { transform: translate(363px, 242px); }
+.tile-position-4-4 { transform: translate(363px, 363px); }
+
+/* 各數值背景 */
+.tile-2 .tile-inner { background: var(--tile-2); color: var(--tile-text-light); }
+.tile-4 .tile-inner { background: var(--tile-4); color: var(--tile-text-light); }
+.tile-8 .tile-inner { background: var(--tile-8); color: var(--tile-text-light); }
+.tile-16 .tile-inner { background: var(--tile-16); color: var(--tile-text-light); }
+.tile-32 .tile-inner { background: var(--tile-32); color: var(--tile-text-light); }
+.tile-64 .tile-inner { background: var(--tile-64); color: var(--tile-text-light); }
+.tile-128 .tile-inner { background: var(--tile-128); color: var(--tile-text-light); font-size: 45px;
+  box-shadow: 0 0 12px 2px rgba(232, 184, 64, 0.2); }
+.tile-256 .tile-inner { background: var(--tile-256); color: var(--tile-text-light); font-size: 45px;
+  box-shadow: 0 0 12px 2px rgba(240, 200, 80, 0.25); }
+.tile-512 .tile-inner { background: var(--tile-512); color: var(--tile-text-light); font-size: 45px;
+  box-shadow: 0 0 12px 2px rgba(245, 216, 96, 0.3); }
+.tile-1024 .tile-inner { background: var(--tile-1024); color: var(--tile-text-light); font-size: 35px;
+  box-shadow: 0 0 15px 3px rgba(250, 228, 112, 0.35); }
+.tile-2048 .tile-inner { background: var(--tile-2048); color: var(--tile-text-light); font-size: 35px;
+  box-shadow: 0 0 20px 5px rgba(255, 215, 0, 0.5); }
+.tile-super .tile-inner { background: var(--tile-super); color: var(--tile-text-light); font-size: 30px; }
+
+/* 動畫 */
+@keyframes appear {
+  0% { opacity: 0; transform: scale(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.tile-new .tile-inner {
+  animation: appear 200ms ease 100ms backwards;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.tile-merged .tile-inner {
+  z-index: 20;
+  animation: pop 200ms ease 100ms backwards;
+}
+
+/* ===== 遊戲訊息遮罩 ===== */
+.game-message {
+  display: none;
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  text-align: center;
+  animation: fade-in 800ms ease 1200ms both;
+  border-radius: 8px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.game-message p {
+  font-size: 50px;
+  font-weight: bold;
+  color: var(--accent-color);
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+}
+
+.game-message .lower {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.game-message a {
+  display: inline-block;
+  background: var(--accent-color);
+  border-radius: 6px;
+  padding: 0 20px;
+  color: #000;
+  text-decoration: none;
+  height: 40px;
+  line-height: 40px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: all 0.2s;
+  border: none;
+}
+
+.game-message a:hover {
+  transform: scale(1.05);
+  background: #fff;
+}
+
+.game-message a:active {
+  transform: scale(0.95);
+}
+
+.game-message a.keep-playing-button {
+  display: none;
+  background: #555;
+  color: #fff;
+}
+
+.game-message a.keep-playing-button:hover {
+  background: #777;
+  color: #fff;
+}
+
+.game-message.game-won {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.game-message.game-won a.keep-playing-button {
+  display: inline-block;
+}
+
+.game-message.game-won, .game-message.game-over {
+  display: flex;
+}
+
+/* ===== 開始畫面 ===== */
+#start-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  z-index: 200;
+  border-radius: 8px;
+}
+
+#start-overlay.hidden {
+  display: none;
+}
+
+#start-overlay h1 {
+  font-size: 80px;
+  font-weight: bold;
+  color: var(--accent-color);
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+  letter-spacing: 4px;
+  margin: 0;
+}
+
+#start-overlay p {
+  font-size: 14px;
+  color: #aaa;
+  line-height: 1.8;
+  text-align: center;
+}
+
+#start-btn {
+  background: var(--accent-color);
+  border: none;
+  padding: 14px 40px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  border-radius: 50px;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+  transition: all 0.2s;
+  margin-top: 10px;
+  touch-action: manipulation;
+}
+
+#start-btn:hover {
+  transform: scale(1.05);
+  background: #fff;
+}
+
+#start-btn:active {
+  transform: scale(0.95);
+}
+
+/* ===== 手機版 ===== */
+@media screen and (max-width: 520px) {
+  #game-container {
+    gap: 8px;
+  }
+
+  #top-bar {
+    max-width: 280px;
+  }
+
+  #top-bar .title {
+    font-size: 32px;
+  }
+
+  .score-box {
+    padding: 4px 8px;
+    min-width: 55px;
+  }
+
+  .score-box .value { font-size: 16px; }
+  .score-box .label { font-size: 8px; }
+
+  .game-intro { font-size: 11px; }
+
+  #restart-btn {
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .game-wrapper {
+    width: 280px;
+    height: 280px;
+    padding: 10px;
+  }
+
+  .grid-row { margin-bottom: 10px; }
+
+  .grid-cell {
+    width: 57.5px;
+    height: 57.5px;
+    margin-right: 10px;
+  }
+
+  .tile-position-1-1 { transform: translate(0px, 0px); }
+  .tile-position-1-2 { transform: translate(0px, 67px); }
+  .tile-position-1-3 { transform: translate(0px, 135px); }
+  .tile-position-1-4 { transform: translate(0px, 202px); }
+  .tile-position-2-1 { transform: translate(67px, 0px); }
+  .tile-position-2-2 { transform: translate(67px, 67px); }
+  .tile-position-2-3 { transform: translate(67px, 135px); }
+  .tile-position-2-4 { transform: translate(67px, 202px); }
+  .tile-position-3-1 { transform: translate(135px, 0px); }
+  .tile-position-3-2 { transform: translate(135px, 67px); }
+  .tile-position-3-3 { transform: translate(135px, 135px); }
+  .tile-position-3-4 { transform: translate(135px, 202px); }
+  .tile-position-4-1 { transform: translate(202px, 0px); }
+  .tile-position-4-2 { transform: translate(202px, 67px); }
+  .tile-position-4-3 { transform: translate(202px, 135px); }
+  .tile-position-4-4 { transform: translate(202px, 202px); }
+
+  .tile {
+    width: 58px;
+    height: 58px;
+    line-height: 58px;
+  }
+
+  .tile .tile-inner {
+    font-size: 35px;
+    line-height: 58px;
+  }
+
+  .tile-128 .tile-inner,
+  .tile-256 .tile-inner,
+  .tile-512 .tile-inner { font-size: 25px; }
+  .tile-1024 .tile-inner,
+  .tile-2048 .tile-inner { font-size: 18px; }
+  .tile-super .tile-inner { font-size: 14px; }
+
+  .game-message p {
+    font-size: 30px !important;
+  }
+
+  .game-message .lower {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  #start-overlay h1 {
+    font-size: 48px;
+  }
+
+  #start-overlay p {
+    font-size: 12px;
+  }
+
+  #start-btn {
+    font-size: 1rem;
+    padding: 10px 30px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <!-- 頂部列：標題 + 分數 -->
+  <div id="top-bar">
+    <h1 class="title">2048</h1>
+    <div class="scores-container">
+      <div class="score-box">
+        <div class="label">分數</div>
+        <div class="value">0</div>
+      </div>
+      <div class="score-box">
+        <div class="label">最佳</div>
+        <div class="value">0</div>
+      </div>
+      <button id="restart-btn" style="display:none;">重新開始</button>
+    </div>
+  </div>
+
+  <!-- 遊戲區域 -->
+  <div class="game-wrapper" id="game-wrapper">
+    <!-- 開始畫面 -->
+    <div id="start-overlay">
+      <h1>2048</h1>
+      <p class="game-intro">合併數字，達成 <strong>2048！</strong></p>
+      <p>PC 操作：方向鍵 / WASD / 滑鼠拖曳</p>
+      <p>手機操作：螢幕上觸控滑動</p>
+      <button id="start-btn">開始遊戲</button>
+    </div>
+
+    <!-- 遊戲訊息遮罩 -->
+    <div class="game-message" id="game-message">
+      <p></p>
+      <div class="lower">
+        <a class="keep-playing-button">繼續玩</a>
+        <a class="retry-button">再試一次</a>
+      </div>
+    </div>
+
+    <!-- 網格 -->
+    <div class="grid-container">
+      <div class="grid-row">
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+      </div>
+      <div class="grid-row">
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+        <div class="grid-cell"></div>
+      </div>
+    </div>
+
+    <!-- 方塊容器 -->
+    <div class="tile-container"></div>
+  </div>
+</div>
+
+<script>
+(function () {
+  if (typeof window.Element === "undefined" || "classList" in document.documentElement) { return; }
+  var prototype = Array.prototype, push = prototype.push, splice = prototype.splice, join = prototype.join;
+  function DOMTokenList(el) {
+    this.el = el;
+    var classes = el.className.replace(/^\s+|\s+$/g, '').split(/\s+/);
+    for (var i = 0; i < classes.length; i++) { push.call(this, classes[i]); }
+  }
+  DOMTokenList.prototype = {
+    add: function (t) { if (this.contains(t)) return; push.call(this, t); this.el.className = this.toString(); },
+    contains: function (t) { return this.el.className.indexOf(t) != -1; },
+    remove: function (t) { if (!this.contains(t)) return; for (var i = 0; i < this.length; i++) { if (this[i] == t) break; } splice.call(this, i, 1); this.el.className = this.toString(); },
+    toString: function () { return join.call(this, ' '); },
+    toggle: function (t) { if (!this.contains(t)) { this.add(t); } else { this.remove(t); } return this.contains(t); }
+  };
+  window.DOMTokenList = DOMTokenList;
+  function defineElementGetter(obj, prop, getter) {
+    if (Object.defineProperty) { Object.defineProperty(obj, prop, { get: getter }); }
+    else { obj.__defineGetter__(prop, getter); }
+  }
+  defineElementGetter(HTMLElement.prototype, 'classList', function () { return new DOMTokenList(this); });
+})();
+
+(function () {
+  var lastTime = 0;
+  var vendors = ['webkit', 'moz'];
+  for (var x = 0; x < vendors.length && !window.requestAnimationFrame; ++x) {
+    window.requestAnimationFrame = window[vendors[x] + 'RequestAnimationFrame'];
+    window.cancelAnimationFrame = window[vendors[x] + 'CancelAnimationFrame'] || window[vendors[x] + 'CancelRequestAnimationFrame'];
+  }
+  if (!window.requestAnimationFrame) {
+    window.requestAnimationFrame = function (callback) {
+      var currTime = new Date().getTime();
+      var timeToCall = Math.max(0, 16 - (currTime - lastTime));
+      var id = window.setTimeout(function () { callback(currTime + timeToCall); }, timeToCall);
+      lastTime = currTime + timeToCall;
+      return id;
+    };
+  }
+  if (!window.cancelAnimationFrame) {
+    window.cancelAnimationFrame = function (id) { clearTimeout(id); };
+  }
+})();
+
+// ===== 儲存管理 =====
+window.fakeStorage = {
+  _data: {},
+  setItem: function (id, val) { return this._data[id] = String(val); },
+  getItem: function (id) { return this._data.hasOwnProperty(id) ? this._data[id] : undefined; },
+  removeItem: function (id) { return delete this._data[id]; },
+  clear: function () { return this._data = {}; }
+};
+
+function LocalStorageManager() {
+  this.bestScoreKey = "bestScore";
+  this.gameStateKey = "gameState";
+  var supported = this.localStorageSupported();
+  this.storage = supported ? window.localStorage : window.fakeStorage;
+}
+
+LocalStorageManager.prototype.localStorageSupported = function () {
+  var testKey = "test";
+  try {
+    var storage = window.localStorage;
+    storage.setItem(testKey, "1");
+    storage.removeItem(testKey);
+    return true;
+  } catch (error) { return false; }
+};
+
+LocalStorageManager.prototype.getBestScore = function () {
+  return this.storage.getItem(this.bestScoreKey) || 0;
+};
+
+LocalStorageManager.prototype.setBestScore = function (score) {
+  this.storage.setItem(this.bestScoreKey, score);
+};
+
+LocalStorageManager.prototype.getGameState = function () {
+  var stateJSON = this.storage.getItem(this.gameStateKey);
+  return stateJSON ? JSON.parse(stateJSON) : null;
+};
+
+LocalStorageManager.prototype.setGameState = function (gameState) {
+  this.storage.setItem(this.gameStateKey, JSON.stringify(gameState));
+};
+
+LocalStorageManager.prototype.clearGameState = function () {
+  this.storage.removeItem(this.gameStateKey);
+};
+
+// ===== 方塊物件 =====
+function Tile(position, value) {
+  this.x = position.x;
+  this.y = position.y;
+  this.value = value || 2;
+  this.previousPosition = null;
+  this.mergedFrom = null;
+}
+
+Tile.prototype.savePosition = function () {
+  this.previousPosition = { x: this.x, y: this.y };
+};
+
+Tile.prototype.updatePosition = function (position) {
+  this.x = position.x;
+  this.y = position.y;
+};
+
+Tile.prototype.serialize = function () {
+  return {
+    position: { x: this.x, y: this.y },
+    value: this.value
+  };
+};
+
+// ===== 網格管理 =====
+function Grid(size, previousState) {
+  this.size = size;
+  this.cells = previousState ? this.fromState(previousState) : this.empty();
+}
+
+Grid.prototype.empty = function () {
+  var cells = [];
+  for (var x = 0; x < this.size; x++) {
+    var row = cells[x] = [];
+    for (var y = 0; y < this.size; y++) {
+      row.push(null);
+    }
+  }
+  return cells;
+};
+
+Grid.prototype.fromState = function (state) {
+  var cells = [];
+  for (var x = 0; x < this.size; x++) {
+    var row = cells[x] = [];
+    for (var y = 0; y < this.size; y++) {
+      var tile = state[x][y];
+      row.push(tile ? new Tile(tile.position, tile.value) : null);
+    }
+  }
+  return cells;
+};
+
+Grid.prototype.randomAvailableCell = function () {
+  var cells = this.availableCells();
+  if (cells.length) { return cells[Math.floor(Math.random() * cells.length)]; }
+};
+
+Grid.prototype.availableCells = function () {
+  var cells = [];
+  this.eachCell(function (x, y, tile) {
+    if (!tile) { cells.push({ x: x, y: y }); }
+  });
+  return cells;
+};
+
+Grid.prototype.eachCell = function (callback) {
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+      callback(x, y, this.cells[x][y]);
+    }
+  }
+};
+
+Grid.prototype.cellsAvailable = function () {
+  return !!this.availableCells().length;
+};
+
+Grid.prototype.cellAvailable = function (cell) {
+  return !this.cellOccupied(cell);
+};
+
+Grid.prototype.cellOccupied = function (cell) {
+  return !!this.cellContent(cell);
+};
+
+Grid.prototype.cellContent = function (cell) {
+  if (this.withinBounds(cell)) { return this.cells[cell.x][cell.y]; }
+  else { return null; }
+};
+
+Grid.prototype.insertTile = function (tile) {
+  this.cells[tile.x][tile.y] = tile;
+};
+
+Grid.prototype.removeTile = function (tile) {
+  this.cells[tile.x][tile.y] = null;
+};
+
+Grid.prototype.withinBounds = function (position) {
+  return position.x >= 0 && position.x < this.size && position.y >= 0 && position.y < this.size;
+};
+
+Grid.prototype.serialize = function () {
+  var cellState = [];
+  for (var x = 0; x < this.size; x++) {
+    var row = cellState[x] = [];
+    for (var y = 0; y < this.size; y++) {
+      row.push(this.cells[x][y] ? this.cells[x][y].serialize() : null);
+    }
+  }
+  return { size: this.size, cells: cellState };
+};
+
+// ===== 輸入管理 =====
+function KeyboardInputManager() {
+  this.events = {};
+  this.listen();
+}
+
+KeyboardInputManager.prototype.on = function (event, callback) {
+  if (!this.events[event]) { this.events[event] = []; }
+  this.events[event].push(callback);
+};
+
+KeyboardInputManager.prototype.emit = function (event, data) {
+  var callbacks = this.events[event];
+  if (callbacks) { callbacks.forEach(function (callback) { callback(data); }); }
+};
+
+KeyboardInputManager.prototype.listen = function () {
+  var self = this;
+  var map = {
+    38: 0, 39: 1, 40: 2, 37: 3, // 方向鍵
+    75: 0, 76: 1, 74: 2, 72: 3, // Vim
+    87: 0, 68: 1, 83: 2, 65: 3  // WASD
+  };
+
+  // 鍵盤事件
+  document.addEventListener("keydown", function (event) {
+    var modifiers = event.altKey || event.ctrlKey || event.metaKey || event.shiftKey;
+    var mapped = map[event.which];
+    if (!modifiers) {
+      if (mapped !== undefined) {
+        event.preventDefault();
+        self.emit("move", mapped);
+      }
+    }
+    if (!modifiers && event.which === 82) {
+      self.emit("restart");
+    }
+  });
+
+  // 觸控事件（全域監聽，遊戲區外也能操作）
+  var touchStartClientX, touchStartClientY;
+
+  document.addEventListener("touchstart", function (event) {
+    if (event.touches.length > 1) { return; }
+    touchStartClientX = event.touches[0].clientX;
+    touchStartClientY = event.touches[0].clientY;
+    event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchmove", function (event) {
+    event.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchend", function (event) {
+    if (event.touches.length > 0) { return; }
+    var touchEndClientX = event.changedTouches[0].clientX;
+    var touchEndClientY = event.changedTouches[0].clientY;
+    var dx = touchEndClientX - touchStartClientX;
+    var absDx = Math.abs(dx);
+    var dy = touchEndClientY - touchStartClientY;
+    var absDy = Math.abs(dy);
+    if (Math.max(absDx, absDy) > 10) {
+      self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+    }
+  });
+
+  // 滑鼠拖曳支援（全域監聽，遊戲區外也能操作）
+  var mouseDownX, mouseDownY, mouseDragging = false;
+
+  document.addEventListener("mousedown", function (event) {
+    // 排除按鈕區域
+    if (event.target.closest("#restart-btn") || event.target.closest(".game-message a") || event.target.closest("#start-btn")) { return; }
+    mouseDownX = event.clientX;
+    mouseDownY = event.clientY;
+    mouseDragging = true;
+    event.preventDefault();
+  });
+
+  document.addEventListener("mousemove", function (event) {
+    if (!mouseDragging) { return; }
+    event.preventDefault();
+  });
+
+  document.addEventListener("mouseup", function (event) {
+    if (!mouseDragging) { return; }
+    mouseDragging = false;
+    var dx = event.clientX - mouseDownX;
+    var absDx = Math.abs(dx);
+    var dy = event.clientY - mouseDownY;
+    var absDy = Math.abs(dy);
+    if (Math.max(absDx, absDy) > 10) {
+      self.emit("move", absDx > absDy ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
+    }
+  });
+
+  // 按鈕事件
+  document.querySelector(".retry-button").addEventListener("click", function () { self.emit("restart"); });
+  document.querySelector("#restart-btn").addEventListener("click", function () { self.emit("restart"); });
+  document.querySelector(".keep-playing-button").addEventListener("click", function () { self.emit("keepPlaying"); });
+};
+
+// ===== HTML 渲染 =====
+function HTMLActuator() {
+  this.tileContainer = document.querySelector(".tile-container");
+  this.scoreContainer = document.querySelectorAll(".score-box")[0];
+  this.bestContainer = document.querySelectorAll(".score-box")[1];
+  this.messageContainer = document.querySelector(".game-message");
+  this.score = 0;
+}
+
+HTMLActuator.prototype.actuate = function (grid, metadata) {
+  var self = this;
+  window.requestAnimationFrame(function () {
+    self.clearContainer(self.tileContainer);
+    grid.cells.forEach(function (column) {
+      column.forEach(function (cell) {
+        if (cell) { self.addTile(cell); }
+      });
+    });
+    self.updateScore(metadata.score);
+    self.updateBestScore(metadata.bestScore);
+    if (metadata.terminated) {
+      if (metadata.over) { self.message(false); }
+      else if (metadata.won) { self.message(true); }
+    }
+  });
+};
+
+HTMLActuator.prototype.continueGame = function () {
+  this.clearMessage();
+};
+
+HTMLActuator.prototype.clearContainer = function (container) {
+  while (container.firstChild) { container.removeChild(container.firstChild); }
+};
+
+HTMLActuator.prototype.addTile = function (tile) {
+  var self = this;
+  var wrapper = document.createElement("div");
+  var inner = document.createElement("div");
+  var position = tile.previousPosition || { x: tile.x, y: tile.y };
+  var positionClass = this.positionClass(position);
+  var classes = ["tile", "tile-" + tile.value, positionClass];
+  if (tile.value > 2048) classes.push("tile-super");
+  this.applyClasses(wrapper, classes);
+  inner.classList.add("tile-inner");
+  inner.textContent = tile.value;
+  if (tile.previousPosition) {
+    window.requestAnimationFrame(function () {
+      classes[2] = self.positionClass({ x: tile.x, y: tile.y });
+      self.applyClasses(wrapper, classes);
+    });
+  } else if (tile.mergedFrom) {
+    classes.push("tile-merged");
+    this.applyClasses(wrapper, classes);
+    tile.mergedFrom.forEach(function (merged) {
+      self.addTile(merged);
+    });
+  } else {
+    classes.push("tile-new");
+    this.applyClasses(wrapper, classes);
+  }
+  wrapper.appendChild(inner);
+  this.tileContainer.appendChild(wrapper);
+};
+
+HTMLActuator.prototype.applyClasses = function (element, classes) {
+  element.setAttribute("class", classes.join(" "));
+};
+
+HTMLActuator.prototype.normalizePosition = function (position) {
+  return { x: position.x + 1, y: position.y + 1 };
+};
+
+HTMLActuator.prototype.positionClass = function (position) {
+  position = this.normalizePosition(position);
+  return "tile-position-" + position.x + "-" + position.y;
+};
+
+HTMLActuator.prototype.updateScore = function (score) {
+  var difference = score - this.score;
+  this.score = score;
+  var valueEl = this.scoreContainer.querySelector(".value");
+  if (valueEl) {
+    valueEl.textContent = this.score;
+  }
+  if (difference > 0) {
+    // 移除舊的加分動畫
+    var oldAdd = this.scoreContainer.querySelector(".score-addition");
+    if (oldAdd) oldAdd.remove();
+    var addition = document.createElement("div");
+    addition.classList.add("score-addition");
+    addition.textContent = "+" + difference;
+    this.scoreContainer.appendChild(addition);
+  }
+};
+
+HTMLActuator.prototype.updateBestScore = function (bestScore) {
+  var valueEl = this.bestContainer.querySelector(".value");
+  if (valueEl) {
+    valueEl.textContent = bestScore;
+  }
+};
+
+HTMLActuator.prototype.message = function (won) {
+  var type = won ? "game-won" : "game-over";
+  var message = won ? "順利通關" : "遊戲結束";
+  restartBtn.style.display = "none";
+  this.messageContainer.classList.add(type);
+  this.messageContainer.getElementsByTagName("p")[0].textContent = message;
+};
+
+HTMLActuator.prototype.clearMessage = function () {
+  this.messageContainer.classList.remove("game-won");
+  this.messageContainer.classList.remove("game-over");
+};
+
+// ===== 遊戲管理 =====
+function GameManager(size, InputManager, Actuator, StorageManager) {
+  this.size = size;
+  this.inputManager = new InputManager;
+  this.storageManager = new StorageManager;
+  this.actuator = new Actuator;
+  this.startTiles = 2;
+  this.inputManager.on("move", this.move.bind(this));
+  this.inputManager.on("restart", this.restart.bind(this));
+  this.inputManager.on("keepPlaying", this.keepPlaying.bind(this));
+  this.setup();
+}
+
+GameManager.prototype.restart = function () {
+  this.storageManager.clearGameState();
+  restartBtn.style.display = "block";
+  this.actuator.continueGame();
+  this.setup();
+};
+
+GameManager.prototype.keepPlaying = function () {
+  restartBtn.style.display = "block";
+  this.keepPlaying = true;
+  this.actuator.continueGame();
+};
+
+GameManager.prototype.isGameTerminated = function () {
+  return this.over || (this.won && !this.keepPlaying);
+};
+
+GameManager.prototype.setup = function () {
+  var previousState = this.storageManager.getGameState();
+  if (previousState) {
+    this.grid = new Grid(previousState.grid.size, previousState.grid.cells);
+    this.score = previousState.score;
+    this.over = previousState.over;
+    this.won = previousState.won;
+    this.keepPlaying = previousState.keepPlaying;
+  } else {
+    this.grid = new Grid(this.size);
+    this.score = 0;
+    this.over = false;
+    this.won = false;
+    this.keepPlaying = false;
+    this.addStartTiles();
+  }
+  this.actuate();
+};
+
+GameManager.prototype.addStartTiles = function () {
+  for (var i = 0; i < this.startTiles; i++) {
+    this.addRandomTile();
+  }
+};
+
+GameManager.prototype.addRandomTile = function () {
+  if (this.grid.cellsAvailable()) {
+    var value = Math.random() < 0.9 ? 2 : 4;
+    var tile = new Tile(this.grid.randomAvailableCell(), value);
+    this.grid.insertTile(tile);
+  }
+};
+
+GameManager.prototype.actuate = function () {
+  if (this.storageManager.getBestScore() < this.score) {
+    this.storageManager.setBestScore(this.score);
+  }
+  if (this.over) {
+    this.storageManager.clearGameState();
+  } else {
+    this.storageManager.setGameState(this.serialize());
+  }
+  this.actuator.actuate(this.grid, {
+    score: this.score,
+    over: this.over,
+    won: this.won,
+    bestScore: this.storageManager.getBestScore(),
+    terminated: this.isGameTerminated()
+  });
+};
+
+GameManager.prototype.serialize = function () {
+  return {
+    grid: this.grid.serialize(),
+    score: this.score,
+    over: this.over,
+    won: this.won,
+    keepPlaying: this.keepPlaying
+  };
+};
+
+GameManager.prototype.prepareTiles = function () {
+  this.grid.eachCell(function (x, y, tile) {
+    if (tile) {
+      tile.mergedFrom = null;
+      tile.savePosition();
+    }
+  });
+};
+
+GameManager.prototype.moveTile = function (tile, cell) {
+  this.grid.cells[tile.x][tile.y] = null;
+  this.grid.cells[cell.x][cell.y] = tile;
+  tile.updatePosition(cell);
+};
+
+GameManager.prototype.move = function (direction) {
+  var self = this;
+  if (this.isGameTerminated()) return;
+  var cell, tile;
+  var vector = this.getVector(direction);
+  var traversals = this.buildTraversals(vector);
+  var moved = false;
+  this.prepareTiles();
+  traversals.x.forEach(function (x) {
+    traversals.y.forEach(function (y) {
+      cell = { x: x, y: y };
+      tile = self.grid.cellContent(cell);
+      if (tile) {
+        var positions = self.findFarthestPosition(cell, vector);
+        var next = self.grid.cellContent(positions.next);
+        if (next && next.value === tile.value && !next.mergedFrom) {
+          var merged = new Tile(positions.next, tile.value * 2);
+          merged.mergedFrom = [tile, next];
+          self.grid.insertTile(merged);
+          self.grid.removeTile(tile);
+          tile.updatePosition(positions.next);
+          self.score += merged.value;
+          if (merged.value === 2048) self.won = true;
+        } else {
+          self.moveTile(tile, positions.farthest);
+        }
+        if (!self.positionsEqual(cell, tile)) {
+          moved = true;
+        }
+      }
+    });
+  });
+  if (moved) {
+    this.addRandomTile();
+    if (!this.movesAvailable()) {
+      this.over = true;
+    }
+    this.actuate();
+  }
+};
+
+GameManager.prototype.getVector = function (direction) {
+  var map = {
+    0: { x: 0, y: -1 }, // 上
+    1: { x: 1, y: 0 },  // 右
+    2: { x: 0, y: 1 },  // 下
+    3: { x: -1, y: 0 }  // 左
+  };
+  return map[direction];
+};
+
+GameManager.prototype.buildTraversals = function (vector) {
+  var traversals = { x: [], y: [] };
+  for (var pos = 0; pos < this.size; pos++) {
+    traversals.x.push(pos);
+    traversals.y.push(pos);
+  }
+  if (vector.x === 1) traversals.x = traversals.x.reverse();
+  if (vector.y === 1) traversals.y = traversals.y.reverse();
+  return traversals;
+};
+
+GameManager.prototype.findFarthestPosition = function (cell, vector) {
+  var previous;
+  do {
+    previous = cell;
+    cell = { x: previous.x + vector.x, y: previous.y + vector.y };
+  } while (this.grid.withinBounds(cell) && this.grid.cellAvailable(cell));
+  return { farthest: previous, next: cell };
+};
+
+GameManager.prototype.movesAvailable = function () {
+  return this.grid.cellsAvailable() || this.tileMatchesAvailable();
+};
+
+GameManager.prototype.tileMatchesAvailable = function () {
+  var self = this;
+  var tile;
+  for (var x = 0; x < this.size; x++) {
+    for (var y = 0; y < this.size; y++) {
+      tile = this.grid.cellContent({ x: x, y: y });
+      if (tile) {
+        for (var direction = 0; direction < 4; direction++) {
+          var vector = self.getVector(direction);
+          var cell = { x: x + vector.x, y: y + vector.y };
+          var other = self.grid.cellContent(cell);
+          if (other && other.value === tile.value) { return true; }
+        }
+      }
+    }
+  }
+  return false;
+};
+
+GameManager.prototype.positionsEqual = function (first, second) {
+  return first.x === second.x && first.y === second.y;
+};
+
+// ===== 啟動流程 =====
+var startOverlay = document.getElementById("start-overlay");
+var startBtn = document.getElementById("start-btn");
+var restartBtn = document.getElementById("restart-btn");
+
+startBtn.addEventListener("click", function () {
+  startOverlay.classList.add("hidden");
+  restartBtn.style.display = "block";
+  window.requestAnimationFrame(function () {
+    new GameManager(4, KeyboardInputManager, HTMLActuator, LocalStorageManager);
+  });
+});
+</script>
+</body>
+</html>
