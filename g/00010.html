@@ -5012,7 +5012,7 @@ function renderPrestige() {
     const gain = blueprintsForDemolish();
     let html = `<div class="prestige-hero">
         <div class="prestige-num">+${fmt(gain)}</div>
-        <div class="prestige-sub">拆除現在可得藍圖 · ${fmt(game.run.height)} 樓 · 最佳連鎖 ${fmt(game.run.bestChainRun)}</div>
+        <div class="prestige-sub">最佳連鎖 ${fmt(game.run.bestChainRun)}<br>拆除現在 ${fmt(game.run.height)} 樓，可得藍圖 ${fmt(gain)} 張，但會失去磚塊。</div>
         <button class="demolish-btn" id="doDemolish" ${gain>0?'':'disabled'}>拆除${gain>0?'':'（需 '+T.PRESTIGE_MIN_FLOOR+' 樓以上）'}</button>
         <div class="prestige-sub">可用藍圖：<b style="color:var(--blueprint)">${fmt(game.blueprints)}</b></div>
     </div>`;
@@ -5424,6 +5424,8 @@ function init() {
             if (!game.run.alive) {
                 rebuild();
             }
+            // 確保鏡頭正確對齊塔（避免拖曳偏移或離線累積錯誤）
+            recenterCamera();
             toast('自動恢復上次進度');
             requestAnimationFrame(loop);
             return;
