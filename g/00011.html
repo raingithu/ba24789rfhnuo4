@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="description" content="經典關燈益智遊戲，挑戰不同難度關卡。">
+<meta name="theme-color" content="#4a9eff">
+<title>光影謎陣</title>
+<style>
+/* ============================================================
+   CSS Reset & Global
+   ============================================================ */
+html, body {
+    width: 100%; height: 100%; overflow: hidden;
+}
+* {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: none; user-select: none;
+}
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0a0a0a; color: #fff;
+    display: flex; justify-content: center; align-items: flex-start;
+    min-height: 100vh; padding: 20px 20px 40px;
+}
+.game-container {
+    text-align: center; max-width: 500px; width: 100%;
+}
+
+/* ============================================================
+   變數 & Keyframes
+   ============================================================ */
+:root {
+    --primary-color: #357abd;
+    --primary-hover: #7dc2ff;
+    --light-on: #9de2ff;
+    --light-on-dark: #357abd;
+    --glow-color: #4a9eff;
+    --glow-shadow: rgba(74, 158, 255, 0.6);
+}
+
+@keyframes pulse {
+    0% { transform: scale(1) }
+    50% { transform: scale(1.2) }
+    100% { transform: scale(1) }
+}
+@keyframes particle-float {
+    0% { transform: translateY(0) scale(1); opacity: 1 }
+    100% { transform: translateY(-100px) scale(0); opacity: 0 }
+}
+
+/* ============================================================
+   開始畫面
+   ============================================================ */
+#menu-screen {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    padding: 20px 0;
+}
+#menu-screen.hidden { display: none }
+
+.menu-title {
+    font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    font-weight: 700;
+    font-size: clamp(30px, 12vw, 48px);
+    letter-spacing: 6px;
+    text-shadow: 0 0 36px rgba(76, 200, 255, 0.8);
+    margin-bottom: 4px;
+}
+.menu-rules {
+    font: 15px 'Segoe UI', 'PingFang TC', sans-serif;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: center; line-height: 1.8;
+    margin-bottom: 8px; max-width: 360px;
+}
+
+/* 難度按鈕 */
+.diff-btn {
+    width: 60%; padding: 12px 0;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.6);
+    font: 16px 'Segoe UI', 'PingFang TC', sans-serif;
+    cursor: pointer; transition: all 0.15s;
+    touch-action: manipulation;
+}
+.diff-btn:hover { filter: brightness(1.2) }
+.diff-btn.active { border-width: 2px; font-weight: bold }
+.diff-btn[data-diff="3"].active {
+    background: rgba(74, 222, 128, 0.2); border-color: #4ade80; color: #4ade80;
+}
+.diff-btn[data-diff="4"].active {
+    background: rgba(251, 191, 36, 0.2); border-color: #fbbf24; color: #fbbf24;
+}
+.diff-btn[data-diff="5"].active {
+    background: rgba(239, 68, 68, 0.2); border-color: #ef4444; color: #ef4444;
+}
+
+/* 開始遊戲按鈕 */
+.start-btn {
+    width: 60%; padding: 14px 0;
+    border: 2px solid var(--primary-color); border-radius: 12px;
+    background: transparent;
+    color: var(--primary-color);
+    font: bold 20px 'Segoe UI', 'PingFang TC', sans-serif;
+    cursor: pointer; letter-spacing: 0.1em;
+    text-shadow: 0 0 10px var(--glow-color);
+    box-shadow: 0 0 30px var(--glow-shadow), inset 0 0 15px rgba(74, 158, 255, 0.1);
+    position: relative; overflow: visible;
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+    margin-top: 8px;
+    touch-action: manipulation;
+}
+.start-btn::before {
+    content: '';
+    position: absolute; inset: -2px;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 0 30px var(--glow-shadow), inset 0 0 30px rgba(74, 158, 255, 0.4);
+    pointer-events: none; z-index: -1;
+}
+.start-btn:hover, .start-btn:active {
+    transform: scale(1.04);
+    background: var(--primary-color); color: #fff;
+}
+.start-btn:hover::before, .start-btn:active::before { opacity: 1 }
+
+/* ============================================================
+   遊戲頁面
+   ============================================================ */
+#game-page.hidden { display: none }
+
+h1 {
+    margin-bottom: 20px; font-size: 2.5rem;
+    text-shadow: 0 0 20px var(--glow-color);
+}
+
+/* 遊戲資訊區 */
+.game-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px; margin-bottom: 20px;
+    padding: 10px; background: #1a1a1a; border-radius: 15px;
+}
+.info-item { text-align: center }
+.info-label { font-size: 0.8rem; color: #aaa; margin-bottom: 2px }
+.info-value { font-size: 1.1rem; color: var(--primary-color); font-weight: bold }
+
+/* 動作按鈕列 */
+.action-buttons {
+    display: flex; gap: 10px; justify-content: center;
+    margin-bottom: 20px; flex-wrap: wrap;
+}
+.btn {
+    background: transparent; border: 1px solid rgba(255,255,255,0.2);
+    padding: 10px 16px; border-radius: 10px;
+    color: rgba(255,255,255,0.7); font-size: 0.9rem;
+    cursor: pointer; transition: all 0.15s;
+    touch-action: manipulation;
+}
+.btn:hover { background: rgba(255,255,255,0.12); color: #fff }
+.btn:active { transform: scale(0.97) }
+.btn:disabled { opacity: 0.3; cursor: not-allowed }
+.btn-secondary {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(255,255,255,0.12);
+    color: rgba(255,255,255,0.5);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7) }
+
+/* 燈格方陣 */
+.grid {
+    display: grid; gap: 6px; margin: 0 auto;
+    background: #1a1a1a; padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+.grid.size-3 { grid-template-columns: repeat(3, 1fr); max-width: 250px }
+.grid.size-4 { grid-template-columns: repeat(4, 1fr); max-width: 300px }
+.grid.size-5 { grid-template-columns: repeat(5, 1fr); max-width: 350px }
+
+.light {
+    aspect-ratio: 1; border: 2px solid #333;
+    border-radius: 50%; cursor: pointer;
+    transition: all 0.3s ease; position: relative;
+    background: #2a2a2a; min-height: 40px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent; outline: none;
+}
+.light.on {
+    background: radial-gradient(circle at 38% 38%, var(--light-on), var(--light-on-dark));
+    border-color: var(--primary-color);
+    box-shadow: 0 0 20px rgba(91, 163, 255, 0.2), 0 0 10px rgba(91, 163, 255, 0.3), inset 0 0 4px rgba(0,0,0,0.2), inset 0 2px 8px rgba(255,255,255,0.2);
+}
+.light.off {
+    background: #2a2a2a; border-color: #444;
+    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.5);
+}
+.light:hover { transform: scale(1.1) }
+.light:active { transform: scale(0.95) }
+.light.pulse { animation: pulse 0.3s ease-in-out }
+
+/* ============================================================
+   勝利訊息（玻璃面板風格）
+   ============================================================ */
+.win-message {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 30px 28px;
+    text-align: center;
+    border-radius: 16px;
+    opacity: 0; visibility: hidden;
+    transition: all 0.3s ease; z-index: 1000;
+}
+.win-message::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: rgba(255, 255, 255, 0.07);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 16px;
+    z-index: -1;
+}
+.win-message.show { opacity: 1; visibility: visible }
+.win-content {
+    display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+.win-title {
+    font: bold 28px 'Segoe UI', 'PingFang TC', sans-serif;
+    color: #fff;
+}
+.win-stats {
+    font: 16px 'Segoe UI', 'PingFang TC', sans-serif;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.6;
+}
+.win-record {
+    font: 14px 'Segoe UI', 'PingFang TC', sans-serif;
+    color: #4ade80;
+}
+.btn.win-continue {
+    background: transparent; border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 10px; padding: 10px 24px;
+    color: rgba(255,255,255,0.7); font: 15px 'Segoe UI', 'PingFang TC', sans-serif;
+    cursor: pointer; transition: all 0.15s; margin-top: 4px;
+}
+.btn.win-continue:hover { background: rgba(255,255,255,0.12); color: #fff }
+
+/* 粒子特效 */
+.particle {
+    position: absolute; width: 4px; height: 4px;
+    background: var(--primary-color); border-radius: 50%;
+    pointer-events: none;
+    animation: particle-float 2s ease-out forwards;
+}
+
+/* ============================================================
+   RWD / 觸控裝置適配
+   ============================================================ */
+/* 手機端禁用 hover/active 縮放效果 */
+@media (hover: none) and (pointer: coarse) {
+    .light:hover { transform: none }
+    .light:active { transform: none }
+}
+@media (max-width: 480px) {
+    h1 { font-size: 2rem }
+    .game-info { grid-template-columns: repeat(2, 1fr) }
+    .action-buttons { flex-direction: row; justify-content: center }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+
+    <!-- 開始畫面 -->
+    <div id="menu-screen">
+        <div class="menu-title">光影謎陣</div>
+        <div class="menu-rules">
+            每次一次開始都是隨機狀態。<br>
+            點擊燈會切換該格及其上下左右相鄰格的開關狀態，<br>
+            意即：開燈狀態變關燈，關燈狀態變開燈。<br>
+            目標是在最少的步數內關閉所有的燈。<br><br>
+        </div>
+        <div class="menu-title" style="font-size:18px;color:rgba(255,255,255,0.5)">選擇難度</div>
+        <button class="diff-btn" data-diff="3" onclick="selectDifficulty(3)">簡單（3×3）</button>
+        <button class="diff-btn" data-diff="4" onclick="selectDifficulty(4)">中等（4×4）</button>
+        <button class="diff-btn active" data-diff="5" onclick="selectDifficulty(5)">困難（5×5）</button>
+        <button class="start-btn" onclick="startGameFromMenu()">開始遊戲</button>
+    </div>
+
+    <!-- 遊戲頁面 -->
+    <div id="game-page" class="hidden">
+        <h1>光影謎陣</h1>
+        <div class="game-info">
+            <div class="info-item">
+                <div class="info-label">步數</div>
+                <div class="info-value" id="moveCount">0</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">時間</div>
+                <div class="info-value" id="timer">0:00</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">最佳步數</div>
+                <div class="info-value" id="bestMoves">-</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">最佳時間</div>
+                <div class="info-value" id="bestTime">-</div>
+            </div>
+        </div>
+        <div class="action-buttons">
+            <button class="btn" onclick="backToMenu()">重選難度</button>
+            <button class="btn btn-secondary" onclick="game.undo()" id="undoBtn" disabled>回上一步</button>
+            <button class="btn" onclick="restartGame()">重新開始</button>
+        </div>
+        <div class="grid size-5" id="grid"></div>
+    </div>
+
+    <!-- 勝利訊息 -->
+    <div class="win-message" id="winMessage">
+        <div class="win-content">
+            <div class="win-title">🎉 恭喜過關 🎉</div>
+            <div class="win-stats">
+                <div>花費時間：<span id="finalTime"></span></div>
+                <div>用了 <span id="finalMoves"></span> 步完成</div>
+            </div>
+            <div class="win-record" id="recordMessage"></div>
+            <button class="btn win-continue" onclick="restartGame()">再玩一次</button>
+        </div>
+    </div>
+</div>
+
+<script>
+class LightsOut{
+    constructor(){
+        this.size=5;
+        this.grid=[];
+        this.moves=0;
+        this.gameStarted=false;
+        this.startTime=0;
+        this.timer=0;
+        this.timerInterval=null;
+        this.moveHistory=[];
+        this.init();
+    }
+    init(){
+        this.createGrid();
+        this.generatePuzzle();
+        this.updateDisplay();
+        this.loadBestScores();
+    }
+    createGrid(){
+        const gridEl=document.getElementById('grid');
+        gridEl.innerHTML='';
+        gridEl.className=`grid size-${this.size}`;
+        this.grid=Array(this.size).fill().map(()=>Array(this.size).fill(false));
+        for(let i=0;i<this.size;i++){
+            for(let j=0;j<this.size;j++){
+                const light=document.createElement('div');
+                light.className='light off';
+                light.onclick=()=>this.clickLight(i,j);
+                light.dataset.row=i;
+                light.dataset.col=j;
+                gridEl.appendChild(light);
+            }
+        }
+    }
+    generatePuzzle(){
+        this.grid=Array(this.size).fill().map(()=>Array(this.size).fill(false));
+        const complexity=Math.floor(Math.random()*8)+this.size*2;
+        for(let i=0;i<complexity;i++){
+            const row=Math.floor(Math.random()*this.size);
+            const col=Math.floor(Math.random()*this.size);
+            this.toggleLights(row,col,false);
+        }
+        if(this.checkWin()){this.generatePuzzle();}
+    }
+    clickLight(row,col){
+        if(!this.gameStarted){
+            this.startGame();
+        }
+        const prevState=this.grid.map(row=>[...row]);
+        this.moveHistory.push({state:prevState,row,col});
+        this.toggleLights(row,col,true);
+        this.moves++;
+        this.updateDisplay();
+        document.getElementById('undoBtn').disabled=false;
+        if(this.checkWin()){
+            this.endGame();
+            setTimeout(()=>this.showWinMessage(),300);
+        }
+    }
+    toggleLights(row,col,animate=true){
+        const directions=[[0,0],[-1,0],[1,0],[0,-1],[0,1]];
+        directions.forEach(([dr,dc])=>{
+            const newRow=row+dr;
+            const newCol=col+dc;
+            if(newRow>=0&&newRow<this.size&&newCol>=0&&newCol<this.size){
+                this.grid[newRow][newCol]=!this.grid[newRow][newCol];
+                if(animate){
+                    const lightEl=document.querySelector(`[data-row="${newRow}"][data-col="${newCol}"]`);
+                    lightEl.classList.add('pulse');
+                    setTimeout(()=>lightEl.classList.remove('pulse'),300);
+                }
+            }
+        });
+    }
+    updateDisplay(){
+        for(let i=0;i<this.size;i++){
+            for(let j=0;j<this.size;j++){
+                const lightEl=document.querySelector(`[data-row="${i}"][data-col="${j}"]`);
+                lightEl.className=`light ${this.grid[i][j]?'on':'off'}`;
+            }
+        }
+        document.getElementById('moveCount').textContent=this.moves;
+    }
+    checkWin(){
+        return this.grid.every(row=>row.every(light=>!light));
+    }
+    startGame(){
+        this.gameStarted=true;
+        this.startTime=Date.now();
+        this.timerInterval=setInterval(()=>{
+            this.timer=Math.floor((Date.now()-this.startTime)/1000);
+            const mins=Math.floor(this.timer/60);
+            const secs=this.timer%60;
+            document.getElementById('timer').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+        },1000);
+    }
+    endGame(){
+        if(this.timerInterval){
+            clearInterval(this.timerInterval);
+            this.timerInterval=null;
+        }
+        this.gameStarted=false;
+        this.saveScore();
+    }
+    showWinMessage(){
+        const mins=Math.floor(this.timer/60);
+        const secs=this.timer%60;
+        const timeStr=`${mins}:${secs.toString().padStart(2,'0')}`;
+        document.getElementById('finalMoves').textContent=this.moves;
+        document.getElementById('finalTime').textContent=timeStr;
+        const bestScores=this.getBestScores();
+        let recordMsg='';
+        if(this.moves<=bestScores.moves||bestScores.moves===0){
+            recordMsg+='🏆 新最佳步數紀錄！ ';
+        }
+        if(this.timer<=bestScores.time||bestScores.time===0){
+            recordMsg+='⚡ 新最佳時間紀錄！';
+        }
+        document.getElementById('recordMessage').textContent=recordMsg;
+        document.getElementById('winMessage').classList.add('show');
+        this.createParticles();
+    }
+    createParticles(){
+        const gridEl=document.getElementById('grid');
+        for(let i=0;i<20;i++){
+            setTimeout(()=>{
+                const particle=document.createElement('div');
+                particle.className='particle';
+                particle.style.left=Math.random()*100+'%';
+                particle.style.top=Math.random()*100+'%';
+                gridEl.appendChild(particle);
+                setTimeout(()=>particle.remove(),2000);
+            },i*100);
+        }
+    }
+    hideWinMessage(){
+        document.getElementById('winMessage').classList.remove('show');
+    }
+    undo(){
+        if(this.moveHistory.length===0)return;
+        const lastMove=this.moveHistory.pop();
+        this.grid=lastMove.state;
+        this.moves--;
+        this.updateDisplay();
+        if(this.moveHistory.length===0){
+            document.getElementById('undoBtn').disabled=true;
+        }
+    }
+    saveScore(){
+        const key=`lightsout_best_${this.size}`;
+        const current=JSON.parse(localStorage.getItem(key)||'{"moves":0,"time":0}');
+        const newBest={
+            moves:(this.moves<current.moves||current.moves===0)?this.moves:current.moves,
+            time:(this.timer<current.time||current.time===0)?this.timer:current.time
+        };
+        localStorage.setItem(key,JSON.stringify(newBest));
+        this.loadBestScores();
+    }
+    getBestScores(){
+        const key=`lightsout_best_${this.size}`;
+        return JSON.parse(localStorage.getItem(key)||'{"moves":0,"time":0}');
+    }
+    loadBestScores(){
+        const best=this.getBestScores();
+        document.getElementById('bestMoves').textContent=best.moves||'-';
+        if(best.time){
+            const mins=Math.floor(best.time/60);
+            const secs=best.time%60;
+            document.getElementById('bestTime').textContent=`${mins}:${secs.toString().padStart(2,'0')}`;
+        }else{
+            document.getElementById('bestTime').textContent='-';
+        }
+    }
+    reset(){
+        if(this.timerInterval){
+            clearInterval(this.timerInterval);
+            this.timerInterval=null;
+        }
+        this.moves=0;
+        this.timer=0;
+        this.gameStarted=false;
+        this.moveHistory=[];
+        document.getElementById('timer').textContent='0:00';
+        document.getElementById('undoBtn').disabled=true;
+        this.createGrid();
+        this.generatePuzzle();
+        this.updateDisplay();
+    }
+}
+
+// ── 遊戲實例 ──
+let game=new LightsOut();
+
+// ── 難度選擇 ──
+let selectedDiff=5;
+window.selectDifficulty=function(diff){
+    selectedDiff=diff;
+    document.querySelectorAll('.diff-btn').forEach(function(btn){
+        btn.classList.remove('active');
+        if(parseInt(btn.dataset.diff)===diff){
+            btn.classList.add('active');
+        }
+    });
+};
+
+window.startGameFromMenu=function(){
+    game.size=selectedDiff;
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('game-page').classList.remove('hidden');
+    game.reset();
+    game.loadBestScores();
+};
+
+// ── 回選單（重選難度） ──
+window.backToMenu=function(){
+    if(game.timerInterval){
+        clearInterval(game.timerInterval);
+        game.timerInterval=null;
+    }
+    document.getElementById('menu-screen').classList.remove('hidden');
+    document.getElementById('game-page').classList.add('hidden');
+    document.getElementById('winMessage').classList.remove('show');
+    selectedDiff=game.size;
+    selectDifficulty(selectedDiff);
+};
+
+// ── 重新開始（同難度） ──
+window.restartGame=function(){
+    document.getElementById('winMessage').classList.remove('show');
+    game.reset();
+};
+
+// ── 隱藏勝利訊息 ──
+function hideWinMessage(){
+    game.hideWinMessage();
+}
+
+// ── Undo 快捷 ──
+document.addEventListener('keydown',function(e){
+    if(e.key==='z'&&(e.ctrlKey||e.metaKey)){
+        e.preventDefault();
+        if(document.getElementById('undoBtn')&&!document.getElementById('undoBtn').disabled){
+            game.undo();
+        }
+    }
+});
+</script>
+</body>
+</html>
