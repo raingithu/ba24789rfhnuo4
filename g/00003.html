@@ -1,1858 +1,1858 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <meta name="robots" content="noindex,nofollow">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>小雞回家</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>小雞回家</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            background: linear-gradient(135deg, #e8f5e9, #f1f8e9, #dcedc8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: none;
-        }
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: linear-gradient(135deg, #e8f5e9, #f1f8e9, #dcedc8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+}
 
-        #game-container {
-            width: 90vmin;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 16px;
-        }
+#game-container {
+    width: 90vmin;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
 
-        .title-bar {
-            text-align: center;
-            color: #5a3d7a;
-            font-size: 24px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-shadow: 0 1px 2px rgba(90,61,122,0.15);
-        }
+.title-bar {
+    text-align: center;
+    color: #5a3d7a;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-shadow: 0 1px 2px rgba(90,61,122,0.15);
+}
 
-        .stage-desc {
-            text-align: center;
-            color: #444;
-            font-size: 14px;
-            line-height: 1.6;
-            padding: 4px 12px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 12px;
-            width: 100%;
-        }
+.stage-desc {
+    text-align: center;
+    color: #444;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 4px 12px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 12px;
+    width: 100%;
+}
 
-        .stage-desc span {
-            display: block;
-        }
+.stage-desc span {
+    display: block;
+}
 
-        .info-bar {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            padding: 8px 12px;
-            background: rgba(255,255,255,0.45);
-            border-radius: 16px;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            box-shadow: inset 0 1px 3px rgba(255,255,255,0.6), 0 4px 12px rgba(90,61,122,0.08);
-        }
+.info-bar {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 16px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    box-shadow: inset 0 1px 3px rgba(255,255,255,0.6), 0 4px 12px rgba(90,61,122,0.08);
+}
 
-        .info-bar span {
-                 font-size: 16px;
-                 color: #5a3d7a;
-                 font-weight: 600;
-             }
+.info-bar span {
+         font-size: 16px;
+         color: #5a3d7a;
+         font-weight: 600;
+     }
 
-        #board {
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            background: linear-gradient(180deg, #8bc34a 0%, #7cb342 30%, #689f38 60%, #558b2f 100%);
-            border-radius: 20px;
-            box-shadow: 
-                inset 0 2px 8px rgba(255,255,255,0.3),
-                inset 0 -2px 8px rgba(0,0,0,0.15),
-                0 6px 20px rgba(0,0,0,0.2),
-                0 0 0 4px rgba(139,195,74,0.4),
-                0 0 0 8px rgba(104,159,56,0.2);
-            position: relative;
-            overflow: hidden;
-        }
+#board {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(180deg, #8bc34a 0%, #7cb342 30%, #689f38 60%, #558b2f 100%);
+    border-radius: 20px;
+    box-shadow: 
+        inset 0 2px 8px rgba(255,255,255,0.3),
+        inset 0 -2px 8px rgba(0,0,0,0.15),
+        0 6px 20px rgba(0,0,0,0.2),
+        0 0 0 4px rgba(139,195,74,0.4),
+        0 0 0 8px rgba(104,159,56,0.2);
+    position: relative;
+    overflow: hidden;
+}
 
-        #board::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            background: 
-                radial-gradient(ellipse 3px 3px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 100%),
-                radial-gradient(ellipse 2px 2px at 70% 60%, rgba(255,255,255,0.12) 0%, transparent 100%),
-                radial-gradient(ellipse 2px 2px at 40% 80%, rgba(255,255,255,0.1) 0%, transparent 100%);
-            pointer-events: none;
-            z-index: 1;
-        }
+#board::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: 
+        radial-gradient(ellipse 3px 3px at 20% 30%, rgba(255,255,255,0.15) 0%, transparent 100%),
+        radial-gradient(ellipse 2px 2px at 70% 60%, rgba(255,255,255,0.12) 0%, transparent 100%),
+        radial-gradient(ellipse 2px 2px at 40% 80%, rgba(255,255,255,0.1) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+}
 
-        #board::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 20px;
-            border: 3px solid rgba(255,255,255,0.15);
-            pointer-events: none;
-            z-index: 100;
-        }
+#board::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    border: 3px solid rgba(255,255,255,0.15);
+    pointer-events: none;
+    z-index: 100;
+}
 
-        .cell {
-            position: absolute;
-            background: rgba(100,160,60,0.25);
-            border-radius: 4px;
-            border: 1px solid rgba(76,175,80,0.15);
-            box-shadow: inset 0 0 2px rgba(0,0,0,0.03);
-        }
+.cell {
+    position: absolute;
+    background: rgba(100,160,60,0.25);
+    border-radius: 4px;
+    border: 1px solid rgba(76,175,80,0.15);
+    box-shadow: inset 0 0 2px rgba(0,0,0,0.03);
+}
 
-        .cell::before,
-        .cell::after {
-            content: '';
-            position: absolute;
-            width: 2px;
-            height: 8px;
-            background: linear-gradient(180deg, rgba(139,195,74,0.5), rgba(104,159,56,0.3));
-            border-radius: 1px;
-            pointer-events: none;
-        }
+.cell::before,
+.cell::after {
+    content: '';
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: linear-gradient(180deg, rgba(139,195,74,0.5), rgba(104,159,56,0.3));
+    border-radius: 1px;
+    pointer-events: none;
+}
 
-        .cell::before {
-            left: 15%;
-            bottom: 20%;
-            transform: rotate(-5deg);
-        }
+.cell::before {
+    left: 15%;
+    bottom: 20%;
+    transform: rotate(-5deg);
+}
 
-        .cell::after {
-            right: 15%;
-            bottom: 25%;
-            transform: rotate(3deg);
-        }
+.cell::after {
+    right: 15%;
+    bottom: 25%;
+    transform: rotate(3deg);
+}
 
-        .block {
-            position: absolute;
-            border-radius: 14px;
-            cursor: grab;
-            transition: none;
-            touch-action: none;
-            backdrop-filter: blur(2px) saturate(1.2);
-            -webkit-backdrop-filter: blur(2px) saturate(1.2);
-            border: 1px solid rgba(255,255,255,0.4);
-            box-shadow: 
-                0 4px 12px rgba(0,0,0,0.1),
-                inset 0 2px 4px rgba(255,255,255,0.3),
-                inset 0 -2px 4px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-            overflow: hidden;
-        }
+.block {
+    position: absolute;
+    border-radius: 14px;
+    cursor: grab;
+    transition: none;
+    touch-action: none;
+    backdrop-filter: blur(2px) saturate(1.2);
+    -webkit-backdrop-filter: blur(2px) saturate(1.2);
+    border: 1px solid rgba(255,255,255,0.4);
+    box-shadow: 
+        0 4px 12px rgba(0,0,0,0.1),
+        inset 0 2px 4px rgba(255,255,255,0.3),
+        inset 0 -2px 4px rgba(0,0,0,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    overflow: hidden;
+}
 
-        .block::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05) 100%);
-            pointer-events: none;
-        }
+.block::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05) 100%);
+    pointer-events: none;
+}
 
-        .block::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 40%;
-            border-radius: 14px 14px 0 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
-            pointer-events: none;
-        }
+.block::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40%;
+    border-radius: 14px 14px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+}
 
-        .block:active { cursor: grabbing; }
+.block:active { cursor: grabbing; }
 
-        .block .icon {
-            font-size: 36px;
-            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
-            pointer-events: none;
-        }
+.block .icon {
+    font-size: 36px;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+    pointer-events: none;
+}
 
-        .player-block {
-            z-index: 5;
-            border: 2px solid rgba(255,255,255,0.5);
-            box-shadow: 
-                0 4px 12px rgba(0,0,0,0.15),
-                inset 0 2px 4px rgba(255,255,255,0.4),
-                inset 0 -2px 4px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
+.player-block {
+    z-index: 5;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-shadow: 
+        0 4px 12px rgba(0,0,0,0.15),
+        inset 0 2px 4px rgba(255,255,255,0.4),
+        inset 0 -2px 4px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
 
-        .player-block::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 14px;
-            background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05) 100%);
-            pointer-events: none;
-        }
+.player-block::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0.05) 50%, rgba(0,0,0,0.05) 100%);
+    pointer-events: none;
+}
 
-        .player-block::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 40%;
-            border-radius: 14px 14px 0 0;
-            background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
-            pointer-events: none;
-        }
+.player-block::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 40%;
+    border-radius: 14px 14px 0 0;
+    background: linear-gradient(180deg, rgba(255,255,255,0.15) 0%, transparent 100%);
+    pointer-events: none;
+}
 
-        .player-block .icon { font-size: 32px; }
+.player-block .icon { font-size: 32px; }
 
-        /* 小雞移動路徑的黃土路效果（row 上的格子） */
-        .cell.path-cell {
-            background: rgba(188,170,100,0.35);
-            border: 1px solid rgba(160,140,80,0.25);
-            box-shadow: inset 0 0 4px rgba(140,120,60,0.1);
-        }
+/* 小雞移動路徑的黃土路效果（row 上的格子） */
+.cell.path-cell {
+    background: rgba(188,170,100,0.35);
+    border: 1px solid rgba(160,140,80,0.25);
+    box-shadow: inset 0 0 4px rgba(140,120,60,0.1);
+}
 
-        .cell.path-cell::before,
-        .cell.path-cell::after {
-            background: linear-gradient(180deg, rgba(139,195,74,0.5), rgba(104,159,56,0.3));
-        }
+.cell.path-cell::before,
+.cell.path-cell::after {
+    background: linear-gradient(180deg, rgba(139,195,74,0.5), rgba(104,159,56,0.3));
+}
 
-        #overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(90,61,122,0.5);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
+#overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(90,61,122,0.5);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
 
-        #overlay.show { opacity: 1; pointer-events: auto; }
+#overlay.show { opacity: 1; pointer-events: auto; }
 
-        .modal {
-            background: rgba(255,255,255,0.7);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border-radius: 24px;
-            padding: 32px;
-            text-align: center;
-            box-shadow: 0 8px 40px rgba(90,61,122,0.2);
-            max-width: 320px;
-            width: 85vw;
-        }
+.modal {
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-radius: 24px;
+    padding: 32px;
+    text-align: center;
+    box-shadow: 0 8px 40px rgba(90,61,122,0.2);
+    max-width: 320px;
+    width: 85vw;
+}
 
-        .modal h2 {
-            color: #5a3d7a;
-            font-size: 24px;
-            margin-bottom: 12px;
-        }
+.modal h2 {
+    color: #5a3d7a;
+    font-size: 24px;
+    margin-bottom: 12px;
+}
 
-        .modal p {
-            color: #6b5090;
-            font-size: 15px;
-            margin-bottom: 20px;
-        }
+.modal p {
+    color: #6b5090;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
 
-        .btn {
-            display: inline-block;
-            padding: 12px 32px;
-            background: linear-gradient(135deg, #c9a4e8, #a78bdb);
-            color: white;
-            border: none;
-            border-radius: 16px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(90,61,122,0.2);
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
-            font-family: inherit;
-        }
+.btn {
+    display: inline-block;
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #c9a4e8, #a78bdb);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(90,61,122,0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+    font-family: inherit;
+}
 
-        .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(90,61,122,0.25); }
-        .btn:active { transform: translateY(1px); }
+.btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(90,61,122,0.25); }
+.btn:active { transform: translateY(1px); }
 
-        .hidden { display: none; }
+.hidden { display: none; }
 
-        @media (max-width: 480px) {
-            .title-bar { font-size: 18px; }
-            .info-bar span { font-size: 13px; }
-            .modal { padding: 24px; }
-            .modal h2 { font-size: 20px; }
-            .block .icon { font-size: 28px; }
-            .player-block .icon { font-size: 26px; }
-        }
-    </style>
+@media (max-width: 480px) {
+    .title-bar { font-size: 18px; }
+    .info-bar span { font-size: 13px; }
+    .modal { padding: 24px; }
+    .modal h2 { font-size: 20px; }
+    .block .icon { font-size: 28px; }
+    .player-block .icon { font-size: 26px; }
+}
+</style>
 </head>
 <body>
 
-    <div id="game-container">
-         <div class="title-bar">🐣 小雞回家 🐔</div>
-         <div class="stage-desc" id="stage-desc">
-             <span>其他動物擋住了小雞回家的路，請幫助小雞回家！</span>
-             <span>注意：直的只能垂直移動，橫的只能水平移動。</span>
-             <span>小雞到達對面即可進入下一關。</span>
-         </div>
-         <div class="info-bar">
-             <span id="stage-info">第 1 關</span>
-             <div style="display: flex; align-items: center; gap: 12px;">
-                 <span id="move-info">步數：0</span>
-                 <button id="reset-btn" class="btn" style="padding: 4px 8px; font-size: 11px; line-height: 1; height: 20px; border-radius: 10px;">🔄 重置位置</button>
-             </div>
-         </div>
-         <div id="board"></div>
+<div id="game-container">
+     <div class="title-bar">🐣 小雞回家 🐔</div>
+     <div class="stage-desc" id="stage-desc">
+         <span>其他動物擋住了小雞回家的路，請幫助小雞回家！</span>
+         <span>注意：直的只能垂直移動，橫的只能水平移動。</span>
+         <span>小雞到達對面即可進入下一關。</span>
      </div>
+     <div class="info-bar">
+         <span id="stage-info">第 1 關</span>
+         <div style="display: flex; align-items: center; gap: 12px;">
+             <span id="move-info">步數：0</span>
+             <button id="reset-btn" class="btn" style="padding: 4px 8px; font-size: 11px; line-height: 1; height: 20px; border-radius: 10px;">🔄 重置位置</button>
+         </div>
+     </div>
+     <div id="board"></div>
+ </div>
 
-    <div id="overlay">
-        <div class="modal" id="modal-content"></div>
-    </div>
+<div id="overlay">
+    <div class="modal" id="modal-content"></div>
+</div>
 
-    <script>
-        const GRID_W = 6;
-        const GRID_H = 6;
+<script>
+const GRID_W = 6;
+const GRID_H = 6;
 
-        const COLORS = {
-            horizontal: [
-                ['#E98051','#F9AE52'],
-                ['#FFC2F9','#FF57A0'],
-                ['#EEA0A0','#D19999'],
-                ['#773E18','#B17B2F'],
-                ['#B4B9FD','#98C3FB'],
-                ['#C3B1E1','#E0D0F5'],
-                ['#FBDE74','#FFE09E'],
-                ['#FFB685','#FFC894'],
-                ['#DFDDFD','#C8BED5'],
-                ['#7CFDEE','#BEF3F4'],
-                ['#920C0C','#BB1637'],
-                ['#535C7F','#7179A2'],
-                ['#BD0094','#B290A9'],
-                ['#92E2BD','#B9E4D1'],
-                ['#FFDFD3','#FFF0EB'],
-            ],
-            vertical: [
-                ['#B5EAD7','#D8F5E9'],
-                ['#E2F0CB','#F0F9DE'],
-                ['#C4A8E0','#DDD1F0'],
-                ['#FFC6A0','#FFE5CC'],
-                ['#FFABAB','#FFD4D4'],
-            ]
-        };
+const COLORS = {
+    horizontal: [
+        ['#E98051','#F9AE52'],
+        ['#FFC2F9','#FF57A0'],
+        ['#EEA0A0','#D19999'],
+        ['#773E18','#B17B2F'],
+        ['#B4B9FD','#98C3FB'],
+        ['#C3B1E1','#E0D0F5'],
+        ['#FBDE74','#FFE09E'],
+        ['#FFB685','#FFC894'],
+        ['#DFDDFD','#C8BED5'],
+        ['#7CFDEE','#BEF3F4'],
+        ['#920C0C','#BB1637'],
+        ['#535C7F','#7179A2'],
+        ['#BD0094','#B290A9'],
+        ['#92E2BD','#B9E4D1'],
+        ['#FFDFD3','#FFF0EB'],
+    ],
+    vertical: [
+        ['#B5EAD7','#D8F5E9'],
+        ['#E2F0CB','#F0F9DE'],
+        ['#C4A8E0','#DDD1F0'],
+        ['#FFC6A0','#FFE5CC'],
+        ['#FFABAB','#FFD4D4'],
+    ]
+};
 
-        const BLOCK_ICONS = {
-            horizontal: ['🐱','🐮','🐵','🐻','🦥','🐶','🐸','🦁','🐼','🐨','🦊','🐹','🐍','🐢','🦝'],
-            vertical: ['🌸','🍄','🐝','🌳','🌵']
-        };
+const BLOCK_ICONS = {
+    horizontal: ['🐱','🐮','🐵','🐻','🦥','🐶','🐸','🦁','🐼','🐨','🦊','🐹','🐍','🐢','🦝'],
+    vertical: ['🌸','🍄','🐝','🌳','🌵']
+};
 
-        let currentStage = 0;
-        let moves = 0;
-        let dragging = null;
-        let dragStartX = 0, dragStartY = 0;
-        let blockOrigX = 0, blockOrigY = 0;
-        let isMobile = false;
-        let currentLevelData = null; // 存放當前關卡的運行數據
-        const SAVE_KEY = 'chicken_save_data';
-        // playMode: 'continue'=繼續闖關(更新resume), 'restart'=重新開始(通關比較best), 'freeplay'=自由選關(不寫)
-        window._playMode = 'freeplay';
+let currentStage = 0;
+let moves = 0;
+let dragging = null;
+let dragStartX = 0, dragStartY = 0;
+let blockOrigX = 0, blockOrigY = 0;
+let isMobile = false;
+let currentLevelData = null; // 存放當前關卡的運行數據
+const SAVE_KEY = 'chicken_save_data';
+// playMode: 'continue'=繼續闖關(更新resume), 'restart'=重新開始(通關比較best), 'freeplay'=自由選關(不寫)
+window._playMode = 'freeplay';
 
-        function loadSaveData() {
-            try {
-                const raw = localStorage.getItem(SAVE_KEY);
-                if (!raw) return null;
-                return JSON.parse(raw);
-            } catch (e) {}
-            return null;
+function loadSaveData() {
+    try {
+        const raw = localStorage.getItem(SAVE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch (e) {}
+    return null;
+}
+
+function saveBestRecord(highestStage, totalMoves) {
+    // 比較 best 紀錄，只有更好才寫入
+    try {
+        const save = loadSaveData();
+        const best = save ? save.best : null;
+        let isBetter = false;
+        
+        if (!best || best.highestStage === 0) {
+            isBetter = true;
+        } else if (highestStage > best.highestStage) {
+            isBetter = true;
+        } else if (highestStage >= best.highestStage && totalMoves < best.totalMoves) {
+            isBetter = true;
         }
-
-        function saveBestRecord(highestStage, totalMoves) {
-            // 比較 best 紀錄，只有更好才寫入
-            try {
-                const save = loadSaveData();
-                const best = save ? save.best : null;
-                let isBetter = false;
-                
-                if (!best || best.highestStage === 0) {
-                    isBetter = true;
-                } else if (highestStage > best.highestStage) {
-                    isBetter = true;
-                } else if (highestStage >= best.highestStage && totalMoves < best.totalMoves) {
-                    isBetter = true;
-                }
-                
-                if (isBetter) {
-                    if (!save) save = {};
-                    save.best = {
-                        highestStage: Math.max(highestStage, 0),
-                        totalMoves: totalMoves || 0
-                    };
-                    localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-                }
-            } catch (e) {}
-        }
-
-        function saveResumeProgress(highestStage, totalMoves) {
-            // 更新 resume 進度（每次過關都寫）
-            try {
-                const save = loadSaveData() || {};
-                save.resume = {
-                    highestStage: Math.max(highestStage, 0),
-                    totalMoves: totalMoves || 0
-                };
-                
-                // 只有通關最後一關時才更新 best
-                if (highestStage === STAGES.length) {
-                    const best = save.best || { highestStage: 0, totalMoves: Infinity };
-                    if (highestStage > best.highestStage) {
-                        save.best = {
-                            highestStage: highestStage,
-                            totalMoves: totalMoves
-                        };
-                    }
-                }
-                
-                localStorage.setItem(SAVE_KEY, JSON.stringify(save));
-            } catch (e) {}
-        }
-
-        function init() {
-            isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-            setupInput();
-
-            const save = loadSaveData();
-            const best = save ? save.best : null;
-            const resume = save ? save.resume : null;
-            
-            if (resume && resume.highestStage >= 1) {
-                // 有繼續進度，顯示繼續/重新開始
-                if (resume.highestStage >= STAGES.length) {
-                    // 繼續進度已通關，顯示最佳紀錄 + 選擇關卡
-                    showAllClearModal(best ? best.totalMoves : 0);
-                } else if (best && best.highestStage > resume.highestStage) {
-                    // resume 落後於 best，提供從 best 開始的選項
-                    showResumeModal(resume, best, true);
-                } else {
-                    showResumeModal(resume, best);
-                }
-            } else if (best && best.highestStage >= 1) {
-                // 沒有繼續進度但有最佳紀錄，顯示最佳紀錄 + 重新開始
-                showBestRecordModal(best);
-            } else {
-                window._playMode = 'continue';
-                showStageScreen(1);
-            }
-        }
-
-        function showResumeModal(resume, best, showBestOption) {
-            const modal = document.getElementById('modal-content');
-            const bestText = best && best.highestStage >= STAGES.length 
-                ? `您的最佳通關紀錄：${best.totalMoves} 步` 
-                : (best && best.highestStage >= 1 ? `最佳紀錄：第 ${best.highestStage} 關，${best.totalMoves} 步` : '');
-            
-            let buttons = `<button class="btn" id="btn-resume">繼續 (${resume.highestStage + 1} 關起)</button>`;
-            buttons += `<button class="btn" id="btn-restart-new" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">重新開始</button>`;
-            if (showBestOption) {
-                buttons += `<button class="btn" id="btn-best" style="background:linear-gradient(135deg,#f0c050,#e0a030);">從最佳紀錄 (${best.highestStage + 1} 關起)</button>`;
-            }
-            
-            modal.innerHTML = `
-                <h2>📂 發現存檔</h2>
-                <p>您上次玩到第 ${resume.highestStage} 關，已用 ${resume.totalMoves} 步。<br>${bestText ? bestText + '<br>' : ''}要繼續闖關還是重新開始？</p>
-                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                    ${buttons}
-                </div>
-            `;
-            showOverlay();
-            document.getElementById('btn-resume').onclick = function() {
-                hideOverlay();
-                window._playMode = 'continue';
-                window._totalMoves = resume.totalMoves;
-                showStageScreen(resume.highestStage + 1);
+        
+        if (isBetter) {
+            if (!save) save = {};
+            save.best = {
+                highestStage: Math.max(highestStage, 0),
+                totalMoves: totalMoves || 0
             };
-            document.getElementById('btn-restart-new').onclick = function() {
-                hideOverlay();
-                window._playMode = 'restart';
-                window._totalMoves = 0;
-                showStageScreen(1);
-            };
-            if (showBestOption) {
-                document.getElementById('btn-best').onclick = function() {
-                    hideOverlay();
-                    window._playMode = 'continue';
-                    window._totalMoves = best.totalMoves;
-                    showStageScreen(best.highestStage + 1);
+            localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+        }
+    } catch (e) {}
+}
+
+function saveResumeProgress(highestStage, totalMoves) {
+    // 更新 resume 進度（每次過關都寫）
+    try {
+        const save = loadSaveData() || {};
+        save.resume = {
+            highestStage: Math.max(highestStage, 0),
+            totalMoves: totalMoves || 0
+        };
+        
+        // 只有通關最後一關時才更新 best
+        if (highestStage === STAGES.length) {
+            const best = save.best || { highestStage: 0, totalMoves: Infinity };
+            if (highestStage > best.highestStage) {
+                save.best = {
+                    highestStage: highestStage,
+                    totalMoves: totalMoves
                 };
             }
         }
+        
+        localStorage.setItem(SAVE_KEY, JSON.stringify(save));
+    } catch (e) {}
+}
 
-        function showBestRecordModal(best) {
-            const modal = document.getElementById('modal-content');
-            modal.innerHTML = `
-                <h2>🏆 歡迎回來</h2>
-                <p>您的最佳通關紀錄：${best.totalMoves} 步完成全部 ${best.highestStage} 關！<br>要重新挑戰嗎？</p>
-                <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
-                    <button class="btn" id="btn-restart-best">重新開始</button>
-                </div>
-            `;
-            showOverlay();
-            document.getElementById('btn-restart-best').onclick = function() {
-                hideOverlay();
-                window._playMode = 'restart';
-                window._totalMoves = 0;
-                showStageScreen(1);
-            };
+function init() {
+    isMobile = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    setupInput();
+
+    const save = loadSaveData();
+    const best = save ? save.best : null;
+    const resume = save ? save.resume : null;
+    
+    if (resume && resume.highestStage >= 1) {
+        // 有繼續進度，顯示繼續/重新開始
+        if (resume.highestStage >= STAGES.length) {
+            // 繼續進度已通關，顯示最佳紀錄 + 選擇關卡
+            showAllClearModal(best ? best.totalMoves : 0);
+        } else if (best && best.highestStage > resume.highestStage) {
+            // resume 落後於 best，提供從 best 開始的選項
+            showResumeModal(resume, best, true);
+        } else {
+            showResumeModal(resume, best);
         }
+    } else if (best && best.highestStage >= 1) {
+        // 沒有繼續進度但有最佳紀錄，顯示最佳紀錄 + 重新開始
+        showBestRecordModal(best);
+    } else {
+        window._playMode = 'continue';
+        showStageScreen(1);
+    }
+}
 
-        function showAllClearModal(bestTotalMoves) {
-            const modal = document.getElementById('modal-content');
-            let options = '';
-            for (let i = 1; i <= STAGES.length; i++) {
-                options += `<option value="${i}">${i} 關</option>`;
-            }
-            modal.innerHTML = `
-                <h2>🏆 全部通關！</h2>
-                <p>您的最佳紀錄：${bestTotalMoves} 步完成全部 ${STAGES.length} 關！<br>要重新挑戰還是從指定關卡開始？</p>
-                <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
-                    <select id="stage-select" style="padding:8px 12px;border-radius:12px;font-size:14px;border:1px solid #ccc;font-family:inherit;">
-                        ${options}
-                    </select>
-                    <button class="btn" id="btn-start-stage">從選擇關卡開始</button>
-                </div>
-                <div style="margin-top:12px;">
-                    <button class="btn" id="btn-restart-all" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">全部重新開始</button>
-                </div>
-            `;
-            showOverlay();
-            document.getElementById('btn-start-stage').onclick = function() {
-                const val = parseInt(document.getElementById('stage-select').value);
-                hideOverlay();
-                window._playMode = 'freeplay';
-                window._totalMoves = 0;
-                showStageScreen(val);
-            };
-            document.getElementById('btn-restart-all').onclick = function() {
-                hideOverlay();
-                window._playMode = 'restart';
-                window._totalMoves = 0;
-                showStageScreen(1);
-            };
-        }
-
-        function showStageScreen(stage) {
-            currentStage = stage - 1;
-            if (stage > 1) {
-                window._totalMoves = (window._totalMoves || 0) + moves;
-            }
-            moves = 0;
-            document.getElementById('stage-info').textContent = `第 ${stage} 關`;
-            document.getElementById('move-info').textContent = '步數：0';
-            
-            // 關鍵：初始化當前關卡的副本
-            currentLevelData = JSON.parse(JSON.stringify(STAGES[currentStage]));
-            
-            renderBoard();
+function showResumeModal(resume, best, showBestOption) {
+    const modal = document.getElementById('modal-content');
+    const bestText = best && best.highestStage >= STAGES.length 
+        ? `您的最佳通關紀錄：${best.totalMoves} 步` 
+        : (best && best.highestStage >= 1 ? `最佳紀錄：第 ${best.highestStage} 關，${best.totalMoves} 步` : '');
+    
+    let buttons = `<button class="btn" id="btn-resume">繼續 (${resume.highestStage + 1} 關起)</button>`;
+    buttons += `<button class="btn" id="btn-restart-new" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">重新開始</button>`;
+    if (showBestOption) {
+        buttons += `<button class="btn" id="btn-best" style="background:linear-gradient(135deg,#f0c050,#e0a030);">從最佳紀錄 (${best.highestStage + 1} 關起)</button>`;
+    }
+    
+    modal.innerHTML = `
+        <h2>📂 發現存檔</h2>
+        <p>您上次玩到第 ${resume.highestStage} 關，已用 ${resume.totalMoves} 步。<br>${bestText ? bestText + '<br>' : ''}要繼續闖關還是重新開始？</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            ${buttons}
+        </div>
+    `;
+    showOverlay();
+    document.getElementById('btn-resume').onclick = function() {
+        hideOverlay();
+        window._playMode = 'continue';
+        window._totalMoves = resume.totalMoves;
+        showStageScreen(resume.highestStage + 1);
+    };
+    document.getElementById('btn-restart-new').onclick = function() {
+        hideOverlay();
+        window._playMode = 'restart';
+        window._totalMoves = 0;
+        showStageScreen(1);
+    };
+    if (showBestOption) {
+        document.getElementById('btn-best').onclick = function() {
             hideOverlay();
-            
-            // 綁定重置按鈕
-            const resetBtn = document.getElementById('reset-btn');
-            if (resetBtn) {
-                resetBtn.onclick = resetCurrentStage;
+            window._playMode = 'continue';
+            window._totalMoves = best.totalMoves;
+            showStageScreen(best.highestStage + 1);
+        };
+    }
+}
+
+function showBestRecordModal(best) {
+    const modal = document.getElementById('modal-content');
+    modal.innerHTML = `
+        <h2>🏆 歡迎回來</h2>
+        <p>您的最佳通關紀錄：${best.totalMoves} 步完成全部 ${best.highestStage} 關！<br>要重新挑戰嗎？</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+            <button class="btn" id="btn-restart-best">重新開始</button>
+        </div>
+    `;
+    showOverlay();
+    document.getElementById('btn-restart-best').onclick = function() {
+        hideOverlay();
+        window._playMode = 'restart';
+        window._totalMoves = 0;
+        showStageScreen(1);
+    };
+}
+
+function showAllClearModal(bestTotalMoves) {
+    const modal = document.getElementById('modal-content');
+    let options = '';
+    for (let i = 1; i <= STAGES.length; i++) {
+        options += `<option value="${i}">${i} 關</option>`;
+    }
+    modal.innerHTML = `
+        <h2>🏆 全部通關！</h2>
+        <p>您的最佳紀錄：${bestTotalMoves} 步完成全部 ${STAGES.length} 關！<br>要重新挑戰還是從指定關卡開始？</p>
+        <div style="display:flex;gap:12px;justify-content:center;align-items:center;flex-wrap:wrap;">
+            <select id="stage-select" style="padding:8px 12px;border-radius:12px;font-size:14px;border:1px solid #ccc;font-family:inherit;">
+                ${options}
+            </select>
+            <button class="btn" id="btn-start-stage">從選擇關卡開始</button>
+        </div>
+        <div style="margin-top:12px;">
+            <button class="btn" id="btn-restart-all" style="background:linear-gradient(135deg,#a78bdb,#8b6fc0);">全部重新開始</button>
+        </div>
+    `;
+    showOverlay();
+    document.getElementById('btn-start-stage').onclick = function() {
+        const val = parseInt(document.getElementById('stage-select').value);
+        hideOverlay();
+        window._playMode = 'freeplay';
+        window._totalMoves = 0;
+        showStageScreen(val);
+    };
+    document.getElementById('btn-restart-all').onclick = function() {
+        hideOverlay();
+        window._playMode = 'restart';
+        window._totalMoves = 0;
+        showStageScreen(1);
+    };
+}
+
+function showStageScreen(stage) {
+    currentStage = stage - 1;
+    if (stage > 1) {
+        window._totalMoves = (window._totalMoves || 0) + moves;
+    }
+    moves = 0;
+    document.getElementById('stage-info').textContent = `第 ${stage} 關`;
+    document.getElementById('move-info').textContent = '步數：0';
+    
+    // 關鍵：初始化當前關卡的副本
+    currentLevelData = JSON.parse(JSON.stringify(STAGES[currentStage]));
+    
+    renderBoard();
+    hideOverlay();
+    
+    // 綁定重置按鈕
+    const resetBtn = document.getElementById('reset-btn');
+    if (resetBtn) {
+        resetBtn.onclick = resetCurrentStage;
+    }
+}
+
+function getCurrentTotalMoves() {
+    return (window._totalMoves || 0) + moves;
+}
+
+function resetCurrentStage() {
+        // 重置當前關卡的數據，但保留步數
+        currentLevelData = JSON.parse(JSON.stringify(STAGES[currentStage]));
+        renderBoard();
+        hideOverlay();
+    }
+
+function getCellSize() {
+    const boardEl = document.getElementById('board');
+    return boardEl.clientWidth / GRID_W;
+}
+
+function clearBoard() {
+    const board = document.getElementById('board');
+    board.innerHTML = '';
+}
+
+function renderBoard() {
+    clearBoard();
+    const cellSize = getCellSize();
+    const stage = currentLevelData;
+    // ... rest of the code ...
+
+    for (let r = 0; r < GRID_H; r++) {
+        for (let c = 0; c < GRID_W; c++) {
+            const cell = document.createElement('div');
+            cell.className = 'cell';
+            cell.style.left = (c * cellSize) + 'px';
+            cell.style.top = (r * cellSize) + 'px';
+            cell.style.width = cellSize + 'px';
+            cell.style.height = cellSize + 'px';
+            document.getElementById('board').appendChild(cell);
+        }
+    }
+
+    // Highlight player's path row as dirt road
+    const playerRow = stage.player.row;
+    const allCells = document.getElementById('board').querySelectorAll('.cell');
+    allCells.forEach((cell, index) => {
+        const row = Math.floor(index / GRID_W);
+        if (row === playerRow) {
+            cell.classList.add('path-cell');
+        }
+    });
+
+    // Draw blocks
+    stage.blocks.forEach((block, i) => {
+    const el = createBlockElement(block, cellSize, COLORS.horizontal[i % COLORS.horizontal.length], BLOCK_ICONS.horizontal[i % BLOCK_ICONS.horizontal.length]);
+    document.getElementById('board').appendChild(el);
+});
+
+    // Draw player
+    const p = stage.player;
+    const pEl = createPlayerElement(p.col, p.row, cellSize);
+    document.getElementById('board').appendChild(pEl);
+}
+
+function createBlockElement(block, cellSize, colors, icon) {
+    const el = document.createElement('div');
+    el.className = 'block';
+    el.dataset.blockIndex = block.index;
+    const w = block.w * cellSize - 4;
+    const h = block.h * cellSize - 4;
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.left = (block.col * cellSize + 2) + 'px';
+    el.style.top = (block.row * cellSize + 2) + 'px';
+    el.style.background = `linear-gradient(135deg, ${colors[0]}88, ${colors[1]}99)`;
+    el.style.backdropFilter = 'blur(3px) saturate(1.3)';
+    el.style.webkitBackdropFilter = 'blur(3px) saturate(1.3)';
+
+    const spanEl = document.createElement('span');
+    spanEl.className = 'icon';
+    spanEl.textContent = icon;
+    el.appendChild(spanEl);
+
+    return el;
+}
+
+function createPlayerElement(col, row, cellSize) {
+    const el = document.createElement('div');
+    el.className = 'block player-block';
+    el.id = 'player-block';
+    const w = 2 * cellSize - 4;
+    const h = cellSize - 4;
+    el.style.width = w + 'px';
+    el.style.height = h + 'px';
+    el.style.left = (col * cellSize + 2) + 'px';
+    el.style.top = (row * cellSize + 2) + 'px';
+    const grad = 'linear-gradient(135deg, #FFE0B2, #FFCC80)';
+    el.style.background = grad;
+
+    const spanEl = document.createElement('span');
+    spanEl.className = 'icon';
+    spanEl.textContent = '🐣🐥';
+    el.appendChild(spanEl);
+
+    return el;
+}
+
+function getOccupiedCellsExcludingPlayer(stage) {
+    const cells = new Set();
+    stage.blocks.forEach(b => {
+        for (let dr = 0; dr < b.h; dr++) {
+            for (let dc = 0; dc < b.w; dc++) {
+                cells.add(`${b.row + dr},${b.col + dc}`);
             }
         }
+    });
+    return cells;
+}
 
-        function getCurrentTotalMoves() {
-            return (window._totalMoves || 0) + moves;
-        }
-
-        function resetCurrentStage() {
-                // 重置當前關卡的數據，但保留步數
-                currentLevelData = JSON.parse(JSON.stringify(STAGES[currentStage]));
-                renderBoard();
-                hideOverlay();
+// Get all occupied cells by ALL blocks (including the dragging block's current position)
+// Also includes the player's cells
+function getOccupiedCellsByBlocks(stage, excludeBlockIndex) {
+    const cells = new Set();
+    stage.blocks.forEach(b => {
+        if (excludeBlockIndex !== undefined && b.index === excludeBlockIndex) return;
+        for (let dr = 0; dr < b.h; dr++) {
+            for (let dc = 0; dc < b.w; dc++) {
+                cells.add(`${b.row + dr},${b.col + dc}`);
             }
-
-        function getCellSize() {
-            const boardEl = document.getElementById('board');
-            return boardEl.clientWidth / GRID_W;
         }
+    });
+    // Add player cells
+    const p = stage.player;
+    for (let pc = 0; pc < 2; pc++) {
+        cells.add(`${p.row},${p.col + pc}`);
+    }
+    return cells;
+}
 
-        function clearBoard() {
-            const board = document.getElementById('board');
-            board.innerHTML = '';
+function canPlayerMove(stage, targetCol) {
+    const p = stage.player;
+    const occupied = getOccupiedCellsExcludingPlayer(stage);
+
+    if (targetCol === p.col) return true;
+
+    // Player spans 2 cells. Moving from (p.col, p.col+1) to (targetCol, targetCol+1)
+    // Check ALL cells between old and new positions for obstacles
+    const startCol = Math.min(p.col, targetCol);
+    const endCol = Math.max(p.col, targetCol) + 1; // +1 to include the left cell of new position
+
+    for (let c = startCol; c < endCol; c++) {
+        if (c < 0 || c >= GRID_W) return false;
+        const key = `${p.row},${c}`;
+        if (occupied.has(key)) return false;
+    }
+
+    // Also check the rightmost cell of new position if it extends beyond old position
+    const rightEdge = targetCol + 1;
+    if (rightEdge > p.col + 1) {
+        if (rightEdge < GRID_W) {
+            const key = `${p.row},${rightEdge}`;
+            if (occupied.has(key)) return false;
         }
+    }
 
-        function renderBoard() {
-            clearBoard();
-            const cellSize = getCellSize();
-            const stage = currentLevelData;
-            // ... rest of the code ...
+    return true;
+}
 
-            for (let r = 0; r < GRID_H; r++) {
-                for (let c = 0; c < GRID_W; c++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.style.left = (c * cellSize) + 'px';
-                    cell.style.top = (r * cellSize) + 'px';
-                    cell.style.width = cellSize + 'px';
-                    cell.style.height = cellSize + 'px';
-                    document.getElementById('board').appendChild(cell);
-                }
+function canMoveBlock(block, targetRow, targetCol, stage) {
+    const newRow = targetRow;
+    const newCol = targetCol;
+
+    if (newCol < 0 || newRow < 0 || newRow + block.h > GRID_H || newCol + block.w > GRID_W) return false;
+
+    const occupied = getOccupiedCellsByBlocks(stage, block.index);
+
+    // Check cells the block traverses (from old position to new position)
+    const startRow = Math.min(block.row, newRow);
+    const endRow = Math.max(block.row + block.h, newRow + block.h);
+    const startCol = Math.min(block.col, newCol);
+    const endCol = Math.max(block.col + block.w, newCol + block.w);
+
+    for (let r = startRow; r < endRow; r++) {
+        for (let c = startCol; c < endCol; c++) {
+            const key = `${r},${c}`;
+            if (occupied.has(key)) return false;
+        }
+    }
+
+    return true;
+}
+
+function checkWin(stage) {
+    const p = stage.player;
+    // Player reaches rightmost columns (col 4-5 means the block spans 4,5)
+    return p.col >= GRID_W - 2;
+}
+
+// Input handling
+function setupInput() {
+    const board = document.getElementById('board');
+
+    board.addEventListener('mousedown', onPointerDown);
+    board.addEventListener('touchstart', onPointerDown, { passive: false });
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('mouseup', onPointerUp);
+    window.addEventListener('touchend', onPointerUp);
+}
+
+function getEventPos(e) {
+    if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    return { x: e.clientX, y: e.clientY };
+}
+
+function onPointerDown(e) {
+    e.preventDefault();
+    const pos = getEventPos(e);
+    const boardEl = document.getElementById('board');
+    const rect = boardEl.getBoundingClientRect();
+    const relX = pos.x - rect.left;
+    const relY = pos.y - rect.top;
+
+    // Check if clicking on the player first (higher priority)
+    const stage = currentLevelData;
+    const p = stage.player;
+    const cellSize = getCellSize();
+    const px = p.col * cellSize + 2;
+    const py = p.row * cellSize + 2;
+    const pw = 2 * cellSize - 4;
+    const ph = cellSize - 4;
+
+    if (relX >= px && relX <= px + pw && relY >= py && relY <= py + ph) {
+        dragging = -1; // special index for player
+        dragStartX = pos.x;
+        dragStartY = pos.y;
+        blockOrigX = p.col * cellSize + 2;
+        blockOrigY = p.row * cellSize + 2;
+        const pEl = document.getElementById('player-block');
+        if (pEl) {
+            pEl.style.transition = 'none';
+            pEl.style.zIndex = 10;
+        }
+        return;
+    }
+
+    // Check if clicking on a block
+    for (let i = stage.blocks.length - 1; i >= 0; i--) {
+        const b = stage.blocks[i];
+        const bx = b.col * cellSize + 2;
+        const by = b.row * cellSize + 2;
+        const bw = b.w * cellSize - 4;
+        const bh = b.h * cellSize - 4;
+
+        if (relX >= bx && relX <= bx + bw && relY >= by && relY <= by + bh) {
+            dragging = i;
+            dragStartX = pos.x;
+            dragStartY = pos.y;
+            blockOrigX = b.col * cellSize + 2;
+            blockOrigY = b.row * cellSize + 2;
+
+            const el = boardEl.querySelector(`[data-block-index="${i}"]`);
+            if (el) {
+                el.style.transition = 'none';
+                el.style.zIndex = 10;
             }
-
-            // Highlight player's path row as dirt road
-            const playerRow = stage.player.row;
-            const allCells = document.getElementById('board').querySelectorAll('.cell');
-            allCells.forEach((cell, index) => {
-                const row = Math.floor(index / GRID_W);
-                if (row === playerRow) {
-                    cell.classList.add('path-cell');
-                }
-            });
-
-            // Draw blocks
-            stage.blocks.forEach((block, i) => {
-            const el = createBlockElement(block, cellSize, COLORS.horizontal[i % COLORS.horizontal.length], BLOCK_ICONS.horizontal[i % BLOCK_ICONS.horizontal.length]);
-            document.getElementById('board').appendChild(el);
-        });
-
-            // Draw player
-            const p = stage.player;
-            const pEl = createPlayerElement(p.col, p.row, cellSize);
-            document.getElementById('board').appendChild(pEl);
+            break;
         }
+    }
+}
 
-        function createBlockElement(block, cellSize, colors, icon) {
-            const el = document.createElement('div');
-            el.className = 'block';
-            el.dataset.blockIndex = block.index;
-            const w = block.w * cellSize - 4;
-            const h = block.h * cellSize - 4;
-            el.style.width = w + 'px';
-            el.style.height = h + 'px';
-            el.style.left = (block.col * cellSize + 2) + 'px';
-            el.style.top = (block.row * cellSize + 2) + 'px';
-            el.style.background = `linear-gradient(135deg, ${colors[0]}88, ${colors[1]}99)`;
-            el.style.backdropFilter = 'blur(3px) saturate(1.3)';
-            el.style.webkitBackdropFilter = 'blur(3px) saturate(1.3)';
+function onPointerMove(e) {
+    e.preventDefault();
+    if (dragging === null) return;
 
-            const spanEl = document.createElement('span');
-            spanEl.className = 'icon';
-            spanEl.textContent = icon;
-            el.appendChild(spanEl);
+    const pos = getEventPos(e);
+    const dx = pos.x - dragStartX;
+    const dy = pos.y - dragStartY;
+    const cellSize = getCellSize();
+    const stage = currentLevelData;
 
-            return el;
-        }
+    if (dragging === -1) {
+        // Player drag: move horizontally along their row
+        const p = stage.player;
+        const startCol = p.col;
+        const targetCol = Math.round((blockOrigX + dx) / cellSize);
+        const clampedTarget = Math.max(0, Math.min(GRID_W - 2, targetCol));
 
-        function createPlayerElement(col, row, cellSize) {
-            const el = document.createElement('div');
-            el.className = 'block player-block';
-            el.id = 'player-block';
-            const w = 2 * cellSize - 4;
-            const h = cellSize - 4;
-            el.style.width = w + 'px';
-            el.style.height = h + 'px';
-            el.style.left = (col * cellSize + 2) + 'px';
-            el.style.top = (row * cellSize + 2) + 'px';
-            const grad = 'linear-gradient(135deg, #FFE0B2, #FFCC80)';
-            el.style.background = grad;
-
-            const spanEl = document.createElement('span');
-            spanEl.className = 'icon';
-            spanEl.textContent = '🐣🐥';
-            el.appendChild(spanEl);
-
-            return el;
-        }
-
-        function getOccupiedCellsExcludingPlayer(stage) {
-            const cells = new Set();
-            stage.blocks.forEach(b => {
-                for (let dr = 0; dr < b.h; dr++) {
-                    for (let dc = 0; dc < b.w; dc++) {
-                        cells.add(`${b.row + dr},${b.col + dc}`);
-                    }
-                }
-            });
-            return cells;
-        }
-
-        // Get all occupied cells by ALL blocks (including the dragging block's current position)
-        // Also includes the player's cells
-        function getOccupiedCellsByBlocks(stage, excludeBlockIndex) {
-            const cells = new Set();
-            stage.blocks.forEach(b => {
-                if (excludeBlockIndex !== undefined && b.index === excludeBlockIndex) return;
-                for (let dr = 0; dr < b.h; dr++) {
-                    for (let dc = 0; dc < b.w; dc++) {
-                        cells.add(`${b.row + dr},${b.col + dc}`);
-                    }
-                }
-            });
-            // Add player cells
-            const p = stage.player;
-            for (let pc = 0; pc < 2; pc++) {
-                cells.add(`${p.row},${p.col + pc}`);
-            }
-            return cells;
-        }
-
-        function canPlayerMove(stage, targetCol) {
-            const p = stage.player;
-            const occupied = getOccupiedCellsExcludingPlayer(stage);
-
-            if (targetCol === p.col) return true;
-
-            // Player spans 2 cells. Moving from (p.col, p.col+1) to (targetCol, targetCol+1)
-            // Check ALL cells between old and new positions for obstacles
-            const startCol = Math.min(p.col, targetCol);
-            const endCol = Math.max(p.col, targetCol) + 1; // +1 to include the left cell of new position
-
-            for (let c = startCol; c < endCol; c++) {
-                if (c < 0 || c >= GRID_W) return false;
-                const key = `${p.row},${c}`;
-                if (occupied.has(key)) return false;
-            }
-
-            // Also check the rightmost cell of new position if it extends beyond old position
-            const rightEdge = targetCol + 1;
-            if (rightEdge > p.col + 1) {
-                if (rightEdge < GRID_W) {
-                    const key = `${p.row},${rightEdge}`;
-                    if (occupied.has(key)) return false;
-                }
-            }
-
-            return true;
-        }
-
-        function canMoveBlock(block, targetRow, targetCol, stage) {
-            const newRow = targetRow;
-            const newCol = targetCol;
-
-            if (newCol < 0 || newRow < 0 || newRow + block.h > GRID_H || newCol + block.w > GRID_W) return false;
-
-            const occupied = getOccupiedCellsByBlocks(stage, block.index);
-
-            // Check cells the block traverses (from old position to new position)
-            const startRow = Math.min(block.row, newRow);
-            const endRow = Math.max(block.row + block.h, newRow + block.h);
-            const startCol = Math.min(block.col, newCol);
-            const endCol = Math.max(block.col + block.w, newCol + block.w);
-
-            for (let r = startRow; r < endRow; r++) {
-                for (let c = startCol; c < endCol; c++) {
-                    const key = `${r},${c}`;
-                    if (occupied.has(key)) return false;
-                }
-            }
-
-            return true;
-        }
-
-        function checkWin(stage) {
-            const p = stage.player;
-            // Player reaches rightmost columns (col 4-5 means the block spans 4,5)
-            return p.col >= GRID_W - 2;
-        }
-
-        // Input handling
-        function setupInput() {
-            const board = document.getElementById('board');
-
-            board.addEventListener('mousedown', onPointerDown);
-            board.addEventListener('touchstart', onPointerDown, { passive: false });
-            window.addEventListener('mousemove', onPointerMove);
-            window.addEventListener('touchmove', onPointerMove, { passive: false });
-            window.addEventListener('mouseup', onPointerUp);
-            window.addEventListener('touchend', onPointerUp);
-        }
-
-        function getEventPos(e) {
-            if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-            if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-            return { x: e.clientX, y: e.clientY };
-        }
-
-        function onPointerDown(e) {
-            e.preventDefault();
-            const pos = getEventPos(e);
-            const boardEl = document.getElementById('board');
-            const rect = boardEl.getBoundingClientRect();
-            const relX = pos.x - rect.left;
-            const relY = pos.y - rect.top;
-
-            // Check if clicking on the player first (higher priority)
-            const stage = currentLevelData;
-            const p = stage.player;
-            const cellSize = getCellSize();
-            const px = p.col * cellSize + 2;
-            const py = p.row * cellSize + 2;
-            const pw = 2 * cellSize - 4;
-            const ph = cellSize - 4;
-
-            if (relX >= px && relX <= px + pw && relY >= py && relY <= py + ph) {
-                dragging = -1; // special index for player
-                dragStartX = pos.x;
-                dragStartY = pos.y;
-                blockOrigX = p.col * cellSize + 2;
-                blockOrigY = p.row * cellSize + 2;
+        if (clampedTarget !== startCol) {
+            if (canPlayerMove(stage, clampedTarget)) {
+                p.col = clampedTarget;
                 const pEl = document.getElementById('player-block');
                 if (pEl) {
-                    pEl.style.transition = 'none';
-                    pEl.style.zIndex = 10;
+                    pEl.style.left = (p.col * cellSize + 2) + 'px';
                 }
-                return;
-            }
+                moves++;
+                document.getElementById('move-info').textContent = `步數：${moves}`;
 
-            // Check if clicking on a block
-            for (let i = stage.blocks.length - 1; i >= 0; i--) {
-                const b = stage.blocks[i];
-                const bx = b.col * cellSize + 2;
-                const by = b.row * cellSize + 2;
-                const bw = b.w * cellSize - 4;
-                const bh = b.h * cellSize - 4;
-
-                if (relX >= bx && relX <= bx + bw && relY >= by && relY <= by + bh) {
-                    dragging = i;
-                    dragStartX = pos.x;
-                    dragStartY = pos.y;
-                    blockOrigX = b.col * cellSize + 2;
-                    blockOrigY = b.row * cellSize + 2;
-
-                    const el = boardEl.querySelector(`[data-block-index="${i}"]`);
-                    if (el) {
-                        el.style.transition = 'none';
-                        el.style.zIndex = 10;
-                    }
-                    break;
+                if (checkWin(stage)) {
+                    setTimeout(() => showStageComplete(), 300);
                 }
             }
         }
+        return;
+    }
 
-        function onPointerMove(e) {
-            e.preventDefault();
-            if (dragging === null) return;
+    const block = stage.blocks[dragging];
 
-            const pos = getEventPos(e);
-            const dx = pos.x - dragStartX;
-            const dy = pos.y - dragStartY;
-            const cellSize = getCellSize();
-            const stage = currentLevelData;
+    let newCol = Math.round(blockOrigX / cellSize);
+    let newRow = Math.round(blockOrigY / cellSize);
 
-            if (dragging === -1) {
-                // Player drag: move horizontally along their row
-                const p = stage.player;
-                const startCol = p.col;
-                const targetCol = Math.round((blockOrigX + dx) / cellSize);
-                const clampedTarget = Math.max(0, Math.min(GRID_W - 2, targetCol));
+    if (block.w > block.h) {
+        // Horizontal block: only move horizontally
+        newCol += Math.round(dx / cellSize);
+    } else {
+        // Vertical block: only move vertically
+        newRow += Math.round(dy / cellSize);
+    }
 
-                if (clampedTarget !== startCol) {
-                    if (canPlayerMove(stage, clampedTarget)) {
-                        p.col = clampedTarget;
-                        const pEl = document.getElementById('player-block');
-                        if (pEl) {
-                            pEl.style.left = (p.col * cellSize + 2) + 'px';
-                        }
-                        moves++;
-                        document.getElementById('move-info').textContent = `步數：${moves}`;
+    // Clamp to board bounds
+    newCol = Math.max(0, Math.min(GRID_W - block.w, newCol));
+    newRow = Math.max(0, Math.min(GRID_H - block.h, newRow));
 
-                        if (checkWin(stage)) {
-                            setTimeout(() => showStageComplete(), 300);
-                        }
-                    }
-                }
-                return;
+    if (newCol !== block.col || newRow !== block.row) {
+        // Check if valid before updating
+        if (canMoveBlock(block, newRow, newCol, stage)) {
+            block.col = newCol;
+            block.row = newRow;
+
+            const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
+            if (el) {
+                el.style.left = (newCol * cellSize + 2) + 'px';
+                el.style.top = (newRow * cellSize + 2) + 'px';
             }
 
-            const block = stage.blocks[dragging];
+            // Update moves count
+            moves++;
+            document.getElementById('move-info').textContent = `步數：${moves}`;
 
-            let newCol = Math.round(blockOrigX / cellSize);
-            let newRow = Math.round(blockOrigY / cellSize);
-
-            if (block.w > block.h) {
-                // Horizontal block: only move horizontally
-                newCol += Math.round(dx / cellSize);
-            } else {
-                // Vertical block: only move vertically
-                newRow += Math.round(dy / cellSize);
+            // Check win
+            if (checkWin(stage)) {
+                setTimeout(() => showStageComplete(), 300);
             }
+        } else {
+                  // Snap to last valid position by stepping back one cell at a time
+                  const block = stage.blocks[dragging];
+                  const origCol = block.col;
+                  const origRow = block.row;
+                  const isHorizontal = block.w > block.h;
+                  let lastValidCol = origCol;
+                  let lastValidRow = origRow;
 
-            // Clamp to board bounds
-            newCol = Math.max(0, Math.min(GRID_W - block.w, newCol));
-            newRow = Math.max(0, Math.min(GRID_H - block.h, newRow));
-
-            if (newCol !== block.col || newRow !== block.row) {
-                // Check if valid before updating
-                if (canMoveBlock(block, newRow, newCol, stage)) {
-                    block.col = newCol;
-                    block.row = newRow;
-
-                    const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
-                    if (el) {
-                        el.style.left = (newCol * cellSize + 2) + 'px';
-                        el.style.top = (newRow * cellSize + 2) + 'px';
-                    }
-
-                    // Update moves count
-                    moves++;
-                    document.getElementById('move-info').textContent = `步數：${moves}`;
-
-                    // Check win
-                    if (checkWin(stage)) {
-                        setTimeout(() => showStageComplete(), 300);
-                    }
-                } else {
-                          // Snap to last valid position by stepping back one cell at a time
-                          const block = stage.blocks[dragging];
-                          const origCol = block.col;
-                          const origRow = block.row;
-                          const isHorizontal = block.w > block.h;
-                          let lastValidCol = origCol;
-                          let lastValidRow = origRow;
-
-                          if (isHorizontal) {
-                              const dir = newCol > origCol ? 1 : -1;
-                              for (let c = origCol + dir; c !== newCol + dir; c += dir) {
-                                  const testCol = Math.max(0, Math.min(GRID_W - block.w, c));
-                                  if (canMoveBlock(block, origRow, testCol, stage)) {
-                                      lastValidCol = testCol;
-                                  } else {
-                                      break;
-                                  }
-                              }
+                  if (isHorizontal) {
+                      const dir = newCol > origCol ? 1 : -1;
+                      for (let c = origCol + dir; c !== newCol + dir; c += dir) {
+                          const testCol = Math.max(0, Math.min(GRID_W - block.w, c));
+                          if (canMoveBlock(block, origRow, testCol, stage)) {
+                              lastValidCol = testCol;
                           } else {
-                              const dir = newRow > origRow ? 1 : -1;
-                              for (let r = origRow + dir; r !== newRow + dir; r += dir) {
-                                  const testRow = Math.max(0, Math.min(GRID_H - block.h, r));
-                                  if (canMoveBlock(block, testRow, origCol, stage)) {
-                                      lastValidRow = testRow;
-                                  } else {
-                                      break;
-                                  }
-                              }
+                              break;
                           }
+                      }
+                  } else {
+                      const dir = newRow > origRow ? 1 : -1;
+                      for (let r = origRow + dir; r !== newRow + dir; r += dir) {
+                          const testRow = Math.max(0, Math.min(GRID_H - block.h, r));
+                          if (canMoveBlock(block, testRow, origCol, stage)) {
+                              lastValidRow = testRow;
+                          } else {
+                              break;
+                          }
+                      }
+                  }
 
-                          block.col = lastValidCol;
-                          block.row = lastValidRow;
-                    const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
-                    if (el) {
-                        el.style.left = (block.col * cellSize + 2) + 'px';
-                        el.style.top = (block.row * cellSize + 2) + 'px';
-                    }
-                }
+                  block.col = lastValidCol;
+                  block.row = lastValidRow;
+            const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
+            if (el) {
+                el.style.left = (block.col * cellSize + 2) + 'px';
+                el.style.top = (block.row * cellSize + 2) + 'px';
             }
         }
+    }
+}
 
-        function onPointerUp(e) {
-            if (dragging !== null) {
-                if (dragging === -1) {
-                    // Player drag — always has transition and z-index 5
-                    const pEl = document.getElementById('player-block');
-                    if (pEl) {
-                        pEl.style.transition = 'left 0.15s ease';
-                        pEl.style.zIndex = 5;
-                    }
-                } else {
-                    const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
-                    if (el) {
-                        el.style.transition = 'left 0.15s ease, top 0.15s ease';
-                        el.style.zIndex = 2;
-                    }
-                }
-                dragging = null;
+function onPointerUp(e) {
+    if (dragging !== null) {
+        if (dragging === -1) {
+            // Player drag — always has transition and z-index 5
+            const pEl = document.getElementById('player-block');
+            if (pEl) {
+                pEl.style.transition = 'left 0.15s ease';
+                pEl.style.zIndex = 5;
+            }
+        } else {
+            const el = document.getElementById('board').querySelector(`[data-block-index="${dragging}"]`);
+            if (el) {
+                el.style.transition = 'left 0.15s ease, top 0.15s ease';
+                el.style.zIndex = 2;
             }
         }
+        dragging = null;
+    }
+}
 
-        function showStageComplete() {
-            const modal = document.getElementById('modal-content');
-            const prevTotal = window._totalMoves || 0;
-            const stageTotal = prevTotal + moves;
-            
-            if (currentStage < STAGES.length - 1) {
-                // 非最後一關，更新 resume 進度（continue 和 restart 都寫）
-                if (window._playMode === 'continue' || window._playMode === 'restart') {
-                    saveResumeProgress(currentStage + 1, stageTotal);
-                }
-                
-                modal.innerHTML = `
-                <h2>🎉 過關！</h2>
-                <p>你用了 ${moves} 步完成第 ${currentStage + 1} 關！</p>
-                <button class="btn" onclick="window._totalMoves=${stageTotal};showStageScreen(${currentStage + 2});">下一關 →</button>
-            `;
-            } else {
-                // 最後一關通關
-                if (window._playMode === 'continue') {
-                    saveResumeProgress(STAGES.length, stageTotal);
-                }
-                if (window._playMode === 'restart') {
-                    saveBestRecord(STAGES.length, stageTotal);
-                }
-                
-                if (window._playMode === 'continue') {
-                    // 繼續闖關通關，顯示總步數
-                    modal.innerHTML = `
-                    <h2>🎉 恭喜通關！</h2>
-                    <p>本次通關花了 ${stageTotal} 步完成全部 ${STAGES.length} 個關卡！</p>
-                    <button class="btn" onclick="location.reload()">🔄 重新開始</button>
-                `;
-                } else if (window._playMode === 'restart') {
-                    // 重新開始通關，顯示總步數
-                    modal.innerHTML = `
-                    <h2>🎉 恭喜通關！</h2>
-                    <p>本次通關花了 ${stageTotal} 步完成全部 ${STAGES.length} 個關卡！</p>
-                    <button class="btn" onclick="location.reload()">🔄 重新開始</button>
-                `;
-                } else {
-                    // 從中途開始（freeplay），只顯示本關步數
-                    modal.innerHTML = `
-                    <h2>🎉 恭喜完成第 ${currentStage + 1} 關！</h2>
-                    <p>你用了 ${moves} 步完成這一關！</p>
-                    <button class="btn" onclick="location.reload()">🔄 重新開始</button>
-                `;
-                }
-            }
-            showOverlay();
+function showStageComplete() {
+    const modal = document.getElementById('modal-content');
+    const prevTotal = window._totalMoves || 0;
+    const stageTotal = prevTotal + moves;
+    
+    if (currentStage < STAGES.length - 1) {
+        // 非最後一關，更新 resume 進度（continue 和 restart 都寫）
+        if (window._playMode === 'continue' || window._playMode === 'restart') {
+            saveResumeProgress(currentStage + 1, stageTotal);
         }
-
-        function showOverlay() {
-            document.getElementById('overlay').classList.add('show');
+        
+        modal.innerHTML = `
+        <h2>🎉 過關！</h2>
+        <p>你用了 ${moves} 步完成第 ${currentStage + 1} 關！</p>
+        <button class="btn" onclick="window._totalMoves=${stageTotal};showStageScreen(${currentStage + 2});">下一關 →</button>
+    `;
+    } else {
+        // 最後一關通關
+        if (window._playMode === 'continue') {
+            saveResumeProgress(STAGES.length, stageTotal);
         }
-
-        function hideOverlay() {
-            document.getElementById('overlay').classList.remove('show');
+        if (window._playMode === 'restart') {
+            saveBestRecord(STAGES.length, stageTotal);
         }
+        
+        if (window._playMode === 'continue') {
+            // 繼續闖關通關，顯示總步數
+            modal.innerHTML = `
+            <h2>🎉 恭喜通關！</h2>
+            <p>本次通關花了 ${stageTotal} 步完成全部 ${STAGES.length} 個關卡！</p>
+            <button class="btn" onclick="location.reload()">🔄 重新開始</button>
+        `;
+        } else if (window._playMode === 'restart') {
+            // 重新開始通關，顯示總步數
+            modal.innerHTML = `
+            <h2>🎉 恭喜通關！</h2>
+            <p>本次通關花了 ${stageTotal} 步完成全部 ${STAGES.length} 個關卡！</p>
+            <button class="btn" onclick="location.reload()">🔄 重新開始</button>
+        `;
+        } else {
+            // 從中途開始（freeplay），只顯示本關步數
+            modal.innerHTML = `
+            <h2>🎉 恭喜完成第 ${currentStage + 1} 關！</h2>
+            <p>你用了 ${moves} 步完成這一關！</p>
+            <button class="btn" onclick="location.reload()">🔄 重新開始</button>
+        `;
+        }
+    }
+    showOverlay();
+}
 
-        // Stage definitions - each designed to be solvable
-        const STAGES = [
-            // Stage 001
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 3, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 2, col: 4, w: 1, h: 3 },
-                    { index: 5, row: 3, col: 3, w: 1, h: 3 },
-                    { index: 6, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 7, row: 3, col: 1, w: 2, h: 1 },
-                ]
-            },
-            // Stage 002
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 2, w: 1, h: 2 },
-                    { index: 1, row: 3, col: 5, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 3, w: 1, h: 3 },
-                    { index: 3, row: 3, col: 1, w: 2, h: 1 },
-                    { index: 4, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 5, row: 5, col: 3, w: 2, h: 1 },
-                ]
-            },
-            // Stage 003
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 2, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 5, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 1, col: 2, w: 1, h: 2 },
-                ]
-            },
-            // Stage 004
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 3, col: 3, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 4, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 0, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 8, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 9, row: 0, col: 1, w: 2, h: 1 },
-                    { index: 10, row: 1, col: 5, w: 1, h: 3 },
-                ]
-            },
-            // Stage 005
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 5, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 3, h: 1 },
-                    { index: 2, row: 3, col: 0, w: 3, h: 1 },
-                    { index: 3, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 4, row: 1, col: 4, w: 1, h: 3 },
-                    { index: 5, row: 1, col: 3, w: 1, h: 3 },
-                    { index: 6, row: 5, col: 3, w: 3, h: 1 },
-                ]
-            },
-            // Stage 006
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 1, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 6, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 0, col: 5, w: 1, h: 3 },
-                ]
-            },
-            // Stage 007
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 1, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 3, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 2, w: 3, h: 1 },
-                    { index: 3, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 4, row: 2, col: 6, w: 2, h: 2 },
-                    { index: 5, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 6, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 7, row: 3, col: 4, w: 1, h: 2 },
-                    { index: 8, row: 5, col: 1, w: 3, h: 1 },
-                    { index: 9, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 10, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 11, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 008
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 2, row: 0, col: 0, w: 3, h: 1 },
-                    { index: 3, row: 1, col: 4, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 8, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 9, row: 5, col: 1, w: 2, h: 1 },
-                ]
-            },
-            // Stage 009
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 3, row: 2, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 0, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 8, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 0, col: 2, w: 2, h: 1 },
-                ]
-            },
-            // Stage 010
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 1, col: 3, w: 2, h: 1 },
-                    { index: 3, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 4, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 7, row: 4, col: 4, w: 1, h: 2 },
-                ]
-            },
-            // Stage 011
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 1, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 2, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 4, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 5, row: 0, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 8, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 3, col: 0, w: 2, h: 1 },
-                ]
-            },
-            // Stage 012
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 3, w: 2, h: 1 },
-                    { index: 1, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 2, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 0, w: 3, h: 1 },
-                    { index: 4, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 5, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 6, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 8, row: 1, col: 4, w: 1, h: 3 },
-                ]
-            },
-            // Stage 013
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 3, h: 1 },
-                    { index: 1, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 1, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 6, w: 1, h: 3 },
-                    { index: 5, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 6, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 7, row: 5, col: 2, w: 3, h: 1 },
-                    { index: 8, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 014
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 2, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 3, w: 1, h: 2 },
-                    { index: 2, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 4, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 5, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 6, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 7, row: 1, col: 4, w: 1, h: 3 },
-                    { index: 8, row: 5, col: 2, w: 3, h: 1 },
-                    { index: 9, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 10, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 015
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 3, h: 1 },
-                    { index: 1, row: 0, col: 3, w: 1, h: 2 },
-                    { index: 2, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 5, row: 3, col: 3, w: 2, h: 1 },
-                    { index: 6, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 4, w: 1, h: 2 },
-                    { index: 8, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 9, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 10, row: 4, col: 1, w: 1, h: 2 },
-                ]
-            },
-            // Stage 016
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 3, w: 1, h: 3 },
-                    { index: 4, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 4, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 8, row: 5, col: 1, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 6, w: 1, h: 2 },
-                    { index: 10, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 11, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 017
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 1, row: 3, col: 3, w: 1, h: 3 },
-                    { index: 2, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 1, w: 3, h: 1 },
-                    { index: 4, row: 4, col: 0, w: 3, h: 1 },
-                    { index: 5, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 6, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 018
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 4, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 8, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 3, col: 5, w: 1, h: 2 },
-                    { index: 10, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 11, row: 4, col: 1, w: 1, h: 2 },
-                ]
-            },
-            // Stage 019
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 1, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 2, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 4, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 4, w: 1, h: 2 },
-                    { index: 7, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 8, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 9, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 10, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 11, row: 5, col: 3, w: 2, h: 1 },
-                ]
-            },
-            // Stage 020
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 3, w: 1, h: 3 },
-                    { index: 2, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 3, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 4, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 5, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 6, row: 4, col: 4, w: 1, h: 2 },
-                    { index: 7, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 8, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 9, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 10, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 11, row: 5, col: 0, w: 2, h: 1 },
-                ]
-            },
-            // Stage 021
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 1, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 2, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 4, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 5, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 6, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 7, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 8, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 9, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 10, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 11, row: 4, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 022
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 3, row: 0, col: 3, w: 3, h: 1 },
-                    { index: 4, row: 3, col: 5, w: 1, h: 3 },
-                    { index: 5, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 3, col: 1, w: 1, h: 3 },
-                    { index: 8, row: 5, col: 2, w: 3, h: 1 },
-                    { index: 9, row: 4, col: 2, w: 3, h: 1 },
-                ]
-            },
-            // Stage 023
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 8, row: 5, col: 1, w: 3, h: 1 },
-                    { index: 9, row: 3, col: 1, w: 1, h: 2 },
-                ]
-            },
-            // Stage 024
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 3, h: 1 },
-                    { index: 2, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 4, col: 4, w: 1, h: 2 },
-                    { index: 5, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 5, col: 1, w: 2, h: 1 },
-                    { index: 7, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 8, row: 3, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 025
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 1, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 3, col: 1, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 5, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 7, row: 5, col: 3, w: 3, h: 1 },
-                    { index: 8, row: 4, col: 1, w: 1, h: 2 },
-                ]
-            },
-            // Stage 026
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 1, col: 5, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 0, w: 3, h: 1 },
-                    { index: 4, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 5, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 6, row: 3, col: 5, w: 1, h: 2 },
-                    { index: 7, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 8, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 10, row: 5, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 027
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 1, w: 3, h: 1 },
-                    { index: 2, row: 0, col: 4, w: 1, h: 2 },
-                    { index: 3, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 5, row: 3, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 1, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 8, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 10, row: 0, col: 0, w: 1, h: 2 },
-                ]
-            },
-            // Stage 028
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 3, w: 1, h: 2 },
-                    { index: 3, row: 4, col: 4, w: 1, h: 2 },
-                    { index: 4, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 8, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 10, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 11, row: 5, col: 0, w: 2, h: 1 },
-                ]
-            },
-            // Stage 029
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 2, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 5, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 1, col: 2, w: 1, h: 2 },
-                ]
-            },
-            // Stage 030
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 5, w: 1, h: 2 },
-                    { index: 1, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 2, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 8, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 10, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 11, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 12, row: 2, col: 4, w: 1, h: 2 },
-                ]
-            },
-            // Stage 031
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 1, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 2, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 3, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 8, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 9, row: 0, col: 1, w: 2, h: 1 },
-                    { index: 10, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 11, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 12, row: 1, col: 4, w: 1, h: 2 },
-                    { index: 13, row: 0, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 032
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 2, row: 0, col: 3, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 4, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 5, row: 5, col: 2, w: 2, h: 1 },
-                    { index: 6, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 7, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 8, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 9, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 10, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 11, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 12, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 033
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 1, row: 3, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 4, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 0, w: 2, h: 1 },
-                    { index: 8, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 9, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 10, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 11, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 12, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 13, row: 0, col: 2, w: 2, h: 1 },
-                ]
-            },
-            // Stage 034
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 4, row: 2, col: 2, w: 1, h: 2 },
-                    { index: 5, row: 3, col: 3, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 0, w: 3, h: 1 },
-                    { index: 8, row: 5, col: 0, w: 2, h: 1 },
-                ]
-            },
-            // Stage 035
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 1, w: 3, h: 1 },
-                    { index: 2, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 3, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 3, w: 1, h: 3 },
-                    { index: 6, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 5, col: 2, w: 3, h: 1 },
-                    { index: 8, row: 3, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 036
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 3, w: 2, h: 1 },
-                    { index: 1, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 1, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 8, row: 1, col: 3, w: 2, h: 1 },
-                    { index: 9, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 10, row: 0, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 037
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 1, w: 2, h: 1 },
-                    { index: 2, row: 0, col: 3, w: 1, h: 3 },
-                    { index: 3, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 4, row: 5, col: 1, w: 2, h: 1 },
-                    { index: 5, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 6, row: 3, col: 3, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 8, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 038
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 3, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 3, col: 2, w: 3, h: 1 },
-                    { index: 4, row: 3, col: 5, w: 1, h: 2 },
-                    { index: 5, row: 4, col: 0, w: 2, h: 1 },
-                    { index: 6, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 7, row: 4, col: 3, w: 2, h: 1 },
-                    { index: 8, row: 5, col: 3, w: 3, h: 1 },
-                ]
-            },
-            // Stage 039
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 1, row: 3, col: 3, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 0, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 7, row: 0, col: 3, w: 3, h: 1 },
-                    { index: 8, row: 4, col: 1, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 10, row: 5, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 040
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 1, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 3, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 3, w: 2, h: 1 },
-                    { index: 5, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 6, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 7, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 8, row: 5, col: 1, w: 2, h: 1 },
-                    { index: 9, row: 1, col: 0, w: 2, h: 1 },
-                ]
-            },
-            // Stage 041
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 2, row: 0, col: 4, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 4, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 5, row: 3, col: 1, w: 2, h: 1 },
-                    { index: 6, row: 3, col: 3, w: 1, h: 2 },
-                    { index: 7, row: 2, col: 4, w: 1, h: 3 },
-                    { index: 8, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 9, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 10, row: 5, col: 3, w: 2, h: 1 },
-                    { index: 11, row: 4, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 042
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 4, col: 5, w: 1, h: 2 },
-                    { index: 1, row: 2, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 4, row: 5, col: 2, w: 3, h: 1 },
-                    { index: 5, row: 2, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 0, col: 3, w: 1, h: 2 },
-                    { index: 7, row: 3, col: 1, w: 1, h: 3 },
-                ]
-            },
-            // Stage 043
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 2, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 3, w: 2, h: 1 },
-                    { index: 3, row: 1, col: 3, w: 2, h: 1 },
-                    { index: 4, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 5, row: 1, col: 5, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 0, w: 1, h: 2 },
-                    { index: 7, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 8, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 9, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 10, row: 5, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 044
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 3, col: 2, w: 1, h: 2 },
-                    { index: 1, row: 4, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 2, col: 3, w: 1, h: 2 },
-                    { index: 3, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 5, row: 1, col: 4, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 0, w: 2, h: 1 },
-                    { index: 7, row: 4, col: 1, w: 1, h: 2 },
-                    { index: 8, row: 1, col: 2, w: 2, h: 1 },
-                ]
-            },
-            // Stage 045
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 1, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 2, row: 3, col: 0, w: 1, h: 3 },
-                    { index: 3, row: 0, col: 5, w: 1, h: 3 },
-                    { index: 4, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 6, row: 5, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 0, col: 1, w: 3, h: 1 },
-                ]
-            },
-            // Stage 046
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 1, col: 2, w: 2, h: 1 },
-                    { index: 1, row: 5, col: 3, w: 3, h: 1 },
-                    { index: 2, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 4, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 5, row: 2, col: 5, w: 1, h: 3 },
-                    { index: 6, row: 1, col: 4, w: 2, h: 1 },
-                    { index: 7, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 8, row: 0, col: 3, w: 3, h: 1 },
-                    { index: 9, row: 0, col: 1, w: 1, h: 2 },
-                ]
-            },
-            // Stage 047
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 1, w: 3, h: 1 },
-                    { index: 2, row: 1, col: 1, w: 2, h: 1 },
-                    { index: 3, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 4, row: 0, col: 5, w: 1, h: 2 },
-                    { index: 5, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 7, row: 5, col: 0, w: 2, h: 1 },
-                    { index: 8, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 9, row: 5, col: 4, w: 2, h: 1 },
-                ]
-            },
-            // Stage 048
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 0, w: 1, h: 2 },
-                    { index: 1, row: 0, col: 1, w: 1, h: 2 },
-                    { index: 2, row: 1, col: 2, w: 1, h: 2 },
-                    { index: 3, row: 0, col: 2, w: 3, h: 1 },
-                    { index: 4, row: 1, col: 3, w: 2, h: 1 },
-                    { index: 5, row: 2, col: 4, w: 1, h: 2 },
-                    { index: 6, row: 3, col: 0, w: 1, h: 2 },
-                    { index: 7, row: 5, col: 0, w: 3, h: 1 },
-                    { index: 8, row: 4, col: 2, w: 2, h: 1 },
-                    { index: 9, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 10, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 11, row: 3, col: 2, w: 2, h: 1 },
-                    { index: 12, row: 0, col: 5, w: 1, h: 3 },
-                ]
-            },
-            // Stage 049
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 2, w: 3, h: 1 },
-                    { index: 1, row: 1, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 5, w: 1, h: 2 },
-                    { index: 3, row: 1, col: 1, w: 2, h: 1 },
-                    { index: 4, row: 4, col: 4, w: 2, h: 1 },
-                    { index: 5, row: 4, col: 2, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 3, w: 1, h: 2 },
-                    { index: 7, row: 3, col: 1, w: 3, h: 1 },
-                    { index: 8, row: 2, col: 5, w: 1, h: 2 },
-                ]
-            },
-            // Stage 050
-            {
-                player: { row: 2, col: 0 },
-                blocks: [
-                    { index: 0, row: 0, col: 2, w: 2, h: 1 },
-                    { index: 1, row: 0, col: 4, w: 1, h: 3 },
-                    { index: 2, row: 0, col: 5, w: 1, h: 2 },
-                    { index: 3, row: 1, col: 2, w: 1, h: 3 },
-                    { index: 4, row: 1, col: 3, w: 1, h: 2 },
-                    { index: 5, row: 3, col: 1, w: 1, h: 2 },
-                    { index: 6, row: 4, col: 2, w: 2, h: 1 },
-                ]
-            }
+function showOverlay() {
+    document.getElementById('overlay').classList.add('show');
+}
 
-        ];
+function hideOverlay() {
+    document.getElementById('overlay').classList.remove('show');
+}
 
-        window.onload = init;
-    </script>
+// Stage definitions - each designed to be solvable
+const STAGES = [
+    // Stage 001
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 4, w: 2, h: 1 },
+            { index: 1, row: 0, col: 2, w: 1, h: 3 },
+            { index: 2, row: 1, col: 3, w: 2, h: 1 },
+            { index: 3, row: 1, col: 5, w: 1, h: 3 },
+            { index: 4, row: 2, col: 4, w: 1, h: 3 },
+            { index: 5, row: 3, col: 3, w: 1, h: 3 },
+            { index: 6, row: 4, col: 1, w: 1, h: 2 },
+            { index: 7, row: 3, col: 1, w: 2, h: 1 },
+        ]
+    },
+    // Stage 002
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 2, w: 1, h: 2 },
+            { index: 1, row: 3, col: 5, w: 1, h: 3 },
+            { index: 2, row: 1, col: 3, w: 1, h: 3 },
+            { index: 3, row: 3, col: 1, w: 2, h: 1 },
+            { index: 4, row: 4, col: 2, w: 1, h: 2 },
+            { index: 5, row: 5, col: 3, w: 2, h: 1 },
+        ]
+    },
+    // Stage 003
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 4, col: 3, w: 1, h: 2 },
+            { index: 2, row: 0, col: 2, w: 2, h: 1 },
+            { index: 3, row: 3, col: 0, w: 1, h: 3 },
+            { index: 4, row: 3, col: 1, w: 3, h: 1 },
+            { index: 5, row: 0, col: 5, w: 1, h: 3 },
+            { index: 6, row: 5, col: 4, w: 2, h: 1 },
+            { index: 7, row: 1, col: 2, w: 1, h: 2 },
+        ]
+    },
+    // Stage 004
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 4, w: 2, h: 1 },
+            { index: 1, row: 4, col: 3, w: 3, h: 1 },
+            { index: 2, row: 3, col: 3, w: 2, h: 1 },
+            { index: 3, row: 1, col: 2, w: 1, h: 2 },
+            { index: 4, row: 4, col: 1, w: 1, h: 2 },
+            { index: 5, row: 0, col: 3, w: 1, h: 2 },
+            { index: 6, row: 5, col: 2, w: 2, h: 1 },
+            { index: 7, row: 5, col: 4, w: 2, h: 1 },
+            { index: 8, row: 3, col: 2, w: 1, h: 2 },
+            { index: 9, row: 0, col: 1, w: 2, h: 1 },
+            { index: 10, row: 1, col: 5, w: 1, h: 3 },
+        ]
+    },
+    // Stage 005
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 5, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 3, h: 1 },
+            { index: 2, row: 3, col: 0, w: 3, h: 1 },
+            { index: 3, row: 4, col: 2, w: 1, h: 2 },
+            { index: 4, row: 1, col: 4, w: 1, h: 3 },
+            { index: 5, row: 1, col: 3, w: 1, h: 3 },
+            { index: 6, row: 5, col: 3, w: 3, h: 1 },
+        ]
+    },
+    // Stage 006
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 5, col: 4, w: 2, h: 1 },
+            { index: 1, row: 4, col: 3, w: 3, h: 1 },
+            { index: 2, row: 3, col: 2, w: 1, h: 2 },
+            { index: 3, row: 3, col: 1, w: 1, h: 3 },
+            { index: 4, row: 0, col: 0, w: 1, h: 2 },
+            { index: 5, row: 0, col: 4, w: 1, h: 3 },
+            { index: 6, row: 5, col: 2, w: 2, h: 1 },
+            { index: 7, row: 0, col: 5, w: 1, h: 3 },
+        ]
+    },
+    // Stage 007
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 1, w: 2, h: 1 },
+            { index: 1, row: 1, col: 3, w: 1, h: 3 },
+            { index: 2, row: 0, col: 2, w: 3, h: 1 },
+            { index: 3, row: 1, col: 4, w: 2, h: 1 },
+            { index: 4, row: 2, col: 6, w: 2, h: 2 },
+            { index: 5, row: 3, col: 0, w: 2, h: 1 },
+            { index: 6, row: 3, col: 2, w: 1, h: 2 },
+            { index: 7, row: 3, col: 4, w: 1, h: 2 },
+            { index: 8, row: 5, col: 1, w: 3, h: 1 },
+            { index: 9, row: 4, col: 0, w: 1, h: 2 },
+            { index: 10, row: 2, col: 5, w: 1, h: 2 },
+            { index: 11, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 008
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 4, col: 4, w: 2, h: 1 },
+            { index: 1, row: 1, col: 2, w: 1, h: 2 },
+            { index: 2, row: 0, col: 0, w: 3, h: 1 },
+            { index: 3, row: 1, col: 4, w: 1, h: 3 },
+            { index: 4, row: 3, col: 1, w: 1, h: 2 },
+            { index: 5, row: 1, col: 5, w: 1, h: 3 },
+            { index: 6, row: 3, col: 2, w: 2, h: 1 },
+            { index: 7, row: 4, col: 2, w: 2, h: 1 },
+            { index: 8, row: 3, col: 0, w: 1, h: 3 },
+            { index: 9, row: 5, col: 1, w: 2, h: 1 },
+        ]
+    },
+    // Stage 009
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 4, col: 3, w: 2, h: 1 },
+            { index: 1, row: 1, col: 4, w: 1, h: 3 },
+            { index: 2, row: 0, col: 1, w: 1, h: 2 },
+            { index: 3, row: 2, col: 5, w: 1, h: 3 },
+            { index: 4, row: 0, col: 0, w: 1, h: 2 },
+            { index: 5, row: 1, col: 2, w: 1, h: 2 },
+            { index: 6, row: 5, col: 0, w: 2, h: 1 },
+            { index: 7, row: 5, col: 4, w: 2, h: 1 },
+            { index: 8, row: 3, col: 2, w: 2, h: 1 },
+            { index: 9, row: 0, col: 2, w: 2, h: 1 },
+        ]
+    },
+    // Stage 010
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 2, h: 1 },
+            { index: 2, row: 1, col: 3, w: 2, h: 1 },
+            { index: 3, row: 2, col: 3, w: 1, h: 2 },
+            { index: 4, row: 2, col: 4, w: 1, h: 2 },
+            { index: 5, row: 2, col: 5, w: 1, h: 2 },
+            { index: 6, row: 4, col: 3, w: 1, h: 2 },
+            { index: 7, row: 4, col: 4, w: 1, h: 2 },
+        ]
+    },
+    // Stage 011
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 2, w: 1, h: 2 },
+            { index: 1, row: 2, col: 5, w: 1, h: 2 },
+            { index: 2, row: 1, col: 0, w: 2, h: 1 },
+            { index: 3, row: 0, col: 4, w: 1, h: 3 },
+            { index: 4, row: 1, col: 2, w: 2, h: 1 },
+            { index: 5, row: 0, col: 5, w: 1, h: 2 },
+            { index: 6, row: 5, col: 4, w: 2, h: 1 },
+            { index: 7, row: 4, col: 3, w: 3, h: 1 },
+            { index: 8, row: 5, col: 2, w: 2, h: 1 },
+            { index: 9, row: 3, col: 0, w: 2, h: 1 },
+        ]
+    },
+    // Stage 012
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 3, w: 2, h: 1 },
+            { index: 1, row: 4, col: 1, w: 1, h: 2 },
+            { index: 2, row: 1, col: 3, w: 1, h: 2 },
+            { index: 3, row: 3, col: 0, w: 3, h: 1 },
+            { index: 4, row: 4, col: 4, w: 2, h: 1 },
+            { index: 5, row: 4, col: 2, w: 2, h: 1 },
+            { index: 6, row: 5, col: 4, w: 2, h: 1 },
+            { index: 7, row: 5, col: 2, w: 2, h: 1 },
+            { index: 8, row: 1, col: 4, w: 1, h: 3 },
+        ]
+    },
+    // Stage 013
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 3, h: 1 },
+            { index: 1, row: 0, col: 4, w: 1, h: 3 },
+            { index: 2, row: 1, col: 2, w: 1, h: 2 },
+            { index: 3, row: 3, col: 1, w: 1, h: 3 },
+            { index: 4, row: 3, col: 6, w: 1, h: 3 },
+            { index: 5, row: 3, col: 4, w: 2, h: 1 },
+            { index: 6, row: 3, col: 2, w: 1, h: 2 },
+            { index: 7, row: 5, col: 2, w: 3, h: 1 },
+            { index: 8, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 014
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 2, w: 1, h: 2 },
+            { index: 1, row: 0, col: 3, w: 1, h: 2 },
+            { index: 2, row: 0, col: 4, w: 2, h: 1 },
+            { index: 3, row: 1, col: 0, w: 2, h: 1 },
+            { index: 4, row: 4, col: 3, w: 2, h: 1 },
+            { index: 5, row: 2, col: 2, w: 1, h: 2 },
+            { index: 6, row: 2, col: 3, w: 1, h: 2 },
+            { index: 7, row: 1, col: 4, w: 1, h: 3 },
+            { index: 8, row: 5, col: 2, w: 3, h: 1 },
+            { index: 9, row: 2, col: 5, w: 1, h: 2 },
+            { index: 10, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 015
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 3, h: 1 },
+            { index: 1, row: 0, col: 3, w: 1, h: 2 },
+            { index: 2, row: 1, col: 0, w: 2, h: 1 },
+            { index: 3, row: 1, col: 2, w: 1, h: 3 },
+            { index: 4, row: 3, col: 0, w: 2, h: 1 },
+            { index: 5, row: 3, col: 3, w: 2, h: 1 },
+            { index: 6, row: 4, col: 2, w: 2, h: 1 },
+            { index: 7, row: 4, col: 4, w: 1, h: 2 },
+            { index: 8, row: 4, col: 5, w: 1, h: 2 },
+            { index: 9, row: 5, col: 2, w: 2, h: 1 },
+            { index: 10, row: 4, col: 1, w: 1, h: 2 },
+        ]
+    },
+    // Stage 016
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 2, h: 1 },
+            { index: 2, row: 3, col: 4, w: 2, h: 1 },
+            { index: 3, row: 1, col: 3, w: 1, h: 3 },
+            { index: 4, row: 2, col: 2, w: 1, h: 2 },
+            { index: 5, row: 1, col: 4, w: 1, h: 2 },
+            { index: 6, row: 4, col: 0, w: 2, h: 1 },
+            { index: 7, row: 4, col: 2, w: 2, h: 1 },
+            { index: 8, row: 5, col: 1, w: 2, h: 1 },
+            { index: 9, row: 4, col: 6, w: 1, h: 2 },
+            { index: 10, row: 5, col: 3, w: 2, h: 1 },
+            { index: 11, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 017
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 2, w: 1, h: 2 },
+            { index: 1, row: 3, col: 3, w: 1, h: 3 },
+            { index: 2, row: 3, col: 4, w: 2, h: 1 },
+            { index: 3, row: 1, col: 1, w: 3, h: 1 },
+            { index: 4, row: 4, col: 0, w: 3, h: 1 },
+            { index: 5, row: 0, col: 4, w: 1, h: 3 },
+            { index: 6, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 018
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 5, col: 4, w: 2, h: 1 },
+            { index: 1, row: 1, col: 3, w: 3, h: 1 },
+            { index: 2, row: 1, col: 2, w: 1, h: 2 },
+            { index: 3, row: 4, col: 3, w: 2, h: 1 },
+            { index: 4, row: 4, col: 0, w: 1, h: 2 },
+            { index: 5, row: 2, col: 3, w: 1, h: 2 },
+            { index: 6, row: 5, col: 2, w: 2, h: 1 },
+            { index: 7, row: 0, col: 4, w: 2, h: 1 },
+            { index: 8, row: 0, col: 2, w: 2, h: 1 },
+            { index: 9, row: 3, col: 5, w: 1, h: 2 },
+            { index: 10, row: 3, col: 2, w: 1, h: 2 },
+            { index: 11, row: 4, col: 1, w: 1, h: 2 },
+        ]
+    },
+    // Stage 019
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 2, w: 2, h: 1 },
+            { index: 1, row: 3, col: 0, w: 2, h: 1 },
+            { index: 2, row: 4, col: 2, w: 2, h: 1 },
+            { index: 3, row: 2, col: 3, w: 1, h: 2 },
+            { index: 4, row: 0, col: 0, w: 1, h: 2 },
+            { index: 5, row: 2, col: 2, w: 1, h: 2 },
+            { index: 6, row: 3, col: 4, w: 1, h: 2 },
+            { index: 7, row: 4, col: 5, w: 1, h: 2 },
+            { index: 8, row: 0, col: 1, w: 1, h: 2 },
+            { index: 9, row: 4, col: 0, w: 2, h: 1 },
+            { index: 10, row: 1, col: 4, w: 2, h: 1 },
+            { index: 11, row: 5, col: 3, w: 2, h: 1 },
+        ]
+    },
+    // Stage 020
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 4, w: 1, h: 2 },
+            { index: 1, row: 0, col: 3, w: 1, h: 3 },
+            { index: 2, row: 2, col: 5, w: 1, h: 2 },
+            { index: 3, row: 1, col: 4, w: 2, h: 1 },
+            { index: 4, row: 1, col: 0, w: 2, h: 1 },
+            { index: 5, row: 0, col: 2, w: 1, h: 3 },
+            { index: 6, row: 4, col: 4, w: 1, h: 2 },
+            { index: 7, row: 4, col: 5, w: 1, h: 2 },
+            { index: 8, row: 3, col: 1, w: 1, h: 2 },
+            { index: 9, row: 3, col: 0, w: 1, h: 2 },
+            { index: 10, row: 3, col: 2, w: 2, h: 1 },
+            { index: 11, row: 5, col: 0, w: 2, h: 1 },
+        ]
+    },
+    // Stage 021
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 5, w: 1, h: 2 },
+            { index: 1, row: 2, col: 3, w: 1, h: 2 },
+            { index: 2, row: 2, col: 2, w: 1, h: 2 },
+            { index: 3, row: 1, col: 4, w: 2, h: 1 },
+            { index: 4, row: 1, col: 2, w: 2, h: 1 },
+            { index: 5, row: 0, col: 1, w: 1, h: 2 },
+            { index: 6, row: 0, col: 0, w: 1, h: 2 },
+            { index: 7, row: 2, col: 4, w: 1, h: 2 },
+            { index: 8, row: 5, col: 4, w: 2, h: 1 },
+            { index: 9, row: 3, col: 0, w: 2, h: 1 },
+            { index: 10, row: 4, col: 0, w: 2, h: 1 },
+            { index: 11, row: 4, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 022
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 4, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 1, h: 3 },
+            { index: 2, row: 3, col: 0, w: 1, h: 3 },
+            { index: 3, row: 0, col: 3, w: 3, h: 1 },
+            { index: 4, row: 3, col: 5, w: 1, h: 3 },
+            { index: 5, row: 1, col: 3, w: 1, h: 2 },
+            { index: 6, row: 3, col: 2, w: 2, h: 1 },
+            { index: 7, row: 3, col: 1, w: 1, h: 3 },
+            { index: 8, row: 5, col: 2, w: 3, h: 1 },
+            { index: 9, row: 4, col: 2, w: 3, h: 1 },
+        ]
+    },
+    // Stage 023
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 2, h: 1 },
+            { index: 1, row: 0, col: 4, w: 1, h: 3 },
+            { index: 2, row: 1, col: 2, w: 2, h: 1 },
+            { index: 3, row: 0, col: 5, w: 1, h: 3 },
+            { index: 4, row: 2, col: 2, w: 1, h: 2 },
+            { index: 5, row: 2, col: 3, w: 1, h: 2 },
+            { index: 6, row: 3, col: 4, w: 2, h: 1 },
+            { index: 7, row: 4, col: 3, w: 3, h: 1 },
+            { index: 8, row: 5, col: 1, w: 3, h: 1 },
+            { index: 9, row: 3, col: 1, w: 1, h: 2 },
+        ]
+    },
+    // Stage 024
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 3, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 3, h: 1 },
+            { index: 2, row: 4, col: 2, w: 2, h: 1 },
+            { index: 3, row: 1, col: 2, w: 1, h: 3 },
+            { index: 4, row: 4, col: 4, w: 1, h: 2 },
+            { index: 5, row: 0, col: 5, w: 1, h: 3 },
+            { index: 6, row: 5, col: 1, w: 2, h: 1 },
+            { index: 7, row: 3, col: 0, w: 1, h: 3 },
+            { index: 8, row: 3, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 025
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 1, w: 2, h: 1 },
+            { index: 1, row: 0, col: 2, w: 2, h: 1 },
+            { index: 2, row: 3, col: 1, w: 2, h: 1 },
+            { index: 3, row: 0, col: 4, w: 1, h: 3 },
+            { index: 4, row: 3, col: 0, w: 1, h: 3 },
+            { index: 5, row: 1, col: 3, w: 1, h: 2 },
+            { index: 6, row: 4, col: 2, w: 1, h: 2 },
+            { index: 7, row: 5, col: 3, w: 3, h: 1 },
+            { index: 8, row: 4, col: 1, w: 1, h: 2 },
+        ]
+    },
+    // Stage 026
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 4, w: 1, h: 2 },
+            { index: 1, row: 0, col: 3, w: 3, h: 1 },
+            { index: 2, row: 1, col: 5, w: 1, h: 2 },
+            { index: 3, row: 3, col: 0, w: 3, h: 1 },
+            { index: 4, row: 2, col: 3, w: 1, h: 2 },
+            { index: 5, row: 0, col: 2, w: 1, h: 3 },
+            { index: 6, row: 3, col: 5, w: 1, h: 2 },
+            { index: 7, row: 4, col: 3, w: 2, h: 1 },
+            { index: 8, row: 5, col: 2, w: 2, h: 1 },
+            { index: 9, row: 4, col: 1, w: 1, h: 2 },
+            { index: 10, row: 5, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 027
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 3, w: 1, h: 2 },
+            { index: 1, row: 0, col: 1, w: 3, h: 1 },
+            { index: 2, row: 0, col: 4, w: 1, h: 2 },
+            { index: 3, row: 1, col: 2, w: 1, h: 3 },
+            { index: 4, row: 4, col: 4, w: 2, h: 1 },
+            { index: 5, row: 3, col: 3, w: 1, h: 2 },
+            { index: 6, row: 5, col: 1, w: 2, h: 1 },
+            { index: 7, row: 5, col: 3, w: 2, h: 1 },
+            { index: 8, row: 3, col: 0, w: 2, h: 1 },
+            { index: 9, row: 4, col: 0, w: 1, h: 2 },
+            { index: 10, row: 0, col: 0, w: 1, h: 2 },
+        ]
+    },
+    // Stage 028
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 2, w: 2, h: 1 },
+            { index: 1, row: 0, col: 2, w: 1, h: 3 },
+            { index: 2, row: 0, col: 3, w: 1, h: 2 },
+            { index: 3, row: 4, col: 4, w: 1, h: 2 },
+            { index: 4, row: 3, col: 1, w: 1, h: 2 },
+            { index: 5, row: 1, col: 5, w: 1, h: 2 },
+            { index: 6, row: 3, col: 4, w: 2, h: 1 },
+            { index: 7, row: 4, col: 5, w: 1, h: 2 },
+            { index: 8, row: 4, col: 2, w: 2, h: 1 },
+            { index: 9, row: 1, col: 0, w: 2, h: 1 },
+            { index: 10, row: 0, col: 4, w: 2, h: 1 },
+            { index: 11, row: 5, col: 0, w: 2, h: 1 },
+        ]
+    },
+    // Stage 029
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 4, col: 3, w: 1, h: 2 },
+            { index: 2, row: 0, col: 2, w: 2, h: 1 },
+            { index: 3, row: 3, col: 0, w: 1, h: 3 },
+            { index: 4, row: 3, col: 1, w: 3, h: 1 },
+            { index: 5, row: 0, col: 5, w: 1, h: 3 },
+            { index: 6, row: 5, col: 4, w: 2, h: 1 },
+            { index: 7, row: 1, col: 2, w: 1, h: 2 },
+        ]
+    },
+    // Stage 030
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 5, w: 1, h: 2 },
+            { index: 1, row: 1, col: 2, w: 2, h: 1 },
+            { index: 2, row: 1, col: 4, w: 2, h: 1 },
+            { index: 3, row: 2, col: 2, w: 1, h: 3 },
+            { index: 4, row: 0, col: 1, w: 1, h: 2 },
+            { index: 5, row: 2, col: 3, w: 1, h: 2 },
+            { index: 6, row: 5, col: 2, w: 2, h: 1 },
+            { index: 7, row: 4, col: 3, w: 2, h: 1 },
+            { index: 8, row: 0, col: 2, w: 2, h: 1 },
+            { index: 9, row: 4, col: 0, w: 2, h: 1 },
+            { index: 10, row: 0, col: 4, w: 2, h: 1 },
+            { index: 11, row: 0, col: 0, w: 1, h: 2 },
+            { index: 12, row: 2, col: 4, w: 1, h: 2 },
+        ]
+    },
+    // Stage 031
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 2, w: 2, h: 1 },
+            { index: 1, row: 4, col: 0, w: 1, h: 2 },
+            { index: 2, row: 3, col: 4, w: 2, h: 1 },
+            { index: 3, row: 3, col: 2, w: 1, h: 3 },
+            { index: 4, row: 4, col: 1, w: 1, h: 2 },
+            { index: 5, row: 2, col: 3, w: 1, h: 2 },
+            { index: 6, row: 5, col: 3, w: 2, h: 1 },
+            { index: 7, row: 4, col: 5, w: 1, h: 2 },
+            { index: 8, row: 0, col: 0, w: 1, h: 2 },
+            { index: 9, row: 0, col: 1, w: 2, h: 1 },
+            { index: 10, row: 4, col: 3, w: 2, h: 1 },
+            { index: 11, row: 3, col: 0, w: 2, h: 1 },
+            { index: 12, row: 1, col: 4, w: 1, h: 2 },
+            { index: 13, row: 0, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 032
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 1, h: 2 },
+            { index: 1, row: 0, col: 1, w: 1, h: 2 },
+            { index: 2, row: 0, col: 3, w: 2, h: 1 },
+            { index: 3, row: 1, col: 2, w: 2, h: 1 },
+            { index: 4, row: 1, col: 4, w: 2, h: 1 },
+            { index: 5, row: 5, col: 2, w: 2, h: 1 },
+            { index: 6, row: 2, col: 4, w: 1, h: 2 },
+            { index: 7, row: 2, col: 5, w: 1, h: 2 },
+            { index: 8, row: 3, col: 0, w: 1, h: 2 },
+            { index: 9, row: 3, col: 1, w: 1, h: 2 },
+            { index: 10, row: 3, col: 2, w: 1, h: 2 },
+            { index: 11, row: 4, col: 3, w: 2, h: 1 },
+            { index: 12, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 033
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 2, col: 3, w: 1, h: 2 },
+            { index: 1, row: 3, col: 2, w: 1, h: 3 },
+            { index: 2, row: 1, col: 2, w: 2, h: 1 },
+            { index: 3, row: 1, col: 4, w: 2, h: 1 },
+            { index: 4, row: 0, col: 1, w: 1, h: 2 },
+            { index: 5, row: 2, col: 4, w: 1, h: 2 },
+            { index: 6, row: 4, col: 0, w: 2, h: 1 },
+            { index: 7, row: 5, col: 0, w: 2, h: 1 },
+            { index: 8, row: 4, col: 3, w: 2, h: 1 },
+            { index: 9, row: 0, col: 0, w: 1, h: 2 },
+            { index: 10, row: 4, col: 5, w: 1, h: 2 },
+            { index: 11, row: 5, col: 3, w: 2, h: 1 },
+            { index: 12, row: 0, col: 4, w: 2, h: 1 },
+            { index: 13, row: 0, col: 2, w: 2, h: 1 },
+        ]
+    },
+    // Stage 034
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 2, h: 1 },
+            { index: 2, row: 1, col: 2, w: 2, h: 1 },
+            { index: 3, row: 0, col: 4, w: 1, h: 3 },
+            { index: 4, row: 2, col: 2, w: 1, h: 2 },
+            { index: 5, row: 3, col: 3, w: 1, h: 2 },
+            { index: 6, row: 3, col: 4, w: 2, h: 1 },
+            { index: 7, row: 4, col: 0, w: 3, h: 1 },
+            { index: 8, row: 5, col: 0, w: 2, h: 1 },
+        ]
+    },
+    // Stage 035
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 2, h: 1 },
+            { index: 1, row: 1, col: 1, w: 3, h: 1 },
+            { index: 2, row: 0, col: 4, w: 1, h: 3 },
+            { index: 3, row: 0, col: 5, w: 1, h: 3 },
+            { index: 4, row: 3, col: 2, w: 1, h: 2 },
+            { index: 5, row: 2, col: 3, w: 1, h: 3 },
+            { index: 6, row: 4, col: 4, w: 2, h: 1 },
+            { index: 7, row: 5, col: 2, w: 3, h: 1 },
+            { index: 8, row: 3, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 036
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 3, w: 2, h: 1 },
+            { index: 1, row: 1, col: 2, w: 1, h: 3 },
+            { index: 2, row: 4, col: 3, w: 1, h: 2 },
+            { index: 3, row: 3, col: 1, w: 1, h: 3 },
+            { index: 4, row: 0, col: 0, w: 1, h: 2 },
+            { index: 5, row: 1, col: 5, w: 1, h: 3 },
+            { index: 6, row: 4, col: 4, w: 2, h: 1 },
+            { index: 7, row: 4, col: 0, w: 1, h: 2 },
+            { index: 8, row: 1, col: 3, w: 2, h: 1 },
+            { index: 9, row: 0, col: 2, w: 2, h: 1 },
+            { index: 10, row: 0, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 037
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 1, h: 2 },
+            { index: 1, row: 0, col: 1, w: 2, h: 1 },
+            { index: 2, row: 0, col: 3, w: 1, h: 3 },
+            { index: 3, row: 3, col: 0, w: 1, h: 2 },
+            { index: 4, row: 5, col: 1, w: 2, h: 1 },
+            { index: 5, row: 1, col: 2, w: 1, h: 3 },
+            { index: 6, row: 3, col: 3, w: 2, h: 1 },
+            { index: 7, row: 4, col: 3, w: 2, h: 1 },
+            { index: 8, row: 5, col: 3, w: 2, h: 1 },
+            { index: 9, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 038
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 4, w: 2, h: 1 },
+            { index: 1, row: 0, col: 3, w: 1, h: 3 },
+            { index: 2, row: 1, col: 4, w: 2, h: 1 },
+            { index: 3, row: 3, col: 2, w: 3, h: 1 },
+            { index: 4, row: 3, col: 5, w: 1, h: 2 },
+            { index: 5, row: 4, col: 0, w: 2, h: 1 },
+            { index: 6, row: 4, col: 2, w: 1, h: 2 },
+            { index: 7, row: 4, col: 3, w: 2, h: 1 },
+            { index: 8, row: 5, col: 3, w: 3, h: 1 },
+        ]
+    },
+    // Stage 039
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 4, w: 2, h: 1 },
+            { index: 1, row: 3, col: 3, w: 1, h: 3 },
+            { index: 2, row: 1, col: 0, w: 2, h: 1 },
+            { index: 3, row: 0, col: 2, w: 1, h: 3 },
+            { index: 4, row: 2, col: 4, w: 1, h: 2 },
+            { index: 5, row: 2, col: 5, w: 1, h: 2 },
+            { index: 6, row: 3, col: 0, w: 2, h: 1 },
+            { index: 7, row: 0, col: 3, w: 3, h: 1 },
+            { index: 8, row: 4, col: 1, w: 2, h: 1 },
+            { index: 9, row: 4, col: 0, w: 1, h: 2 },
+            { index: 10, row: 5, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 040
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 0, w: 2, h: 1 },
+            { index: 1, row: 4, col: 3, w: 3, h: 1 },
+            { index: 2, row: 0, col: 2, w: 1, h: 3 },
+            { index: 3, row: 0, col: 5, w: 1, h: 3 },
+            { index: 4, row: 0, col: 3, w: 2, h: 1 },
+            { index: 5, row: 3, col: 2, w: 2, h: 1 },
+            { index: 6, row: 5, col: 3, w: 2, h: 1 },
+            { index: 7, row: 2, col: 4, w: 1, h: 2 },
+            { index: 8, row: 5, col: 1, w: 2, h: 1 },
+            { index: 9, row: 1, col: 0, w: 2, h: 1 },
+        ]
+    },
+    // Stage 041
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 2, h: 1 },
+            { index: 2, row: 0, col: 4, w: 2, h: 1 },
+            { index: 3, row: 1, col: 2, w: 2, h: 1 },
+            { index: 4, row: 1, col: 4, w: 2, h: 1 },
+            { index: 5, row: 3, col: 1, w: 2, h: 1 },
+            { index: 6, row: 3, col: 3, w: 1, h: 2 },
+            { index: 7, row: 2, col: 4, w: 1, h: 3 },
+            { index: 8, row: 2, col: 5, w: 1, h: 2 },
+            { index: 9, row: 4, col: 2, w: 1, h: 2 },
+            { index: 10, row: 5, col: 3, w: 2, h: 1 },
+            { index: 11, row: 4, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 042
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 4, col: 5, w: 1, h: 2 },
+            { index: 1, row: 2, col: 4, w: 1, h: 3 },
+            { index: 2, row: 1, col: 2, w: 1, h: 2 },
+            { index: 3, row: 3, col: 2, w: 2, h: 1 },
+            { index: 4, row: 5, col: 2, w: 3, h: 1 },
+            { index: 5, row: 2, col: 5, w: 1, h: 2 },
+            { index: 6, row: 0, col: 3, w: 1, h: 2 },
+            { index: 7, row: 3, col: 1, w: 1, h: 3 },
+        ]
+    },
+    // Stage 043
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 1, w: 1, h: 2 },
+            { index: 1, row: 0, col: 2, w: 1, h: 3 },
+            { index: 2, row: 0, col: 3, w: 2, h: 1 },
+            { index: 3, row: 1, col: 3, w: 2, h: 1 },
+            { index: 4, row: 3, col: 1, w: 3, h: 1 },
+            { index: 5, row: 1, col: 5, w: 1, h: 2 },
+            { index: 6, row: 4, col: 0, w: 1, h: 2 },
+            { index: 7, row: 2, col: 4, w: 1, h: 2 },
+            { index: 8, row: 4, col: 1, w: 1, h: 2 },
+            { index: 9, row: 4, col: 3, w: 1, h: 2 },
+            { index: 10, row: 5, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 044
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 3, col: 2, w: 1, h: 2 },
+            { index: 1, row: 4, col: 3, w: 3, h: 1 },
+            { index: 2, row: 2, col: 3, w: 1, h: 2 },
+            { index: 3, row: 0, col: 5, w: 1, h: 3 },
+            { index: 4, row: 0, col: 1, w: 1, h: 2 },
+            { index: 5, row: 1, col: 4, w: 1, h: 2 },
+            { index: 6, row: 3, col: 0, w: 2, h: 1 },
+            { index: 7, row: 4, col: 1, w: 1, h: 2 },
+            { index: 8, row: 1, col: 2, w: 2, h: 1 },
+        ]
+    },
+    // Stage 045
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 3, w: 1, h: 2 },
+            { index: 1, row: 3, col: 1, w: 3, h: 1 },
+            { index: 2, row: 3, col: 0, w: 1, h: 3 },
+            { index: 3, row: 0, col: 5, w: 1, h: 3 },
+            { index: 4, row: 4, col: 3, w: 1, h: 2 },
+            { index: 5, row: 2, col: 4, w: 1, h: 2 },
+            { index: 6, row: 5, col: 4, w: 2, h: 1 },
+            { index: 7, row: 0, col: 1, w: 3, h: 1 },
+        ]
+    },
+    // Stage 046
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 1, col: 2, w: 2, h: 1 },
+            { index: 1, row: 5, col: 3, w: 3, h: 1 },
+            { index: 2, row: 4, col: 2, w: 1, h: 2 },
+            { index: 3, row: 3, col: 1, w: 3, h: 1 },
+            { index: 4, row: 0, col: 0, w: 1, h: 2 },
+            { index: 5, row: 2, col: 5, w: 1, h: 3 },
+            { index: 6, row: 1, col: 4, w: 2, h: 1 },
+            { index: 7, row: 3, col: 0, w: 1, h: 2 },
+            { index: 8, row: 0, col: 3, w: 3, h: 1 },
+            { index: 9, row: 0, col: 1, w: 1, h: 2 },
+        ]
+    },
+    // Stage 047
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 1, h: 2 },
+            { index: 1, row: 0, col: 1, w: 3, h: 1 },
+            { index: 2, row: 1, col: 1, w: 2, h: 1 },
+            { index: 3, row: 0, col: 4, w: 1, h: 3 },
+            { index: 4, row: 0, col: 5, w: 1, h: 2 },
+            { index: 5, row: 3, col: 0, w: 1, h: 2 },
+            { index: 6, row: 3, col: 1, w: 3, h: 1 },
+            { index: 7, row: 5, col: 0, w: 2, h: 1 },
+            { index: 8, row: 4, col: 3, w: 1, h: 2 },
+            { index: 9, row: 5, col: 4, w: 2, h: 1 },
+        ]
+    },
+    // Stage 048
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 0, w: 1, h: 2 },
+            { index: 1, row: 0, col: 1, w: 1, h: 2 },
+            { index: 2, row: 1, col: 2, w: 1, h: 2 },
+            { index: 3, row: 0, col: 2, w: 3, h: 1 },
+            { index: 4, row: 1, col: 3, w: 2, h: 1 },
+            { index: 5, row: 2, col: 4, w: 1, h: 2 },
+            { index: 6, row: 3, col: 0, w: 1, h: 2 },
+            { index: 7, row: 5, col: 0, w: 3, h: 1 },
+            { index: 8, row: 4, col: 2, w: 2, h: 1 },
+            { index: 9, row: 4, col: 4, w: 2, h: 1 },
+            { index: 10, row: 3, col: 1, w: 1, h: 2 },
+            { index: 11, row: 3, col: 2, w: 2, h: 1 },
+            { index: 12, row: 0, col: 5, w: 1, h: 3 },
+        ]
+    },
+    // Stage 049
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 2, w: 3, h: 1 },
+            { index: 1, row: 1, col: 4, w: 1, h: 3 },
+            { index: 2, row: 0, col: 5, w: 1, h: 2 },
+            { index: 3, row: 1, col: 1, w: 2, h: 1 },
+            { index: 4, row: 4, col: 4, w: 2, h: 1 },
+            { index: 5, row: 4, col: 2, w: 1, h: 2 },
+            { index: 6, row: 4, col: 3, w: 1, h: 2 },
+            { index: 7, row: 3, col: 1, w: 3, h: 1 },
+            { index: 8, row: 2, col: 5, w: 1, h: 2 },
+        ]
+    },
+    // Stage 050
+    {
+        player: { row: 2, col: 0 },
+        blocks: [
+            { index: 0, row: 0, col: 2, w: 2, h: 1 },
+            { index: 1, row: 0, col: 4, w: 1, h: 3 },
+            { index: 2, row: 0, col: 5, w: 1, h: 2 },
+            { index: 3, row: 1, col: 2, w: 1, h: 3 },
+            { index: 4, row: 1, col: 3, w: 1, h: 2 },
+            { index: 5, row: 3, col: 1, w: 1, h: 2 },
+            { index: 6, row: 4, col: 2, w: 2, h: 1 },
+        ]
+    }
+
+];
+
+window.onload = init;
+</script>
 </body>
 </html>
