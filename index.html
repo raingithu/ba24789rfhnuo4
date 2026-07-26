@@ -24,6 +24,7 @@
   --cover-building: "g/covers/00010.jpg";
   --cover-gomoku: "g/covers/00006.jpg";
   --cover-kongming: "g/covers/00007.jpg";
+  --cover-lightso: "g/covers/00011.jpg";
   --cover-2048: "g/covers/00009.jpg";
   --cover-chickgh: "g/covers/00003.jpg";
 
@@ -36,6 +37,7 @@
   --link-building: "g/00010.html";
   --link-gomoku: "g/00006.html";
   --link-kongming: "g/00007.html";
+  --link-lightso: "g/00011.html";
   --link-2048: "g/00009.html";
   --link-chickgh: "g/00003.html";
 
@@ -48,6 +50,7 @@
   --name-building: "疊疊樂";
   --name-gomoku: "星空五子棋";
   --name-kongming: "孔明棋";
+  --name-lightso: "光影謎陣";
   --name-2048: "２０４８";
   --name-chickgh: "小雞回家";
 
@@ -60,6 +63,7 @@
   --desc-building: "抓準時機堆疊樓層，建出你的世界最高樓！";
   --desc-gomoku: "黑白交錯，五子連珠即勝的策略遊戲。";
   --desc-kongming: "跳躍消除益智遊戲，最後只剩一顆棋子！";
+  --desc-lightso: "關燈益智遊戲，來把所有燈都關了！";
   --desc-2048: "來試試看合併數字，合出2048！";
   --desc-chickgh: "來幫助小雞穿過障礙，安全回到雞舍！";
 
@@ -72,6 +76,7 @@
   --emoji-building: "🏢";
   --emoji-gomoku: "⚫";
   --emoji-kongming: "🔴";
+  --emoji-lightso: "💡";
   --emoji-2048: "🔢";
   --emoji-chickgh: "🐥";
 
@@ -84,6 +89,7 @@
   --grad-building: "cover-building";
   --grad-gomoku: "cover-gomoku";
   --grad-kongming: "cover-kongming";
+  --grad-lightso: "cover-lightso";
   --grad-2048: "cover-2048";
   --grad-chickgh: "cover-chickgh";
 }
@@ -211,14 +217,15 @@ body::-webkit-scrollbar {
 /* 各遊戲預設漸層 */
 .cover-ggsnake     { background: linear-gradient(135deg, #064e3b, #10b981, #34d399); }
 .cover-ddbird      { background: linear-gradient(135deg, #1e3a5f, #3b82f6, #60a5fa); }
-.cover-candyp      { background: linear-gradient(135deg, #4c1d95, #8b5cf6, #a78bfa); }
+.cover-candyp      { background: linear-gradient(135deg, #713f12, #eab308, #fde047); }
 .cover-pingpong    { background: linear-gradient(135deg, #1c1917, #57534e, #d4d4d4); }
 .cover-tetris      { background: linear-gradient(135deg, #7c2d12, #f97316, #fbbf24); }
 .cover-building    { background: linear-gradient(135deg, #0f4c81, #38bdf8, #bae6fd); }
 .cover-gomoku      { background: linear-gradient(135deg, #451a03, #92400e, #d4a574); }
 .cover-kongming    { background: linear-gradient(135deg, #7f1d1d, #dc2626, #f87171); }
+.cover-lightso     { background: linear-gradient(135deg, #0f172a, #312e81, #7c3aed); }
 .cover-2048        { background: linear-gradient(135deg, #f4e2b8, #f2b94b, #e67e22); }
-.cover-chickgh     { background: linear-gradient(135deg, #713f12, #eab308, #fde047); }
+.cover-chickgh     { background: linear-gradient(135deg, #4c1d95, #8b5cf6, #a78bfa); }
 
 /* 封面陰影過渡 */
 .card-cover::after {
@@ -378,7 +385,7 @@ body::-webkit-scrollbar {
 (function renderGames() {
   var grid = document.getElementById('gameGrid');
   var cs = getComputedStyle(document.documentElement);
-  var names = ['ggsnake','ddbird','candyp','pingpong','tetris','building','gomoku','kongming','2048','chickgh'];
+  var names = ['ggsnake','ddbird','candyp','pingpong','tetris','building','gomoku','kongming','lightso','2048','chickgh'];
 
   grid.innerHTML = '';
 
