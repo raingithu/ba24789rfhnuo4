@@ -23,6 +23,7 @@
   --cover-tetris: "g/covers/00008.jpg";
   --cover-building: "g/covers/00010.jpg";
   --cover-gomoku: "g/covers/00006.jpg";
+  --cover-reversi: "g/covers/00012.jpg";
   --cover-kongming: "g/covers/00007.jpg";
   --cover-lightso: "g/covers/00011.jpg";
   --cover-2048: "g/covers/00009.jpg";
@@ -36,6 +37,7 @@
   --link-tetris: "g/00008.html";
   --link-building: "g/00010.html";
   --link-gomoku: "g/00006.html";
+  --link-reversi: "g/00012.html";
   --link-kongming: "g/00007.html";
   --link-lightso: "g/00011.html";
   --link-2048: "g/00009.html";
@@ -47,8 +49,9 @@
   --name-candyp: "糖果小精靈";
   --name-pingpong: "乒乓";
   --name-tetris: "糖果俄羅斯";
-  --name-building: "疊疊樂";
+  --name-building: "疊疊大樓";
   --name-gomoku: "星空五子棋";
+  --name-reversi: "翻轉黑白棋";
   --name-kongming: "孔明棋";
   --name-lightso: "光影謎陣";
   --name-2048: "２０４８";
@@ -61,7 +64,8 @@
   --desc-pingpong: "復古乒乓對戰，向更高難度挑戰！";
   --desc-tetris: "益智方塊，消除連線、挑戰極限！";
   --desc-building: "抓準時機堆疊樓層，建出你的世界最高樓！";
-  --desc-gomoku: "黑白交錯，五子連珠即勝的策略遊戲。";
+  --desc-gomoku: "交互攻守，五子連珠即勝的策略遊戲。";
+  --desc-reversi: "一步翻盤，黑白棋子的佔地勝負對決！";
   --desc-kongming: "跳躍消除益智遊戲，最後只剩一顆棋子！";
   --desc-lightso: "關燈益智遊戲，來把所有燈都關了！";
   --desc-2048: "來試試看合併數字，合出2048！";
@@ -75,6 +79,7 @@
   --emoji-tetris: "🧩";
   --emoji-building: "🏢";
   --emoji-gomoku: "⚫";
+  --emoji-reversi: "⚪";
   --emoji-kongming: "🔴";
   --emoji-lightso: "💡";
   --emoji-2048: "🔢";
@@ -88,6 +93,7 @@
   --grad-tetris: "cover-tetris";
   --grad-building: "cover-building";
   --grad-gomoku: "cover-gomoku";
+  --grad-reversi: "cover-reversi";
   --grad-kongming: "cover-kongming";
   --grad-lightso: "cover-lightso";
   --grad-2048: "cover-2048";
@@ -222,6 +228,7 @@ body::-webkit-scrollbar {
 .cover-tetris      { background: linear-gradient(135deg, #7c2d12, #f97316, #fbbf24); }
 .cover-building    { background: linear-gradient(135deg, #0f4c81, #38bdf8, #bae6fd); }
 .cover-gomoku      { background: linear-gradient(135deg, #451a03, #92400e, #d4a574); }
+.cover-reversi     { background: linear-gradient(135deg, #111827, #4b5563, #f3f4f6); }
 .cover-kongming    { background: linear-gradient(135deg, #7f1d1d, #dc2626, #f87171); }
 .cover-lightso     { background: linear-gradient(135deg, #0f172a, #312e81, #7c3aed); }
 .cover-2048        { background: linear-gradient(135deg, #f4e2b8, #f2b94b, #e67e22); }
@@ -385,7 +392,20 @@ body::-webkit-scrollbar {
 (function renderGames() {
   var grid = document.getElementById('gameGrid');
   var cs = getComputedStyle(document.documentElement);
-  var names = ['ggsnake','ddbird','candyp','pingpong','tetris','building','gomoku','kongming','lightso','2048','chickgh'];
+  var names = [
+    'ggsnake',
+    'ddbird',
+    'candyp',
+    'pingpong',
+    'tetris',
+    'building',
+    'gomoku',
+    'reversi',
+    'kongming',
+    'lightso',
+    '2048',
+    'chickgh'
+  ];
 
   grid.innerHTML = '';
 

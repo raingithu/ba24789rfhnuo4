@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex,nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>疊疊樂</title>
+<title>疊疊大樓</title>
 <meta name="description" content="放置滑動方塊建造玻璃摩天大樓，連續完美放置獲取高額倍數，抵禦暴風，並透過建築師技能樹提升能力。">
 <meta name="theme-color" content="#0a0e1c">
 <style>
@@ -28,7 +28,7 @@
     --good: #7CFFB2; /* 成功綠色 */
     --danger: #ff5c5c;
     --gold: #ffe27a;
-    --font-disp: 'Space Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --font-disp: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     --font-body: 'Inter', system-ui, -apple-system, sans-serif;
     --font-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
 }
@@ -59,6 +59,92 @@ body {
     inset: 0;
     display: flex;
     flex-direction: column;
+}
+
+/* 開場畫面 */
+#intro {
+    position: absolute;
+    inset: 0;
+    z-index: 60;
+    background: var(--ink);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+}
+
+#intro.hide {
+    display: none;
+}
+
+.intro-logo {
+    font-family: var(--font-disp);
+    font-weight: 700;
+    font-size: clamp(64px, 12vw, 72px);
+    letter-spacing: 6px;
+    color: var(--blueprint);
+    text-shadow: 0 0 36px rgba(76, 200, 255, 0.8);
+    line-height: 1;
+}
+
+.intro-tag {
+    font-size: 13px;
+    color: var(--graphite);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin: 10px 0 30px;
+}
+
+.intro-how {
+    max-width: 340px;
+    font-size: 14px;
+    color: var(--paper);
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+
+.intro-how b {
+    color: var(--amber);
+}
+
+.start-btn {
+    font-family: var(--font-disp);
+    padding: 14px 48px; font-size: clamp(18px, 3vw, 24px);
+    background: transparent; color: rgba(60,200,255,0.8);
+    border: 2px solid rgba(60,200,255,0.8);
+    border-radius: 12px; cursor: pointer; letter-spacing: 0.2em;
+    text-shadow: 0 0 10px #0ff;
+    box-shadow: 0 0 30px rgba(76, 200, 255, 0.4);
+    position: relative;
+    overflow: visible;
+    transform: translateZ(0);
+    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.start-btn::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: 14px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 0 30px rgba(0,255,255,0.5), inset 0 0 30px rgba(76, 200, 255, 0.4);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.start-btn:hover::before,
+.start-btn:active::before {
+    opacity: 1;
+}
+
+.start-btn:hover, .start-btn:active {
+    transform: scale(1.04) translateZ(0);
+    background: rgba(60,200,255,0.8);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(76, 200, 255, 0.4);
 }
 
 /* ---- 頂部 HUD ---- */
@@ -1544,92 +1630,6 @@ textarea.save-box {
     filter: brightness(1.1);
 }
 
-/* 開場畫面 */
-#intro {
-    position: absolute;
-    inset: 0;
-    z-index: 60;
-    background: var(--ink);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-}
-
-#intro.hide {
-    display: none;
-}
-
-.intro-logo {
-    font-family: var(--font-disp);
-    font-weight: 700;
-    font-size: clamp(40px, 12vw, 84px);
-    letter-spacing: 6px;
-    color: var(--blueprint);
-    text-shadow: 0 0 36px rgba(76, 200, 255, 0.8);
-    line-height: 1;
-}
-
-.intro-tag {
-    font-size: 13px;
-    color: var(--graphite);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin: 10px 0 30px;
-}
-
-.intro-how {
-    max-width: 340px;
-    font-size: 13px;
-    color: var(--paper);
-    line-height: 1.6;
-    margin-bottom: 28px;
-}
-
-.intro-how b {
-    color: var(--amber);
-}
-
-.start-btn {
-    font-family: var(--font-disp);
-    padding: 14px 48px; font-size: clamp(16px, 3vw, 24px);
-    background: transparent; color: rgba(60,200,255,0.8);
-    border: 2px solid rgba(60,200,255,0.8);
-    border-radius: 12px; cursor: pointer; letter-spacing: 0.2em;
-    text-shadow: 0 0 10px #0ff;
-    box-shadow: 0 0 30px rgba(76, 200, 255, 0.4);
-    position: relative;
-    overflow: visible;
-    transform: translateZ(0);
-    transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
-}
-
-.start-btn::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 14px;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    box-shadow: 0 0 30px rgba(0,255,255,0.5), inset 0 0 30px rgba(76, 200, 255, 0.4);
-    pointer-events: none;
-    z-index: -1;
-}
-
-.start-btn:hover::before,
-.start-btn:active::before {
-    opacity: 1;
-}
-
-.start-btn:hover, .start-btn:active {
-    transform: scale(1.04) translateZ(0);
-    background: rgba(60,200,255,0.8);
-    color: #fff;
-    box-shadow: 0 0 30px rgba(76, 200, 255, 0.4);
-}
-
 /* 手機版適配 */
 @media (max-width: 480px) {
     .bricks {
@@ -1657,6 +1657,20 @@ textarea.save-box {
 <div id="app">
     <canvas id="stage" width="2680" height="1278" style="width: 1340px; height: 639px;"></canvas>
 
+    <!-- 開始畫面 -->
+    <div id="intro">
+        <div class="intro-logo">疊疊大樓</div>
+        <div class="intro-tag">萬丈高樓平地起</div>
+        <div class="intro-how">
+            放置滑動的方塊。<br>
+            精準放置在正中央達成 <b>「完美」</b><br>連續完美獲取指數回報。<br>
+            完全錯過方塊則大樓會倒塌。<br><br>
+            <button class="start-btn" id="startBtn">開始遊戲</button><br><br>
+            手機觸控／ＰＣ滑鼠點擊或鍵盤空白鍵
+        </div>
+
+    </div>
+
     <!-- 頂部狀態列 -->
     <div id="hud">
         <div class="hud-left">
@@ -1667,7 +1681,8 @@ textarea.save-box {
         <div class="hud-right">
             <div class="height-big" id="heightCount">1 樓</div>
             <div class="chain-badge zero" id="chainBadge">×1.0</div>
-            <div class="stat-row" id="bpRow" style="margin-top:4px;"><span class="k">藍圖</span> <span id="bpCount">0</span></div>
+            <div class="stat-row" id="bpRow" style="margin-top:4px;">
+            <span class="k">藍圖</span> <span id="bpCount">0</span></div>
         </div>
     </div>
 
@@ -1820,20 +1835,6 @@ textarea.save-box {
             <button class="rebuild-btn" id="rebuildBtn">重新開始</button>
             <button class="mini-btn" id="roDemolishBtn" style="display:none;padding:14px 20px;font-size:13px;">拆除換藍圖</button>
         </div>
-    </div>
-
-    <!-- 開場畫面 -->
-    <div id="intro">
-        <div class="intro-logo">疊疊樂</div>
-        <div class="intro-tag">萬丈高樓平地起</div>
-        <div class="intro-how">
-            放置滑動的方塊。<br>
-            精準放置在正中央達成 <b>「完美」</b><br>連續完美獲取指數回報。<br>
-            完全錯過方塊則大樓會倒塌。<br><br>
-            <button class="start-btn" id="startBtn">開始遊戲</button><br><br>
-            手機觸控／ＰＣ滑鼠點擊或鍵盤空白鍵
-        </div>
-
     </div>
 
     <!-- 教學導引 -->

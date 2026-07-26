@@ -207,37 +207,37 @@ h1 {
 /* ============================================================
    勝利訊息（玻璃面板風格）
    ============================================================ */
-.win-message {
-    position: fixed; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 30px 28px;
+.win-overlay {
+    position: fixed; inset: 0;
+    display: none; justify-content: center; align-items: center;
+    z-index: 1000;
+}
+.win-overlay.show { display: flex }
+.win-card {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 30px; border-radius: 20px;
     text-align: center;
-    border-radius: 16px;
-    opacity: 0; visibility: hidden;
-    transition: all 0.3s ease; z-index: 1000;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(6px);
+    border: 1.2px solid rgba(255, 255, 255, 0.05);
+    max-width: 400px;
+    opacity: 0; transform: scale(0.9);
+    transition: all 0.3s ease;
 }
-.win-message::before {
-    content: '';
-    position: absolute; inset: 0;
-    background: rgba(255, 255, 255, 0.07);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 16px;
-    z-index: -1;
+.win-overlay.show .win-card {
+    opacity: 1; transform: scale(1);
 }
-.win-message.show { opacity: 1; visibility: visible }
 .win-content {
     display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
 .win-title {
-    font: bold 28px 'Segoe UI', 'PingFang TC', sans-serif;
+    font: bold 36px 'Segoe UI', 'PingFang TC', sans-serif;
     color: #fff;
 }
 .win-stats {
-    font: 16px 'Segoe UI', 'PingFang TC', sans-serif;
+    font: 15px 'Segoe UI', 'PingFang TC', sans-serif;
     color: rgba(255, 255, 255, 0.8);
-    line-height: 1.6;
+    line-height: 1.7;
 }
 .win-record {
     font: 14px 'Segoe UI', 'PingFang TC', sans-serif;
@@ -324,15 +324,17 @@ h1 {
     </div>
 
     <!-- 勝利訊息 -->
-    <div class="win-message" id="winMessage">
-        <div class="win-content">
-            <div class="win-title">🎉 恭喜過關 🎉</div>
-            <div class="win-stats">
-                <div>花費時間：<span id="finalTime"></span></div>
-                <div>用了 <span id="finalMoves"></span> 步完成</div>
+    <div class="win-overlay" id="winMessage">
+        <div class="win-card">
+            <div class="win-content">
+                <div class="win-title">🎉 恭喜過關 🎉</div>
+                <div class="win-stats">
+                    <div>花費時間：<span id="finalTime"></span></div>
+                    <div>用了 <span id="finalMoves"></span> 步完成</div>
+                </div>
+                <div class="win-record" id="recordMessage"></div>
+                <button class="btn win-continue" onclick="restartGame()">再玩一次</button>
             </div>
-            <div class="win-record" id="recordMessage"></div>
-            <button class="btn win-continue" onclick="restartGame()">再玩一次</button>
         </div>
     </div>
 </div>
@@ -458,7 +460,6 @@ class LightsOut{
         }
         document.getElementById('recordMessage').textContent=recordMsg;
         document.getElementById('winMessage').classList.add('show');
-        this.createParticles();
     }
     createParticles(){
         const gridEl=document.getElementById('grid');
@@ -557,9 +558,9 @@ window.backToMenu=function(){
         clearInterval(game.timerInterval);
         game.timerInterval=null;
     }
+    document.getElementById('winMessage').classList.remove('show');
     document.getElementById('menu-screen').classList.remove('hidden');
     document.getElementById('game-page').classList.add('hidden');
-    document.getElementById('winMessage').classList.remove('show');
     selectedDiff=game.size;
     selectDifficulty(selectedDiff);
 };

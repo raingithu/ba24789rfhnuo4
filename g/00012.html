@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="robots" content="noindex,nofollow">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>翻轉黑白棋</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    touch-action: none;
+}
+
+body {
+    font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+    background: #0f172a;
+    overflow: hidden;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #e2e8f0;
+    line-height: 1;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.game-container {
+    padding: 16px;
+    max-width: 600px;
+    width: 100%;
+}
+
+/* ===== 開始畫面 ===== */
+#menu-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 10px 0;
+}
+#menu-screen.hidden { display: none }
+
+.menu-title {
+    font-size: clamp(48px, 10vw, 64px);
+    font-weight: 800;
+    letter-spacing: 8px;
+    text-shadow: 0 0 20px rgba(100, 255, 218, 0.5);
+    color: #53ffdf;
+    margin-bottom: 4px;
+}
+.menu-subtitle {
+    font: 15px 'Segoe UI', 'PingFang TC', sans-serif;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    line-height: 1.8;
+    max-width: 360px;
+    margin-bottom: 8px;
+}
+
+.menu-btn {
+    width: 70%;
+    padding: 14px 0;
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.8);
+    font: 600 clamp(16px, 4vw, 18px) 'Segoe UI', 'PingFang TC', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+}
+.menu-btn:hover { filter: brightness(1.3); background: rgba(255,255,255,0.1) }
+.menu-btn:active { transform: scale(0.97) }
+.menu-btn-primary {
+    border-color: rgba(100,255,218,0.4);
+    color: #64ffda;
+}
+.menu-btn-primary:hover {
+    background: rgba(100,255,218,0.12);
+    border-color: #64ffda;
+}
+
+/* ===== 遊戲頁面 ===== */
+#game-page.hidden { display: none }
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    gap: 8px;
+}
+
+.score-panel {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 8px 10px;
+    border-radius: 12px;
+    text-align: center;
+    flex: 1;
+    max-width: 140px;
+}
+.score-panel h3 {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.score-value {
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+.score-panel.black-panel .score-value { color: #e2e8f0 }
+.score-panel.white-panel .score-value { color: #cbd5e1 }
+
+.turn-indicator {
+    background: rgba(100,255,218,0.1);
+    border: 1px solid rgba(100,255,218,0.3);
+    color: #64ffda;
+    padding: 12px 14px;
+    border-radius: 12px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 120px;
+}
+
+.board-wrapper {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px;
+    border-radius: 16px;
+}
+
+.board {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 2px;
+    background: #1e293b;
+    padding: 4px;
+    border-radius: 12px;
+    aspect-ratio: 1;
+    transition: opacity 0.2s;
+}
+.board.thinking {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.cell {
+    aspect-ratio: 1;
+    background: #334155;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+    transition: background 0.15s;
+}
+
+.cell.valid-move {
+    cursor: pointer;
+}
+.cell.valid-move::after {
+    content: '';
+    width: 30%;
+    height: 30%;
+    border-radius: 50%;
+    background: rgba(100,255,218,0.35);
+    pointer-events: none;
+}
+.cell.valid-move:hover {
+    background: #475569;
+}
+
+.piece {
+    width: 85%;
+    height: 85%;
+    border-radius: 50%;
+    transition: transform 0.15s;
+}
+.piece.black {
+    background: radial-gradient(circle at 35% 35%, #475569, #0f172a);
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
+}
+.piece.white {
+    background: radial-gradient(circle at 35% 35%, #f8fafc, #94a3b8);
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.15), 0 2px 4px rgba(0,0,0,0.3);
+}
+.piece.flipping {
+    animation: flip 0.4s ease-in-out;
+}
+@keyframes flip {
+    0%, 100% { transform: rotateY(0deg) }
+    50% { transform: rotateY(180deg) scale(1.1) }
+}
+
+.controls {
+    text-align: center;
+    margin-top: 16px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.btn {
+    background: rgba(255,255,255,0.08);
+    color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.12);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+}
+.btn:hover { background: rgba(255,255,255,0.14); color: #e2e8f0 }
+.btn:active { transform: scale(0.97) }
+
+/* ===== 結束畫面 ===== */
+.game-over-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,0.66);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.game-over-card {
+    background: rgba(30,41,59,0.66);
+    padding: 36px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255,255,255,0.08);
+    max-width: 400px;
+    width: 90%;
+}
+.winner-text {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 20px;
+    color: #64ffda;
+}
+.final-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 16px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 12px;
+}
+.stat-item { text-align: center }
+.stat-label {
+    font-size: 0.9rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+}
+.stat-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #e2e8f0;
+    margin-top: 10px;
+}
+
+/* ===== 響應式 ===== */
+@media (max-width: 480px) {
+    .game-container { padding: 8px; }
+    .board-wrapper { padding: 8px; }
+    .board { padding: 3px; gap: 1px; }
+    .turn-indicator { font-size: 0.75rem; padding: 10px 10px; min-width: 80px; }
+    .score-panel { padding: 6px 8px; }
+    .score-value { font-size: 1.5rem; }
+    .score-panel h3 { font-size: 0.65rem; }
+    .winner-text { font-size: 1.5rem; }
+}
+</style>
+</head>
+<body>
+<div class="game-container">
+
+    <!-- 開始畫面 -->
+    <div id="menu-screen">
+        <div class="menu-title">翻轉黑白棋</div>
+        <div class="menu-subtitle">
+            將對手的棋子翻轉為我方的顏色，<br>
+            最後擁有最多棋子者獲勝。<br>
+            只有在能翻轉至少一枚對手棋子的位置才能落子，<br>
+            若無法落子時，則仍為對手的回合。<br>
+        </div>
+        <button class="menu-btn menu-btn-primary" onclick="startGame('ai')">單人模式 (對戰電腦)</button>
+        <button class="menu-btn" onclick="startGame('two-player')">雙人模式 (本機)</button>
+    </div>
+
+    <!-- 遊戲頁面 -->
+    <div id="game-page" class="hidden">
+        <div class="game-header">
+            <div class="score-panel black-panel">
+                <h3>黑棋</h3>
+                <div class="score-value" id="black-score">2</div>
+            </div>
+            <div class="turn-indicator" id="turn-indicator">
+                <span id="turn-text">黑棋回合</span>
+            </div>
+            <div class="score-panel white-panel">
+                <h3>白棋</h3>
+                <div class="score-value" id="white-score">2</div>
+            </div>
+        </div>
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+        <div class="controls">
+            <button class="btn" onclick="backToMenu()">返回選單</button>
+            <button class="btn" onclick="resetGame()">重新開始</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- 結束畫面 -->
+<div class="game-over-overlay" id="game-over">
+    <div class="game-over-card">
+        <div class="winner-text" id="winner-text"></div>
+        <div class="final-stats">
+            <div class="stat-item">
+                <div class="stat-label">黑棋</div>
+                <div class="stat-value" id="final-black">0</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">白棋</div>
+                <div class="stat-value" id="final-white">0</div>
+            </div>
+        </div>
+        <button class="btn menu-btn-primary" id="replay-btn" onclick="resetGame()" style="margin-top:8px;padding:12px 28px;font-size:1rem;">再玩一次</button>
+        <button class="btn" onclick="backToMenu()" style="margin-top:8px;padding:12px 28px;font-size:1rem;">返回選單</button>
+    </div>
+</div>
+
+<script>
+class ReversiGame {
+    constructor(mode = 'two-player') {
+        this.board = Array(8).fill().map(() => Array(8).fill(0));
+        this.currentPlayer = 1; // 1=黑, 2=白
+        this.mode = mode; // 'two-player' or 'ai'
+        this.gameOver = false;
+        this.initBoard();
+        this.renderBoard();
+        this.updateUI();
+    }
+
+    initBoard() {
+        this.board[3][3] = 2;
+        this.board[4][4] = 2;
+        this.board[3][4] = 1;
+        this.board[4][3] = 1;
+    }
+
+    renderBoard() {
+        const boardEl = document.getElementById('board');
+        boardEl.innerHTML = '';
+        for (let row = 0; row < 8; row++) {
+            for (let col = 0; col < 8; col++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.dataset.row = row;
+                cell.dataset.col = col;
+                cell.addEventListener('click', () => this.handleCellClick(row, col));
+                if (this.board[row][col] !== 0) {
+                    const piece = document.createElement('div');
+                    piece.className = `piece ${this.board[row][col] === 1 ? 'black' : 'white'}`;
+                    cell.appendChild(piece);
+                }
+                boardEl.appendChild(cell);
+            }
+        }
+        this.highlightValidMoves();
+    }
+
+    isValidMove(row, col, player) {
+        if (this.board[row][col] !== 0) return false;
+        const directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+        for (const [dr, dc] of directions) {
+            if (this.checkDirection(row, col, dr, dc, player)) return true;
+        }
+        return false;
+    }
+
+    checkDirection(row, col, dr, dc, player) {
+        let r = row + dr, c = col + dc;
+        let foundOpponent = false;
+        while (r >= 0 && r < 8 && c >= 0 && c < 8) {
+            if (this.board[r][c] === 0) return false;
+            if (this.board[r][c] === player) return foundOpponent;
+            foundOpponent = true;
+            r += dr;
+            c += dc;
+        }
+        return false;
+    }
+
+    handleCellClick(row, col) {
+        if (this.gameOver) return;
+        if (this.mode === 'ai' && this.currentPlayer === 2) return; // 等待 AI
+        this.makeMove(row, col);
+    }
+
+    makeMove(row, col) {
+        if (this.gameOver || !this.isValidMove(row, col, this.currentPlayer)) return;
+        const flipped = this.getFlippedPieces(row, col, this.currentPlayer);
+        this.board[row][col] = this.currentPlayer;
+        this.flipPieces(row, col, this.currentPlayer, flipped);
+        this.animateFlip(row, col, flipped);
+        this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+        setTimeout(() => {
+            this.renderBoard();
+            this.updateUI();
+            this.checkGameEnd();
+        }, 300);
+    }
+
+    getFlippedPieces(row, col, player) {
+        const directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+        const toFlip = [];
+        for (const [dr, dc] of directions) {
+            const line = [];
+            let r = row + dr, c = col + dc;
+            while (r >= 0 && r < 8 && c >= 0 && c < 8 && this.board[r][c] !== 0 && this.board[r][c] !== player) {
+                line.push([r, c]);
+                r += dr;
+                c += dc;
+            }
+            if (r >= 0 && r < 8 && c >= 0 && c < 8 && this.board[r][c] === player && line.length > 0) {
+                toFlip.push(...line);
+            }
+        }
+        return toFlip;
+    }
+
+    flipPieces(row, col, player, flipped) {
+        for (const [r, c] of flipped) {
+            this.board[r][c] = player;
+        }
+    }
+
+    animateFlip(row, col, flipped) {
+        // new piece
+        const newCell = document.querySelector(`.cell[data-row="${row}"][data-col="${col}"]`);
+        if (newCell) {
+            const piece = newCell.querySelector('.piece');
+            if (piece) piece.classList.add('flipping');
+        }
+        // flipped pieces
+        flipped.forEach(([r, c]) => {
+            const cell = document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+            if (cell) {
+                const piece = cell.querySelector('.piece');
+                if (piece) piece.classList.add('flipping');
+            }
+        });
+    }
+
+    highlightValidMoves() {
+        document.querySelectorAll('.cell').forEach(cell => {
+            cell.classList.remove('valid-move');
+            const row = parseInt(cell.dataset.row);
+            const col = parseInt(cell.dataset.col);
+            if (this.isValidMove(row, col, this.currentPlayer)) {
+                cell.classList.add('valid-move');
+            }
+        });
+    }
+
+    getScore() {
+        let black = 0, white = 0;
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                if (this.board[r][c] === 1) black++;
+                else if (this.board[r][c] === 2) white++;
+            }
+        }
+        return { black, white };
+    }
+
+    hasValidMoves(player) {
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                if (this.isValidMove(r, c, player)) return true;
+            }
+        }
+        return false;
+    }
+
+    getAllValidMoves(player) {
+        const moves = [];
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                if (this.isValidMove(r, c, player)) {
+                    moves.push({ row: r, col: c });
+                }
+            }
+        }
+        return moves;
+    }
+
+    checkGameEnd() {
+        if (this.currentPlayer === 1) {
+            if (!this.hasValidMoves(1)) {
+                if (!this.hasValidMoves(2)) {
+                    this.endGame();
+                } else {
+                    this.currentPlayer = 2;
+                    this.updateUI();
+                    if (this.mode === 'ai') {
+                        setTimeout(() => this.aiMove(), 400);
+                    }
+                }
+            } else if (this.mode === 'ai' && this.currentPlayer === 2) {
+                setTimeout(() => this.aiMove(), 400);
+            }
+        } else {
+            if (!this.hasValidMoves(2)) {
+                if (!this.hasValidMoves(1)) {
+                    this.endGame();
+                } else {
+                    this.currentPlayer = 1;
+                    this.updateUI();
+                }
+            } else if (this.mode === 'ai') {
+                setTimeout(() => this.aiMove(), 400);
+            }
+        }
+    }
+
+    endGame() {
+        this.gameOver = true;
+        const { black, white } = this.getScore();
+        const overlay = document.getElementById('game-over');
+        const winnerEl = document.getElementById('winner-text');
+        document.getElementById('final-black').textContent = black;
+        document.getElementById('final-white').textContent = white;
+
+        if (this.mode === 'ai') {
+            if (black > white) {
+                winnerEl.textContent = '🎉 你贏了！';
+            } else if (white > black) {
+                winnerEl.textContent = '💔 你輸了！';
+            } else {
+                winnerEl.textContent = '🤝 平手！';
+            }
+        } else {
+            if (black > white) {
+                winnerEl.textContent = '黑棋獲勝！';
+            } else if (white > black) {
+                winnerEl.textContent = '白棋獲勝！';
+            } else {
+                winnerEl.textContent = '🤝 平手！';
+            }
+        }
+        overlay.style.display = 'flex';
+    }
+
+    updateUI() {
+        const { black, white } = this.getScore();
+        document.getElementById('black-score').textContent = black;
+        document.getElementById('white-score').textContent = white;
+        const turnText = document.getElementById('turn-text');
+        const indicator = document.getElementById('turn-indicator');
+
+        if (this.mode === 'ai') {
+            if (this.currentPlayer === 1) {
+                turnText.textContent = '你的回合';
+                indicator.style.color = '#e2e8f0';
+                indicator.style.background = 'rgba(226,232,240,0.08)';
+                indicator.style.borderColor = 'rgba(226,232,240,0.2)';
+            } else {
+                turnText.textContent = '電腦思考中…';
+                indicator.style.color = '#94a3b8';
+                indicator.style.background = 'rgba(148,163,184,0.08)';
+                indicator.style.borderColor = 'rgba(148,163,184,0.2)';
+            }
+        } else {
+            turnText.textContent = this.currentPlayer === 1 ? '黑棋回合' : '白棋回合';
+            indicator.style.color = this.currentPlayer === 1 ? '#e2e8f0' : '#cbd5e1';
+            indicator.style.background = this.currentPlayer === 1
+                ? 'rgba(226,232,240,0.08)' : 'rgba(203,213,225,0.08)';
+            indicator.style.borderColor = this.currentPlayer === 1
+                ? 'rgba(226,232,240,0.2)' : 'rgba(203,213,225,0.2)';
+        }
+        this.highlightValidMoves();
+    }
+
+    // ===== AI =====
+    aiMove() {
+        if (this.gameOver || this.currentPlayer !== 2) return;
+        
+        const boardEl = document.getElementById('board');
+        boardEl.classList.add('thinking');
+        
+        const bestMove = this._findBestMove();
+        
+        boardEl.classList.remove('thinking');
+        
+        if (bestMove) {
+            this.makeMove(bestMove.row, bestMove.col);
+        } else {
+            this.checkGameEnd();
+        }
+    }
+    
+    _findBestMove() {
+        const moves = this.getAllValidMoves(2);
+        if (moves.length === 0) return null;
+        
+        const weightBoard = this.getWeightBoard();
+        let bestScore = -Infinity;
+        let bestMove = moves[0];
+        
+        for (const move of moves) {
+            // 模擬落子（原地修改）
+            const oldSelf = this.board[move.row][move.col];
+            const oldFlipped = [];
+            this.board[move.row][move.col] = 2;
+            const flipped = this.getFlippedPieces(move.row, move.col, 2);
+            for (const [fr, fc] of flipped) {
+                oldFlipped.push([fr, fc, this.board[fr][fc]]);
+                this.board[fr][fc] = 2;
+            }
+            
+            // 計算位置評分
+            let score = 0;
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (this.board[r][c] === 2) score += weightBoard[r][c];
+                    else if (this.board[r][c] === 1) score -= weightBoard[r][c];
+                }
+            }
+            
+            // 額外加權：翻轉的棋子數 * 權重差的平均值（避免被大量反吃）
+            for (const [fr, fc] of flipped) {
+                score += weightBoard[fr][fc] * 0.5;
+            }
+            
+            // 還原
+            this.board[move.row][move.col] = oldSelf;
+            for (const [fr, fc, val] of oldFlipped) {
+                this.board[fr][fc] = val;
+            }
+            
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+        }
+        return bestMove;
+    }
+
+    getWeightBoard() {
+        return [
+            [120, -20,  25,  12,  12,  25, -20, 120],
+            [-20, -40,  -5,  -5,  -5,  -5, -40, -20],
+            [ 25,  -5,  15,   3,   3,  15,  -5,  25],
+            [ 12,  -5,   3,   2,   2,   3,  -5,  12],
+            [ 12,  -5,   3,   2,   2,   3,  -5,  12],
+            [ 25,  -5,  15,   3,   3,  15,  -5,  25],
+            [-20, -40,  -5,  -5,  -5,  -5, -40, -20],
+            [120, -20,  25,  12,  12,  25, -20, 120]
+        ];
+    }
+
+    undo() {
+        if (this.mode === 'ai') {
+            // 恢復到上一步玩家回合
+            this.currentPlayer = 1;
+            this.renderBoard();
+            this.updateUI();
+        }
+    }
+}
+
+let game = null;
+let currentMode = 'two-player';
+
+function startGame(mode) {
+    currentMode = mode;
+    document.getElementById('menu-screen').classList.add('hidden');
+    document.getElementById('game-page').classList.remove('hidden');
+    document.getElementById('game-over').style.display = 'none';
+    game = new ReversiGame(mode);
+}
+
+function resetGame() {
+    document.getElementById('game-over').style.display = 'none';
+    game = new ReversiGame(currentMode);
+}
+
+function backToMenu() {
+    document.getElementById('game-page').classList.add('hidden');
+    document.getElementById('menu-screen').classList.remove('hidden');
+    document.getElementById('game-over').style.display = 'none';
+    game = null;
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'r' || e.key === 'R') {
+        if (document.getElementById('game-page').classList.contains('hidden') === false) {
+            resetGame();
+        }
+    }
+});
+</script>
+</body>
+</html>
