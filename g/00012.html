@@ -17,7 +17,8 @@ body {
     font-family: 'Segoe UI', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
     background: #0f172a;
     overflow: hidden;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -28,6 +29,7 @@ body {
 
 .game-container {
     padding: 16px;
+    max-height: 100vh;
     max-width: 600px;
     width: 100%;
 }
@@ -83,7 +85,10 @@ body {
 }
 
 /* ===== 遊戲頁面 ===== */
-#game-page.hidden { display: none }
+#game-page.hidden {
+    justify-content: center;
+    display: none;
+}
 
 .game-header {
     display: flex;
@@ -700,11 +705,13 @@ function startGame(mode) {
     document.getElementById('game-page').classList.remove('hidden');
     document.getElementById('game-over').style.display = 'none';
     game = new ReversiGame(mode);
+    requestAnimationFrame(fitContainer);
 }
 
 function resetGame() {
     document.getElementById('game-over').style.display = 'none';
     game = new ReversiGame(currentMode);
+    requestAnimationFrame(fitContainer);
 }
 
 function backToMenu() {
@@ -712,7 +719,23 @@ function backToMenu() {
     document.getElementById('menu-screen').classList.remove('hidden');
     document.getElementById('game-over').style.display = 'none';
     game = null;
+    requestAnimationFrame(fitContainer);
 }
+
+function fitContainer() {
+    const container = document.querySelector('.game-container');
+    const viewportH = window.innerHeight;
+    const containerH = container.scrollHeight || container.offsetHeight;
+    if (containerH > viewportH * 0.95) {
+        const scale = (viewportH * 0.95) / containerH;
+        container.style.transformOrigin = 'center top';
+        container.style.transform = `scale(${scale})`;
+    } else {
+        container.style.transform = '';
+    }
+}
+
+window.addEventListener('resize', fitContainer);
 
 document.addEventListener('keydown', (e) => {
     if (e.key === 'r' || e.key === 'R') {

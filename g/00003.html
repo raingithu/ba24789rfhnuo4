@@ -14,7 +14,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
     overflow: hidden;
     user-select: none;
     -webkit-user-select: none;
@@ -1853,6 +1854,22 @@ const STAGES = [
 ];
 
 window.onload = init;
+
+function fitContainer() {
+  var container = document.getElementById('game-container');
+  var viewportH = window.innerHeight;
+  var containerH = container.scrollHeight || container.offsetHeight;
+  if (containerH > viewportH * 0.94) {
+    var scale = (viewportH * 0.94) / containerH;
+    container.style.transformOrigin = 'center center';
+    container.style.transform = 'scale(' + scale + ')';
+  } else {
+    container.style.transform = '';
+  }
+}
+
+window.addEventListener('resize', fitContainer);
+fitContainer();
 </script>
 </body>
 </html>

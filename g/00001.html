@@ -166,6 +166,7 @@ canvas {
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(4px);
     display: flex;
+    text-align: center;
     flex-direction: column;
     justify-content: center;
     align-items: center;
@@ -200,6 +201,11 @@ canvas {
     box-shadow: 0 0 20px rgba(0, 255, 204, 0.4);
     transition: transform 0.1s, box-shadow 0.1s;
     font-weight: bold;
+}
+
+.btn:hover {
+    transform: scale(1.04);
+    background: #00cc99; color: rgba(0, 255, 204, 1);
 }
 
 .btn:active {
@@ -266,7 +272,7 @@ canvas {
         
         <div id="overlay">
             <h1 id="status-text">曲線吞噬者</h1>
-            <p id="final-score">　改變吞噬者的移動方向吃掉蘋果！<br>手機觸控滑動／PC支援鍵盤與滑鼠操作</p>
+            <p id="final-score">改變吞噬者的移動方向吃掉蘋果！<br>手機觸控／PC鍵盤與滑鼠操作</p>
             <button class="btn" id="start-btn">開始遊戲</button>
         </div>
     </div>

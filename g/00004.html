@@ -8,7 +8,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;touch-action:none;user-select:none}
 body{background:#0a0a1a;display:flex;justify-content:center;align-items:flex-start;min-height:100vh;font-family:'Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;overflow:hidden;margin:0;padding:0}
-#game-container{position:relative;width:min(500px,100vw);height:min(700px,100vh);border-radius:0;overflow:hidden}
+#game-container{position:relative;width:min(500px,100vw);height:min(680px,100vh);border-radius:0;overflow:hidden}
 #game-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
 
 /* ── UI 覆蓋層 ── */
@@ -1137,6 +1137,22 @@ function gameLoop(now) {
 }
 
 requestAnimationFrame(gameLoop);
+
+function fitContainer() {
+  var container = document.getElementById('game-container');
+  var viewportH = window.innerHeight;
+  var containerH = container.offsetHeight || 680;
+  if (containerH > viewportH * 0.96) {
+    var scale = (viewportH * 0.96) / containerH;
+    container.style.transformOrigin = 'center center';
+    container.style.transform = 'scale(' + scale + ')';
+  } else {
+    container.style.transform = '';
+  }
+}
+
+window.addEventListener('resize', fitContainer);
+fitContainer();
 </script>
 </body>
 </html>
