@@ -417,6 +417,7 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 /* C12 語音輸入（僅支援的瀏覽器顯示） */
 .btn-mic:not(.enabled){display:none}
 .btn-mic.listening{background:linear-gradient(160deg,rgba(255,120,120,.85),rgba(220,80,80,.8));border-color:rgba(255,140,140,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+.btn-send.hidden,.btn-mic.hidden{display:none}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,110,110,.5)}50%{box-shadow:0 0 0 6px rgba(255,110,110,0)}}
 /* C2 側欄寵物＝匯出／匯入入口 */
 .pet{cursor:pointer}
@@ -775,9 +776,9 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
         <button class="btn-attach btn-imgmode" id="btnImgMode" title="圖片模式（文生圖 / 圖生圖）" aria-label="圖片模式" type="button">🎨</button>
         <button class="btn-attach" id="btnAttach" title="附加圖片" aria-label="附加圖片" type="button">📎</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
-        <button class="btn-attach btn-mic" id="btnMic" title="語音輸入" aria-label="語音輸入" type="button">🎤</button>
         <textarea id="msgInput" placeholder="✒️ 請輸入訊息…" rows="1"></textarea>
         <button class="btn-send" id="btnSend" title="送出" aria-label="送出" type="button">➤</button>
+        <button class="btn-attach btn-mic" id="btnMic" title="語音輸入" aria-label="語音輸入" type="button">🎤</button>
       </div>
     </div>
   </main>
@@ -1826,7 +1827,7 @@ async function sendMessage(){
     return;
   }
 
-  input.value='';layoutMsgInput();   // 清空並重置輸入框高度／置中狀態
+  input.value='';layoutMsgInput();updateSendButton();   // 清空並重置輸入框高度／置中狀態、三態按鈕切換
   updateImgModeHint();
 
   if(!chats[activeChatId].messages.length){
@@ -2203,15 +2204,25 @@ async function requestImage(opts){
   }
 }
 
-// 送出 / 停止 按鈕狀態切換
+// 送出 / 停止 / 語音三態切換（同一個槽位互斥顯示）
 function updateSendButton(){
   const b=document.getElementById('btnSend');
+  const m=document.getElementById('btnMic');
   if(isStreaming){
-    b.textContent='■';b.classList.add('stop');
-    b.title='停止生成';b.setAttribute('aria-label','停止生成');
+    if(b){
+      b.textContent='■';b.classList.add('stop');
+      b.title='停止生成';b.setAttribute('aria-label','停止生成');
+      b.classList.remove('hidden');
+    }
+    if(m)m.classList.add('hidden');
   }else{
-    b.textContent='➤';b.classList.remove('stop');
-    b.title='送出';b.setAttribute('aria-label','送出');
+    const hasText=!!msgInput.value.trim();
+    if(b){
+      b.textContent='➤';b.classList.remove('stop');
+      b.title='送出';b.setAttribute('aria-label','送出');
+      b.classList.toggle('hidden',!hasText);
+    }
+    if(m)m.classList.toggle('hidden',hasText);
   }
 }
 
@@ -2377,6 +2388,9 @@ function layoutMsgInput(){
 msgInput.addEventListener('input',layoutMsgInput);
 window.addEventListener('resize',layoutMsgInput);
 layoutMsgInput();
+
+// 輸入框文字變動時也要更新三態切換（同一個槽位互斥顯示）
+msgInput.addEventListener('input',updateSendButton);
 msgInput.addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     // PC端：Enter發送；手機端：Shift+Enter發送，Enter換行
