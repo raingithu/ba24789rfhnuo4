@@ -109,7 +109,7 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 /* 設定彈窗 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:92%;max-width:420px;max-height:640px;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:96%;max-width:420px;max-height:640px;overflow-y:auto}
 .modal h3{margin-bottom:16px;color:var(--accent)}
 #settingSystem{background:var(--input-bg);color:var(--text);width:100%;height:60px;border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color .2s}
 #settingSystem:focus{border-color:var(--accent)}
@@ -118,8 +118,8 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
 .field input,.field select{width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--accent)}
-.modal-actions{display:flex;gap:24px;justify-content:center;margin-top:16px}
-.modal-actions button{padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;border:none}
+.modal-actions{display:flex;gap:18px;justify-content:center;margin-top:16px}
+.modal-actions button{padding:10px 6px;border-radius:6px;cursor:pointer;font-size:13px;border:none}
 .btn-cancel{background:transparent;color:var(--text2);border:1px solid var(--border)}
 .btn-save{background:var(--msg-user-bg);color:#fff}
 .btn-reset{margin-right:auto;background:transparent;color:var(--text2);border:1px dashed var(--border);transition:all .2s}
@@ -178,13 +178,13 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 .msg-menu-wrap{position:absolute;top:2px;z-index:5}
 .msg-row.user .msg-menu-wrap{right:calc(100% + 6px)}
 .msg-row.assistant .msg-menu-wrap{left:calc(100% + 6px)}
-.msg-menu{display:block;width:24px;height:24px;border:none;background:transparent;color:var(--text2);font-size:15px;line-height:1;cursor:pointer;border-radius:50%;padding:0;opacity:0;visibility:hidden;transition:opacity .15s,background .2s}
+.msg-menu{display:block;width:24px;height:24px;z-index:30;border:none;background:transparent;color:var(--text2);font-size:15px;line-height:1;cursor:pointer;border-radius:50%;padding:0;opacity:0;visibility:hidden;transition:opacity .15s,background .2s}
 .msg-menu:hover{background:var(--surface2)}
 .msg-row:hover .msg-menu,.msg-row.menu-open .msg-menu{opacity:1;visibility:visible}
 .msg-dropdown{position:absolute;top:0;right:-36px;z-index:30;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.45);min-width:132px;overflow:hidden;display:none}
 .msg-row.assistant .msg-dropdown{left:auto;right:0}
 .msg-dropdown.open{display:block}
-.msg-dropdown button{display:block;width:100%;text-align:left;padding:8px 14px;font-size:13px;background:none;border:none;color:var(--text);cursor:pointer;white-space:nowrap}
+.msg-dropdown button{display:block;width:100%;z-index:30;text-align:left;padding:8px 14px;font-size:13px;background:none;border:none;color:var(--text);cursor:pointer;white-space:nowrap}
 .msg-dropdown button:hover{background:var(--surface);color:var(--accent)}
 /* 觸控裝置：不出現 ⋮（長按直接開選單）；長按中禁止文字選取 */
 @media(hover:none){
@@ -232,6 +232,7 @@ body[data-theme="orange"]{--ai-stop-bg:linear-gradient(150deg,#fbeed2,#f4ddb0);-
   .sidebar.open{transform:translateX(0)}
   .menu-btn{display:block}
   .scroll-bottom{bottom:100px;right:14px}
+
 }
 
 /* 設定欄位並排（模型 + 主題 各50%） */
@@ -408,13 +409,13 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 .menu-time{padding:6px 14px 4px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);margin-bottom:4px;white-space:nowrap}
 /* C3 訊息時間戳小氣泡：疊在訊息氣泡下緣邊線上（中心對齊邊線）、上層顯示；
    user 靠右、AI 靠左，且各留 8px 不貼齊訊息氣泡邊緣；樣式跟隨所屬氣泡 */
-.msg-time{position:absolute;top:calc(100% - 9px);z-index:6;height:18px;line-height:18px;padding:0 10px;
+.msg-time{position:absolute;top:calc(100% - 9px);z-index:2;height:18px;line-height:18px;padding:0 10px;
   font-size:10px;border-radius:6px;white-space:nowrap;pointer-events:none;
   background:var(--msg-user-bg);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
 .msg-row.user .msg-time{right:8px}
 .msg-row.assistant .msg-time,.msg-row.error .msg-time{left:8px;background:var(--msg-ai-bg);color:var(--msg-ai)}
 /* C12 語音輸入（僅支援的瀏覽器顯示） */
-.btn-mic{display:none}
+.btn-mic:not(.enabled){display:none}
 .btn-mic.listening{background:linear-gradient(160deg,rgba(255,120,120,.85),rgba(220,80,80,.8));border-color:rgba(255,140,140,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,110,110,.5)}50%{box-shadow:0 0 0 6px rgba(255,110,110,0)}}
 /* C2 側欄寵物＝匯出／匯入入口 */
@@ -944,17 +945,16 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
     <p style="font-size:12px;color:var(--text2);margin-bottom:8px"></p>
     <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
       <input type="checkbox" id="exportWithImages" checked style="width:auto;margin-top:2px">
-      <span>包含圖片資料（圖片以 dataURL 內嵌）。<br>不勾選時僅保留圖片 id，匯入後需原裝置上已有該圖，否則會顯示替代外觀</span>
+      <span>包含圖片資料（圖片以 dataURL 內嵌）。<br>不勾選時，僅保留圖片 id，但要注意：<br>匯入後需原裝置上已有該圖，否則會顯示替代外觀</span>
     </label>
     <div class="modal-actions" style="margin-top:12px">
-      <button class="btn-save" id="btnExportAll" type="button">匯出<br>全部對話</button>
-      <button class="btn-save" id="btnExportCurrent" type="button">匯出<br>當前對話</button>
-      <button class="btn-save" id="btnExportMd" type="button">匯出<br>當前Markdown</button>
+      <button class="btn-save" id="btnExportAll" type="button" style="width:100%;">匯出<br>全部對話</button>
+      <button class="btn-save" id="btnExportCurrent" type="button" style="width:100%;">匯出<br>當前對話</button>
+      <button class="btn-save" id="btnExportMd" type="button" style="width:100%;">匯出<br>當前Markdown</button>
     </div>
     <div class="modal-actions" style="margin-top:8px">
-      <button class="btn-cancel" id="btnImportPick" type="button">📥 匯入 JSON</button>
+      <button class="btn-cancel" id="btnImportPick" type="button">📥  匯入對話 JSON</button>
       <input type="file" id="importFile" accept="application/json,.json" style="display:none">
-      <button class="btn-cancel" id="btnCleanOrphan" type="button">🧹 清理未被引用的圖片</button>
     </div>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn-cancel" id="btnExportClose" type="button">關閉</button>
@@ -965,8 +965,11 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 <!-- C9 圖片 Gallery -->
 <div class="modal-overlay" id="galleryModal">
   <div class="modal" style="width:94%;max-width:720px">
+    <div class="field-row" style="justify-content: space-between;">
     <h3>🖼️ 圖片 Gallery</h3>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在本機的圖片；點縮圖可放大，刪除後引用它的訊息文字會保留、圖片改顯示「已刪除」佔位</p>
+    <button class="btn-cancel" id="btnCleanOrphan" type="button" style="border:0;">🧹 清理未被引用的圖片</button>
+    </div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在本機的圖片；點縮圖可放大。<br>刪除後引用它的訊息文字會保留、圖片則改顯示「已刪除」</p>
     <div class="gallery-grid" id="galleryGrid"></div>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn-cancel" id="btnGalleryClose" type="button">關閉</button>
@@ -1444,10 +1447,10 @@ function msgHtml(m,i){
   const isUser=m.role==='user';
   // C3：訊息時間戳（舊資料無 createdAt 則不顯示）
   const tstr=m.createdAt?('🕒 '+new Date(m.createdAt).toLocaleString('zh-TW')):'';
-  // 氣泡上只顯示短時間（HH:MM），完整時間保留在長按選單第一行
+  // 氣泡上顯示時間（完整時間保留在長按選單第一行）；使用者訊息不顯示，僅 AI 氣泡下方顯示
   const tshort=m.createdAt?new Date(m.createdAt).toLocaleTimeString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
   const timeRow=tstr?`<div class="menu-time">${escHtml(tstr)}</div>`:'';
-  const timeBadge=tshort?`<div class="msg-time">${escHtml(tshort)}</div>`:'';
+  const timeBadge=(tshort&&!isUser)?`<div class="msg-time">${escHtml(tshort)}</div>`:'';
   // 選單項目：user = 複製/編輯；AI 純文字 = 複製/轉格式複製/重新生成；AI 圖片訊息 = 儲存圖片/重新生成（C4：皆附刪除）
   const delBtn=`<button data-act="delmsg" type="button">🗑️ 刪除</button>`;
   const items=isUser
@@ -1908,7 +1911,7 @@ async function fetchWithRetry(url,options,cfg){
     // 佇列已滿 / 伺服器忙碌 → 自動重試
     if((resp.status===503||/queue is full|please retry later/i.test(errText))&&attempt<maxAttempts){
       const wait=Math.min(5*attempt,15);
-      if(onStatus)onStatus('<span class="spinner"></span>'+prefix+'伺服器忙碌（佇列已滿），'+wait+' 秒後自動重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
+      if(onStatus)onStatus('<span class="spinner"></span>'+prefix+'伺服器忙碌，'+wait+' 秒後自動重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
       console.warn('[Chat] 伺服器忙碌（503 queue is full），第 '+attempt+' 次失敗，'+wait+' 秒後重試');
       await new Promise(r=>setTimeout(r,wait*1000));
       if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
@@ -2143,7 +2146,7 @@ async function requestImage(opts){
     const b64=item.b64_json||'';
     const url=item.url||'';
     if(!b64&&!url)throw new Error('圖片模型未回傳圖片（請檢查 prompt 與 API 權限）');
-    statusDiv.innerHTML='<span class="spinner"></span>⬇️ 正在取得圖片…';
+    statusDiv.innerHTML='<span class="spinner"></span>⬇️ 正在取得圖片';
 
     // 圖片存進 IndexedDB，歷史只留輕量 image_ref，不撐爆 localStorage
     const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
@@ -2827,8 +2830,13 @@ document.getElementById('btnCleanOrphan').addEventListener('click',async()=>{
 (function initVoiceInput(){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   const btn=document.getElementById('btnMic');
-  if(!SR||!btn)return;
-  btn.style.display='';
+  if(!btn)return;
+  btn.classList.add('enabled');  // 修正：原用 style.display='' 清不掉 CSS 的 .btn-mic{display:none}，導致按鈕永遠不出現
+  if(!SR){
+    // 不支援的瀏覽器仍顯示按鈕，點擊時說明原因（方便行動端排查，手機沒有主控台）
+    btn.addEventListener('click',()=>showToast('此瀏覽器不支援語音輸入（Web Speech API）。請改用 Chrome / Edge 或 Safari（iOS 14.5+）','warn'));
+    return;
+  }
   let rec=null,listening=false;
   btn.addEventListener('click',()=>{
     if(listening){
