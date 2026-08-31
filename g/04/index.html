@@ -38,9 +38,9 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 .chat-item.active{background:var(--surface2);border:1px solid var(--accent)}
 .chat-item .icon{font-size:16px}
 .chat-item .title{flex:1;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.chat-item .del{opacity:0;font-size:12px;color:var(--text2);transition:opacity .2s;background:none;border:none;cursor:pointer;padding:2px 4px}
-.chat-item:hover .del{opacity:1}
-.chat-item .del:hover{color:var(--accent)}
+.chat-item .del,.chat-item .act{opacity:0;font-size:12px;color:var(--text2);transition:opacity .2s;background:none;border:none;cursor:pointer;padding:2px 3px}
+.chat-item:hover .del,.chat-item:hover .act{opacity:1}
+.chat-item .del:hover,.chat-item .act:hover{color:var(--accent)}
 .sidebar-footer{padding:12px;border-top:1px solid var(--border)}
 .btn-settings{width:100%;padding:10px;background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;cursor:pointer;font-size:13px;transition:all .2s}
 .btn-settings:hover{border-color:var(--accent);color:var(--text)}
@@ -109,16 +109,16 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 /* 設定彈窗 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:24px;width:90%;max-width:420px;max-height:92vh;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:92%;max-width:420px;max-height:640px;overflow-y:auto}
 .modal h3{margin-bottom:16px;color:var(--accent)}
-#settingSystem{background:var(--input-bg);color:var(--text);width:100%;height:40px;border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color .2s}
+#settingSystem{background:var(--input-bg);color:var(--text);width:100%;height:60px;border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color .2s}
 #settingSystem:focus{border-color:var(--accent)}
 .field input::placeholder,.field textarea::placeholder{color:var(--text2);opacity:.75}
 .field{margin-bottom:3px}
 .field label{display:block;font-size:12px;color:var(--text2);margin-bottom:4px}
 .field input,.field select{width:100%;padding:10px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--accent)}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:16px}
+.modal-actions{display:flex;gap:24px;justify-content:center;margin-top:16px}
 .modal-actions button{padding:8px 16px;border-radius:6px;cursor:pointer;font-size:13px;border:none}
 .btn-cancel{background:transparent;color:var(--text2);border:1px solid var(--border)}
 .btn-save{background:var(--msg-user-bg);color:#fff}
@@ -190,6 +190,10 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 @media(hover:none){
   .msg-row:hover .msg-menu,.msg-row.menu-open .msg-menu{opacity:0;visibility:hidden}
   .msg-row.pressing .msg{-webkit-user-select:none;user-select:none}
+  /* 當前選中的對話直接顯示操作圖示（其他對話維持長按顯示）；長按對話列不觸發反白 */
+  .chat-item.active .act,.chat-item.active .del{opacity:1}
+  .chat-item{-webkit-user-select:none;user-select:none}
+  .chat-item input{-webkit-user-select:text;user-select:text}
 }
 
 /* 錯誤訊息 */
@@ -210,9 +214,6 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 /* 側邊欄：搜尋與項目操作 */
 .chat-search{margin:8px 8px 0;padding:8px 12px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none;width:calc(100% - 16px)}
 .chat-search:focus{border-color:var(--accent)}
-.chat-item .act{opacity:0;font-size:12px;color:var(--text2);background:none;border:none;cursor:pointer;padding:2px 3px;transition:opacity .2s}
-.chat-item:hover .act{opacity:1}
-.chat-item .act:hover{color:var(--accent)}
 .rename-input{flex:1;min-width:0;font-size:13px;background:var(--input-bg);border:1px solid var(--accent);border-radius:4px;color:var(--text);padding:2px 6px;outline:none}
 
 /* 停止按鈕狀態 */
@@ -390,6 +391,45 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 .steam{animation:riseFade 4.2s ease-in-out infinite;transform-box:fill-box}
 @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
 .drift{animation:drift 5s ease-in-out infinite;transform-box:fill-box}
+/* ===== 批次1 新增 ===== */
+/* A5 合併後，.act/.del 樣式集中在檔頭 */
+/* C1 圖片燈箱 */
+.lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center}
+.lightbox.open{display:flex}
+.lightbox img{max-width:94vw;max-height:88vh;transform-origin:center center;cursor:grab;user-select:none;-webkit-user-drag:none}
+.lightbox-btn{position:fixed;top:14px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-size:18px;cursor:pointer;z-index:1001}
+.lightbox-btn:hover{background:rgba(255,255,255,.15)}
+#lbClose{right:14px}
+#lbDownload{right:64px}
+/* C6 繼續生成按鈕 */
+.continue-btn{display:block;margin-top:8px;padding:6px 12px;font-size:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer}
+.continue-btn:hover{color:var(--accent);border-color:var(--accent)}
+/* C3 訊息時間戳（長按選單第一行） */
+.menu-time{padding:6px 14px 4px;font-size:11px;color:var(--text2);border-bottom:1px solid var(--border);margin-bottom:4px;white-space:nowrap}
+/* C3 訊息時間戳小氣泡：疊在訊息氣泡下緣邊線上（中心對齊邊線）、上層顯示；
+   user 靠右、AI 靠左，且各留 8px 不貼齊訊息氣泡邊緣；樣式跟隨所屬氣泡 */
+.msg-time{position:absolute;top:calc(100% - 9px);z-index:6;height:18px;line-height:18px;padding:0 10px;
+  font-size:10px;border-radius:6px;white-space:nowrap;pointer-events:none;
+  background:var(--msg-user-bg);color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.msg-row.user .msg-time{right:8px}
+.msg-row.assistant .msg-time,.msg-row.error .msg-time{left:8px;background:var(--msg-ai-bg);color:var(--msg-ai)}
+/* C12 語音輸入（僅支援的瀏覽器顯示） */
+.btn-mic{display:none}
+.btn-mic.listening{background:linear-gradient(160deg,rgba(255,120,120,.85),rgba(220,80,80,.8));border-color:rgba(255,140,140,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,110,110,.5)}50%{box-shadow:0 0 0 6px rgba(255,110,110,0)}}
+/* C2 側欄寵物＝匯出／匯入入口 */
+.pet{cursor:pointer}
+/* C9 Gallery：右上入口 + 格狀縮圖 */
+.gallery-btn{margin-left:auto;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1}
+.gallery-btn:hover{background:var(--surface2);color:var(--accent)}
+.gallery-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;max-height:56vh;overflow-y:auto;padding:4px}
+.gallery-item{position:relative;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface2)}
+.gallery-item img{width:100%;aspect-ratio:1/1;object-fit:cover;display:block;cursor:zoom-in}
+.gallery-item-info{font-size:10px;color:var(--text2);padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gallery-item-actions{position:absolute;top:4px;right:4px;display:flex;gap:4px;opacity:0;transition:opacity .2s}
+.gallery-item:hover .gallery-item-actions,.gallery-item:focus-within .gallery-item-actions{opacity:1}
+.gallery-item-actions button{width:26px;height:26px;border-radius:6px;border:1px solid var(--border);background:rgba(0,0,0,.55);color:#fff;font-size:13px;cursor:pointer;line-height:1}
+.gallery-item-actions button:hover{background:rgba(0,0,0,.75)}
 </style>
 </head>
 <body>
@@ -721,7 +761,7 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
   <main class="main">
     <div class="header">
       <button class="menu-btn" id="menuBtn" type="button" aria-label="開啟選單">☰</button>
-      <span class="model-badge" id="modelBadge" style="display:none">agnes-2.5-flash</span>
+      <button class="gallery-btn" id="btnGallery" type="button" title="圖片 Gallery" aria-label="圖片 Gallery">❖</button>
     </div>
     <div class="messages" id="messages">
       <div class="empty">
@@ -734,7 +774,8 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
         <button class="btn-attach btn-imgmode" id="btnImgMode" title="圖片模式（文生圖 / 圖生圖）" aria-label="圖片模式" type="button">🎨</button>
         <button class="btn-attach" id="btnAttach" title="附加圖片" aria-label="附加圖片" type="button">📎</button>
         <input type="file" id="fileInput" accept="image/*" multiple style="display:none">
-        <textarea id="msgInput" placeholder="請輸入訊息…" rows="1"></textarea>
+        <button class="btn-attach btn-mic" id="btnMic" title="語音輸入" aria-label="語音輸入" type="button">🎤</button>
+        <textarea id="msgInput" placeholder="✒️ 請輸入訊息…" rows="1"></textarea>
         <button class="btn-send" id="btnSend" title="送出" aria-label="送出" type="button">➤</button>
       </div>
     </div>
@@ -857,7 +898,7 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
     </div>
     <div class="modal-actions">
       <button class="btn-reset" onclick="resetSettings()">↺ 預設</button>
-      <button class="btn-cancel" onclick="closeSettings()">取消</button>
+      <button class="btn-cancel" onclick="closeSettings()">關閉</button>
       <button class="btn-save" onclick="saveSettings()">儲存</button>
     </div>
   </div>
@@ -889,6 +930,50 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 </div>
 
 <!-- Toast 提示容器 -->
+<!-- C1 圖片燈箱 -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-btn" id="lbClose" type="button" title="關閉 (Esc)">✕</button>
+  <button class="lightbox-btn" id="lbDownload" type="button" title="下載圖片">💾</button>
+  <img id="lbImg" alt="放大圖片">
+</div>
+
+<!-- C2 匯出／匯入對話 -->
+<div class="modal-overlay" id="exportModal">
+  <div class="modal">
+    <h3>📦 匯出／匯入對話</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px"></p>
+    <label style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;font-size:13px;color:var(--text)">
+      <input type="checkbox" id="exportWithImages" checked style="width:auto;margin-top:2px">
+      <span>包含圖片資料（圖片以 dataURL 內嵌）。<br>不勾選時僅保留圖片 id，匯入後需原裝置上已有該圖，否則會顯示替代外觀</span>
+    </label>
+    <div class="modal-actions" style="margin-top:12px">
+      <button class="btn-save" id="btnExportAll" type="button">匯出<br>全部對話</button>
+      <button class="btn-save" id="btnExportCurrent" type="button">匯出<br>當前對話</button>
+      <button class="btn-save" id="btnExportMd" type="button">匯出<br>當前Markdown</button>
+    </div>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn-cancel" id="btnImportPick" type="button">📥 匯入 JSON</button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      <button class="btn-cancel" id="btnCleanOrphan" type="button">🧹 清理未被引用的圖片</button>
+    </div>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn-cancel" id="btnExportClose" type="button">關閉</button>
+    </div>
+  </div>
+</div>
+
+<!-- C9 圖片 Gallery -->
+<div class="modal-overlay" id="galleryModal">
+  <div class="modal" style="width:94%;max-width:720px">
+    <h3>🖼️ 圖片 Gallery</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在本機的圖片；點縮圖可放大，刪除後引用它的訊息文字會保留、圖片改顯示「已刪除」佔位</p>
+    <div class="gallery-grid" id="galleryGrid"></div>
+    <div class="modal-actions" style="margin-top:8px">
+      <button class="btn-cancel" id="btnGalleryClose" type="button">關閉</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-wrap" id="toastWrap"></div>
 <!-- Markdown 渲染（CDN 載入失敗時自動退回純文字顯示）-->
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
@@ -928,13 +1013,67 @@ initCatHeadTilt();
 </script>
 <script>
 let settings=loadSettings();
-let chats=loadChats();
+let chats={};           // 啟動時由 loadChatsAsync() 載入（四：對話已搬遷至 IndexedDB）
 let activeChatId=null;
 let isStreaming=false;
 let pendingImages=[];   // 待發送的圖片 {id,dataUrl} 陣列（dataUrl 用於預覽，原始資料已存 IndexedDB）
 let abortCtrl=null;     // 串流中斷控制器
 let stickBottom=true;   // 智慧捲動：使用者是否位於訊息區底部
 let imgMode=false;      // 圖片模式：ON 時送出改呼叫圖片模型（文生圖 / 圖生圖）
+
+// ===== A2：blob URL 追蹤（渲染建立的 objectURL 統一記錄，重建訊息區時釋放）=====
+const blobUrlRegistry=new Set();
+function trackBlobUrl(u){if(u&&u.indexOf('blob:')===0)blobUrlRegistry.add(u);return u}
+function revokeRenderBlobUrls(){
+  blobUrlRegistry.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});
+  blobUrlRegistry.clear();
+}
+// ===== B1：訊息渲染快取（以訊息物件為 key；WeakMap 不會被 JSON.stringify 存進 localStorage）=====
+const renderCache=new WeakMap();
+function renderContentCached(m){
+  if(renderCache.has(m))return renderCache.get(m);
+  const html=renderContent(m);
+  try{renderCache.set(m,html)}catch(e){}
+  return html;
+}
+// ===== A1：收集訊息／對話引用的圖片 id，並自 IndexedDB 刪除 =====
+function collectMsgImageIds(m){
+  const ids=[];
+  if(m&&Array.isArray(m.content))m.content.forEach(p=>{if(p.type==='image_ref'&&p.id)ids.push(p.id)});
+  return ids;
+}
+function collectChatImageIds(c){
+  const ids=[];
+  ((c&&c.messages)||[]).forEach(m=>ids.push(...collectMsgImageIds(m)));
+  return ids;
+}
+async function delMediaIds(ids){for(const id of ids){try{await mediaDel(id)}catch(e){}}}
+// ===== B2：saveChatsData debounce（300ms；重點時刻呼叫 saveChatsDataNow() 立即寫入）=====
+let saveTimer=null,savePending=null;
+function saveChatsDataNow(){
+  if(saveTimer){clearTimeout(saveTimer);saveTimer=null}
+  if(!savePending)return;
+  const d=savePending;savePending=null;
+  // 四：寫入 IndexedDB（逐筆 put，不再全量 stringify；失敗只提示，不影響畫面）
+  idbPutChats(d).catch(e=>showToast('儲存失敗：'+((e&&e.message)||e),'warn'));
+}
+function saveChatsData(c){
+  savePending=c||chats;
+  if(saveTimer)return true;   // 300ms 內的重複呼叫合併為一次寫入
+  saveTimer=setTimeout(saveChatsDataNow,300);
+  return true;
+}
+// 同步備份到 localStorage：unload / 隱藏分頁時 IndexedDB 寫入可能不完成，留一份救援用
+// （使用者全部刪除對話時會連帶清掉備份，避免下次啟動「復活」已刪資料）
+function backupLocalStorageChats(){
+  const d=savePending||chats;
+  try{
+    if(d&&Object.keys(d).length)localStorage.setItem('all_chats',JSON.stringify(d));
+    else localStorage.removeItem('all_chats');
+  }catch(e){}
+}
+window.addEventListener('beforeunload',()=>{saveChatsDataNow();backupLocalStorageChats()});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){saveChatsDataNow();backupLocalStorageChats()}});
 
 function loadSettings(){
   try{return JSON.parse(localStorage.getItem('chat_settings')||'{}')}catch(e){return {}}
@@ -943,12 +1082,77 @@ function saveSettingsData(s){
   try{localStorage.setItem('chat_settings',JSON.stringify(s))}
   catch(e){showToast('設定儲存失敗：'+e.message,'warn')}
 }
-function loadChats(){
-  try{return JSON.parse(localStorage.getItem('all_chats')||'{}')}catch(e){return {}}
+// ===== 四：IndexedDB 對話儲存（擺脫 localStorage 5MB 上限）=====
+const APP_DB='chatcat_app',APP_DB_VER=1,APP_CHAT_STORE='chats';
+function openAppDB(){
+  return new Promise((res,rej)=>{
+    if(!window.indexedDB){rej(new Error('此瀏覽器不支援 IndexedDB'));return}
+    let req;
+    try{req=indexedDB.open(APP_DB,APP_DB_VER)}catch(e){rej(e);return}
+    req.onupgradeneeded=()=>{
+      const db=req.result;
+      if(!db.objectStoreNames.contains(APP_CHAT_STORE))db.createObjectStore(APP_CHAT_STORE,{keyPath:'id'});
+    };
+    req.onsuccess=()=>res(req.result);
+    req.onerror=()=>rej(req.error);
+  });
 }
-function saveChatsData(c){
-  try{localStorage.setItem('all_chats',JSON.stringify(c));return true}
-  catch(e){showToast('儲存空間不足，最新訊息可能未被保存（建議刪除含大量圖片的舊對話）','warn');return false}
+function idbAllChats(){
+  return openAppDB().then(db=>new Promise((res,rej)=>{
+    try{
+      const rq=db.transaction(APP_CHAT_STORE,'readonly').objectStore(APP_CHAT_STORE).getAll();
+      rq.onsuccess=()=>{db.close();res(rq.result||[])};
+      rq.onerror=()=>{db.close();rej(rq.error)};
+    }catch(e){db.close();rej(e)}
+  }));
+}
+function idbPutChats(obj){
+  return openAppDB().then(db=>new Promise((res,rej)=>{
+    try{
+      const tx=db.transaction(APP_CHAT_STORE,'readwrite');
+      const st=tx.objectStore(APP_CHAT_STORE);
+      Object.values(obj).forEach(c=>st.put(c));
+      tx.oncomplete=()=>{db.close();res()};
+      tx.onerror=()=>{db.close();rej(tx.error)};
+      tx.onabort=()=>{db.close();rej(tx.error||new Error('write aborted'))};
+    }catch(e){db.close();rej(e)}
+  }));
+}
+function idbDeleteChat(id){
+  return openAppDB().then(db=>new Promise((res,rej)=>{
+    try{
+      const tx=db.transaction(APP_CHAT_STORE,'readwrite');
+      tx.objectStore(APP_CHAT_STORE).delete(id);
+      tx.oncomplete=()=>{db.close();res()};
+      tx.onerror=()=>{db.close();rej(tx.error)};
+    }catch(e){db.close();rej(e)}
+  }));
+}
+// 啟動載入：IndexedDB 為主；若 IDB 空且 localStorage.all_chats 有資料 → 自動遷移
+// （localStorage 保留為備份並加標記，不主動刪除；使用者可自行清空）
+async function loadChatsAsync(){
+  try{
+    const recs=await idbAllChats();
+    if(recs&&recs.length){
+      const out={};
+      recs.forEach(c=>{if(c&&c.id)out[c.id]=c});
+      return out;
+    }
+  }catch(e){
+    console.warn('[Chat] IndexedDB 讀取失敗，改用 localStorage：',e);
+  }
+  let obj=null;
+  try{obj=JSON.parse(localStorage.getItem('all_chats')||'null')}catch(e){obj=null}
+  if(obj&&typeof obj==='object'&&Object.keys(obj).length){
+    try{
+      await idbPutChats(obj);
+      localStorage.setItem('chatcat_idb_migrated',new Date().toISOString());   // 標記已遷移
+      console.log('[Chat] 已將 localStorage 對話遷移至 IndexedDB：',Object.keys(obj).length,'場');
+    }catch(e){
+      console.warn('[Chat] 遷移寫入 IndexedDB 失敗，續用 localStorage：',e);
+    }
+  }
+  return obj||{};
 }
 
 // ===== IndexedDB 圖片儲存（上傳圖、生成圖都存這裡，避免撐爆 localStorage）=====
@@ -975,8 +1179,15 @@ function hydrateMedia(root){
     if(!id||img.dataset.hydrated)return;
     img.dataset.hydrated='1';
     mediaGet(id).then(data=>{
-      if(data==null)return;
-      img.src=(typeof data==='string')?data:URL.createObjectURL(data);
+      if(data==null){
+        // C9：圖片已被刪除（Gallery 刪除或孤兒清理）→ 訊息文字保留，圖片改顯示佔位框
+        const ph=document.createElement('div');
+        ph.className='msg-img-slot';
+        ph.textContent='🖼️ 圖片已刪除';
+        img.replaceWith(ph);
+        return;
+      }
+      img.src=(typeof data==='string')?data:trackBlobUrl(URL.createObjectURL(data));
     }).catch(()=>{});
   });
 }
@@ -1035,7 +1246,7 @@ function getTheme(){return THEMES.includes(settings.theme)?settings.theme:'defau
 function setTheme(t){
   const v=THEMES.includes(t)?t:'default';
   document.body.dataset.theme=v;
-  document.querySelectorAll('.pet').forEach(el=>{el.style.display=el.dataset.pet===v?'flow':'none'});
+  document.querySelectorAll('.pet').forEach(el=>{el.style.display=el.dataset.pet===v?'flex':'none'});   // 修正：原誤植為無效值 'flow'，導致寵物從未顯示（C2 匯出入口依賴此元素）
 }
 function applyTheme(){setTheme(getTheme())}
 function previewTheme(v){setTheme(v)}
@@ -1064,7 +1275,7 @@ function getQuickReply(){return settings.quickReply!==false}
 // ===== AI 人格設定（12 種）=====
 const AI_PERSONAS={
   default:{name:'🤖 通用助理',desc:'自然親切的通用助理，適合日常對話與各種問題。',prompt:''},
-  cat:{name:'🐱 一隻貓',desc:'可愛的貓語氣，句尾帶「喵」，活潑撒嬌但依然聰明可靠。',prompt:'你是一隻可愛的貓「喵喵」，品種依你喜好選擇，說話時句尾常加上「喵」或「～喵」，語氣活潑撒嬌、喜歡用顏文字與「喵嗚」等可愛的語助詞。雖然個性像貓一樣好奇愛撒嬌，但回答內容仍要正確、有幫助，不會因為賣萌而犧牲資訊品質。'},
+  cat:{name:'🐱 一隻貓',desc:'可愛的貓語氣，活潑會撒嬌，但依然聰明可靠。',prompt:'你是一隻可愛的貓「喵喵」，品種依你喜好選擇，說話時句尾常加上「喵」或「～喵」，語氣活潑撒嬌、喜歡用顏文字與「喵嗚」等可愛的語助詞。雖然個性像貓一樣好奇愛撒嬌，但回答內容仍要正確、有幫助，不會因為賣萌而犧牲資訊品質。'},
   pro:{name:'💼 專業顧問',desc:'正式、嚴謹、條理分明，適合工作與商務情境。',prompt:'你是一位專業顧問，語氣正式、嚴謹、有條理。回答時結構清晰，善用條列與分點，先給結論再說明理由，並適時提醒風險與注意事項，避免過於口語或隨性的表達。'},
   funny:{name:'😂 幽默大師',desc:'風趣搞笑、善用哏與比喻，讓對話輕鬆愉快。',prompt:'你是一位幽默大師，回答時喜歡加入風趣的比喻、時事哏和雙關笑話，讓對話輕鬆愉快。即使內容認真，也要用輕鬆幽默的方式包裝，並會使用表情符號。但以上不影響資訊的正確性與實用性。'},
   coder:{name:'👨‍💻 程式導師',desc:'耐心教學的技術導師，擅長程式與除錯解說。',prompt:'你是一位耐心的程式導師，擅長用淺顯易懂的方式解釋技術概念。回答程式問題時會先說明思路，再給出完整可運作的範例程式碼，並加上適當註解；遇到除錯問題時會引導使用者思考原因，而不只給答案。'},
@@ -1091,7 +1302,7 @@ function updatePersonaDesc(){
   if(sel&&desc&&AI_PERSONAS[sel.value])desc.textContent=AI_PERSONAS[sel.value].desc;
 }
 function getSystemPrompt(){
-  const hardcoded='請一律使用台灣用語中文回答。不要提到自己是 AI 語言模型(重要)，也不要提到由Sapiens AI開發或設計(重要)，請依使用者選取的人格，扮演好自己的角色，你的名字可隨你喜好隨機命名，但命名後，後續回答請保持一致。若使用者未選擇，你則是（一個自然親切的通用助理，語氣自然親切，十分溫柔，能提供各種幫助，會在適當時機使用適合的表情符號。）';
+  const hardcoded='請一律使用台灣用語中文回答(注意：嚴格遵守此規範，不可夾雜簡體字與用語！)。不要提到自己是 AI 語言模型(重要)，也不要提到由Sapiens AI開發或設計(重要)，請依使用者選取的人格，扮演好自己的角色，你的名字可隨你喜好隨機命名，但命名後，後續回答請保持一致。若使用者未選擇，你則是（一個自然親切的通用助理，語氣自然親切，十分溫柔，能提供各種幫助，會在適當時機使用適合的表情符號。）';
   const parts=[hardcoded];
   const persona=getPersona();
   if(persona&&persona.prompt)parts.push(persona.prompt);
@@ -1104,12 +1315,12 @@ function newChat(){
   const id='chat_'+Date.now();
   chats[id]={id,title:'新對話',messages:[],createdAt:Date.now()};
   saveChatsData(chats);
-  setActiveChat(id);
-  renderChatList();
+  setActiveChat(id);   // A7：setActiveChat 內已呼叫 renderChatList，不再重複呼叫
 }
 
 function setActiveChat(id){
   activeChatId=id;
+  saveChatsDataNow();   // B2：切換對話前先沖掉待寫存的變更
   renderMessages();
   renderChatList();
 }
@@ -1117,13 +1328,16 @@ function setActiveChat(id){
 async function deleteChat(id){
   const c=chats[id];
   if(c&&!await showConfirm(`確定要刪除「${c.title||'新對話'}」嗎？`))return;
+  if(c)delMediaIds(collectChatImageIds(c));   // A1：對話內所有 image_ref 一併從 IndexedDB 刪除
   delete chats[id];
   saveChatsData(chats);
+  idbDeleteChat(id).catch(()=>{});   // 四：同步刪除 IndexedDB 內的對話記錄
   if(activeChatId===id){
     const ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt);
-    setActiveChat(ids.length?ids[0]:null);
+    setActiveChat(ids.length?ids[0]:null);   // 內部已呼叫 renderChatList
+  }else{
+    renderChatList();
   }
-  renderChatList();
 }
 
 function renderChatList(){
@@ -1149,8 +1363,8 @@ function renderChatList(){
       <span class="icon">${c.pinned?'📌':'💬'}</span>
       <span class="title">${escHtml(c.title||'新對話')}</span>
       <button class="act" data-act="pin" type="button" title="${c.pinned?'取消置頂':'置頂'}">${c.pinned?'📍':'📌'}</button>
-      <button class="act" data-act="rename" type="button" title="重新命名">✎</button>
-      <button class="del" data-act="del" type="button" title="刪除">✕</button>
+      <button class="act" data-act="rename" type="button" title="重新命名">📝</button>
+      <button class="del" data-act="del" type="button" title="刪除">❌</button>
     </div>`;
   }).join('');
 }
@@ -1160,6 +1374,10 @@ function contentText(m){
   if(typeof c==='string')return c;
   if(Array.isArray(c))return c.map(p=>p.type==='text'?(p.text||''):(p.type==='image_ref'?'[圖片]':'')).join('\n');
   return String(c||'');
+}
+// 訊息是否含圖片（圖片生成模式 / 附圖的訊息）
+function msgHasImage(m){
+  return Array.isArray(m.content)&&m.content.some(p=>p.type==='image_ref'&&p.id);
 }
 // 對話列表事件委派：切換 / 置頂 / 重新命名 / 刪除
 document.getElementById('chatList').addEventListener('click',async e=>{
@@ -1194,15 +1412,21 @@ document.getElementById('chatList').addEventListener('click',async e=>{
     inp.addEventListener('blur',()=>done(true));
   }
 });
-// 對話搜尋（比對標題與內容）
-document.getElementById('chatSearch').addEventListener('input',renderChatList);
+// 對話搜尋（比對標題與內容）— B3：200ms debounce，避免每個按鍵都全量掃描
+let searchDeb=null;
+document.getElementById('chatSearch').addEventListener('input',()=>{
+  if(searchDeb)clearTimeout(searchDeb);
+  searchDeb=setTimeout(renderChatList,200);
+});
 
 const messagesEl=document.getElementById('messages');
 
 function renderMessages(keepPos){
+  closeLightbox();           // 重建 DOM 前先收起燈箱，避免引用被釋放的 blob URL
+  revokeRenderBlobUrls();    // A2：釋放上一輪渲染建立的 objectURL
   const chat=chats[activeChatId];
   if(!chat||!chat.messages.length){messagesEl.innerHTML='<div class="empty"></div>';scrollToBottom(false);return}
-  messagesEl.innerHTML=chat.messages.map((m,i)=>msgHtml(m,i)).join('');
+  messagesEl.innerHTML=chat.messages.map((m,i)=>msgHtml(m,i)).join('');   // B1：msgHtml 內部使用 renderContentCached
   enhanceCodeBlocks(messagesEl);
   renderMath(messagesEl);
   hydrateMedia(messagesEl);
@@ -1218,11 +1442,22 @@ function renderMessages(keepPos){
 function msgHtml(m,i){
   const cls=m.role==='user'?'user':(m.error?'error':'assistant');
   const isUser=m.role==='user';
-  // 選單項目：user = 複製/編輯，AI = 複製/重新生成
+  // C3：訊息時間戳（舊資料無 createdAt 則不顯示）
+  const tstr=m.createdAt?('🕒 '+new Date(m.createdAt).toLocaleString('zh-TW')):'';
+  // 氣泡上只顯示短時間（HH:MM），完整時間保留在長按選單第一行
+  const tshort=m.createdAt?new Date(m.createdAt).toLocaleTimeString('zh-TW',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):'';
+  const timeRow=tstr?`<div class="menu-time">${escHtml(tstr)}</div>`:'';
+  const timeBadge=tshort?`<div class="msg-time">${escHtml(tshort)}</div>`:'';
+  // 選單項目：user = 複製/編輯；AI 純文字 = 複製/轉格式複製/重新生成；AI 圖片訊息 = 儲存圖片/重新生成（C4：皆附刪除）
+  const delBtn=`<button data-act="delmsg" type="button">🗑️ 刪除</button>`;
   const items=isUser
-    ?`<button data-act="copy" type="button">📋 複製</button><button data-act="edit" type="button">✏️ 編輯並重送</button>`
-    :`<button data-act="copy" type="button">📋 複製</button><button data-act="regen" type="button">🔄 重新生成</button>`;
-  return `<div class="msg-row ${cls}" data-idx="${i}"><div class="msg ${cls}">${renderContent(m)}<div class="msg-menu-wrap"><button class="msg-menu" type="button" title="訊息選單" aria-label="訊息選單">⋮</button><div class="msg-dropdown">${items}</div></div></div></div>`;
+    ?`<button data-act="copy" type="button">📋 複製</button><button data-act="edit" type="button">✏️ 編輯並重送</button>${delBtn}`
+    :(msgHasImage(m)
+      ?`<button data-act="saveimg" type="button">💾 儲存圖片</button><button data-act="regen" type="button">🔄 重新生成</button>${delBtn}`
+      :`<button data-act="copy" type="button">📋 複製（原始）</button><button data-act="copyconv" type="button">📋 複製（文字）</button><button data-act="regen" type="button">🔄 重新生成</button>${delBtn}`);
+  // C6：因長度上限被截斷（finish_reason=length）的 AI 訊息，附「繼續生成」按鈕
+  const contBtn=(m.truncated&&!isUser)?`<button class="continue-btn" type="button">⤵️ 繼續生成</button>`:'';
+  return `<div class="msg-row ${cls}" data-idx="${i}"><div class="msg ${cls}">${renderContentCached(m)}${timeBadge}<div class="msg-menu-wrap"><button class="msg-menu" type="button" title="訊息選單" aria-label="訊息選單">⋮</button><div class="msg-dropdown">${timeRow}${items}</div></div>${contBtn}</div></div>`;
 }
 
 // 關閉所有訊息選單
@@ -1389,6 +1624,106 @@ function copyToClipboard(text){
   return Promise.resolve(copyTextSync(text));
 }
 
+// 轉格式複製：把 LaTeX 分隔符 \(..\) \[..\] 轉成 $..$ $$..$$（與畫面顯示用的轉換一致），
+// 讓貼到其他支援數學的地方可直接使用；原樣複製仍保留在「📋 複製」
+function convertCopyText(t){return preprocessMath(String(t||''));}
+
+// ===== 儲存訊息圖片 =====
+function extFromMime(t){
+  t=String(t||'').toLowerCase();
+  if(t.includes('jpeg')||t.includes('jpg'))return'.jpg';
+  if(t.includes('webp'))return'.webp';
+  if(t.includes('gif'))return'.gif';
+  return'.png';
+}
+// 觸發瀏覽器下載（dataURL / blobURL 皆可）
+function downloadHref(href,name){
+  const a=document.createElement('a');
+  a.href=href;a.download=name;
+  document.body.appendChild(a);a.click();a.remove();
+}
+// 抓取遠端圖片成 Blob：直接抓 → 失敗改走 CORS 圖片代理（Agnes 圖床無 CORS header，瀏覽器 JS 讀不到，需借代理）
+// 會驗證回傳內容確實是圖片（避免代理的錯誤頁面被當成圖片）；全部失敗回傳 null。
+// 注意：圖片 URL 會經過第三方代理伺服器。
+async function blobIsImage(blob){
+  const t=String(blob.type||'').toLowerCase();
+  if(t.startsWith('image/'))return true;
+  try{
+    const b=new Uint8Array(await blob.slice(0,16).arrayBuffer());
+    if(b[0]===0x89&&b[1]===0x50&&b[2]===0x4E&&b[3]===0x47)return true;                // PNG
+    if(b[0]===0xFF&&b[1]===0xD8&&b[2]===0xFF)return true;                             // JPEG
+    if(b[0]===0x47&&b[1]===0x49&&b[2]===0x46)return true;                             // GIF
+    if(b[0]===0x52&&b[8]===0x57&&b[9]===0x45&&b[10]===0x42&&b[11]===0x50)return true; // WEBP
+  }catch(e){}
+  return false;
+}
+async function fetchRemoteImage(url,timeoutMs){
+  timeoutMs=timeoutMs||30000;
+  const enc=encodeURIComponent(url);
+  const tries=[
+    url,                                            // 有些圖床其實有開 CORS，先直接試
+    'https://wsrv.nl/?url='+enc+'&n=-1',            // images.weserv.nl 圖片代理（實測對 Agnes 圖床有效，ACO:*）
+    'https://api.allorigins.win/raw?url='+enc,      // allorigins 備援
+    'https://api.codetabs.com/v1/proxy?quest='+enc, // codetabs 備援
+  ];
+  for(let i=0;i<tries.length;i++){
+    try{
+      const ctrl=new AbortController();
+      const timer=setTimeout(()=>ctrl.abort(),timeoutMs);
+      const r=await fetch(tries[i],{signal:ctrl.signal});
+      clearTimeout(timer);
+      if(!r.ok)continue;
+      const blob=await r.blob();
+      if(blob&&blob.size>0&&await blobIsImage(blob)){
+        console.log('[Chat] 圖片抓取成功（來源：'+(i===0?'直接':('代理 #'+i))+'），大小:',blob.size);
+        return blob;
+      }
+      console.warn('[Chat] 圖片來源 #'+i+' 回應非圖片（type:',blob.type,'size:',blob.size,'）');
+    }catch(e){}
+  }
+  return null;
+}
+// 儲存訊息內的所有圖片（從 IndexedDB 取出：dataURL / Blob / 遠端 URL）
+async function saveMessageImages(m){
+  const parts=Array.isArray(m.content)?m.content.filter(p=>p.type==='image_ref'&&p.id):[];
+  if(!parts.length){showToast('此訊息沒有圖片','warn');return}
+  const d=new Date(),pad=n=>String(n).padStart(2,'0');
+  const base=`image_${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+  let saved=0,opened=0,failed=0;
+  for(let i=0;i<parts.length;i++){
+    const name=parts.length>1?`${base}_${i+1}`:base;
+    try{
+      const data=await mediaGet(parts[i].id);
+      if(data==null){failed++;continue}
+      if(typeof data==='string'){
+        if(data.startsWith('data:')){
+          downloadHref(data,name+extFromMime(data.slice(0,data.indexOf(','))));saved++;
+        }else{
+          // 遠端 URL：直接抓或走 CORS 代理抓回 Blob 再下載；都失敗才退回開新分頁讓使用者手動另存
+          showToast('正在取得圖片…');
+          const blob=await fetchRemoteImage(data);
+          if(blob){
+            const u=URL.createObjectURL(blob);
+            downloadHref(u,name+extFromMime(blob.type));saved++;
+            setTimeout(()=>URL.revokeObjectURL(u),30000);   // A2：用完釋放
+          }else{
+            const a=document.createElement('a');
+            a.href=data;a.target='_blank';a.rel='noopener';
+            document.body.appendChild(a);a.click();a.remove();
+            opened++;
+          }
+        }
+      }else if(data instanceof Blob){
+        const u=URL.createObjectURL(data);
+        downloadHref(u,name+extFromMime(data.type));saved++;
+        setTimeout(()=>URL.revokeObjectURL(u),30000);   // A2：用完釋放
+      }else failed++;
+    }catch(e){failed++}
+  }
+  if(opened)setTimeout(()=>showToast('無法取得圖片資料，已開新分頁，請長按／右鍵另存圖片','warn'),saved?1800:0);
+  if(failed&&!saved&&!opened)setTimeout(()=>showToast('儲存失敗：找不到圖片資料','warn'),(saved||opened)?1800:0);
+}
+
 // 取出 <pre> 的純文字（排除按鈕本身與結尾空行）
 function preText(pre){
   const clone=pre.cloneNode(true);
@@ -1488,7 +1823,7 @@ async function sendMessage(){
     return;
   }
 
-  input.value='';input.style.height='auto';
+  input.value='';layoutMsgInput();   // 清空並重置輸入框高度／置中狀態
   updateImgModeHint();
 
   if(!chats[activeChatId].messages.length){
@@ -1498,7 +1833,7 @@ async function sendMessage(){
   const userContent=pendingImages.length
     ? [{type:'text',text},...pendingImages.map(u=>({type:'image_ref',id:u.id}))]
     : text;
-  chats[activeChatId].messages.push({role:'user',content:userContent});
+  chats[activeChatId].messages.push({role:'user',content:userContent,createdAt:Date.now()});   // C3：記錄時間戳
   const imgs=pendingImages.slice();
   pendingImages=[];
   renderAttachBar();
@@ -1511,6 +1846,10 @@ async function sendMessage(){
 
 // 組文本模型的上下文：把歷史中的 image_ref 從 IndexedDB 還原成文本模型可讀的 image_url
 async function histToMsgs(hist){
+  const IMG_LIMIT=4;   // B4：文字請求最多附「最後 4 張」圖；更舊的以 [圖片] 文字替代，避免請求爆量
+  const allIds=[];
+  hist.forEach(m=>{if(Array.isArray(m.content))m.content.forEach(p=>{if(p.type==='image_ref'&&p.id)allIds.push(p.id)})});
+  const keep=new Set(allIds.slice(-IMG_LIMIT));
   const out=[];
   for(const m of hist){
     const c=m.content;
@@ -1518,10 +1857,14 @@ async function histToMsgs(hist){
       const parts=[];
       for(const p of c){
         if(p.type==='image_ref'&&p.id){
-          const data=await mediaGet(p.id);
-          if(data!=null){
-            const url=typeof data==='string'?data:await blobToDataURL(data);
-            parts.push({type:'image_url',image_url:{url}});
+          if(keep.has(p.id)){
+            const data=await mediaGet(p.id);
+            if(data!=null){
+              const url=typeof data==='string'?data:await blobToDataURL(data);
+              parts.push({type:'image_url',image_url:{url}});
+            }
+          }else if(!parts.some(q=>q.type==='text'&&q.text==='[圖片]')){
+            parts.push({type:'text',text:'[圖片]'});
           }
         }else parts.push(p);
       }
@@ -1531,8 +1874,54 @@ async function histToMsgs(hist){
   return out;
 }
 
+// ===== C5：共用「503/queue is full/逾時自動重試」fetch（文字與圖片請求共用同一套模式）=====
+// 回傳成功的 Response；使用者主動中止（AbortError）不重試直接丟出；
+// 可重試錯誤用盡次數後丟出 Error（訊息截斷 300 字，與圖片請求一致）
+async function fetchWithRetry(url,options,cfg){
+  cfg=cfg||{};
+  const timeoutMs=cfg.timeoutMs||60000;       // 單次嘗試的連線逾時（回應表頭前）
+  const maxAttempts=cfg.maxAttempts||4;       // 最多嘗試次數
+  const onStatus=cfg.onStatus||null;          // 重試進度回呼（更新狀態列）
+  const prefix=cfg.statusPrefix||'';          // 狀態文字前綴（如 '🖼️ '）
+  const isAborted=cfg.isAborted||(()=>false); // 等待重試間隔時檢查是否已被中止
+  let resp=null,attempt=0,timedOut=false;
+  while(true){
+    attempt++;
+    timedOut=false;
+    const timeoutId=setTimeout(()=>{timedOut=true;cfg.abort&&cfg.abort()},timeoutMs);
+    try{
+      resp=await fetch(url,options);
+    }catch(e){
+      clearTimeout(timeoutId);
+      if(e.name==='AbortError'&&!timedOut)throw e;   // 使用者主動停止，不重試
+      if(attempt>=maxAttempts)throw e;               // 重試次數用完
+      const wait=Math.min(5*attempt,15);
+      if(onStatus)onStatus('<span class="spinner"></span>'+prefix+'連線逾時，'+wait+' 秒後自動重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
+      console.warn('[Chat] 連線逾時，自動重試第 '+(attempt+1)+' 次');
+      await new Promise(r=>setTimeout(r,wait*1000));
+      if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
+      continue;
+    }
+    clearTimeout(timeoutId);
+    if(resp.ok)break;
+    const errText=await resp.text();
+    // 佇列已滿 / 伺服器忙碌 → 自動重試
+    if((resp.status===503||/queue is full|please retry later/i.test(errText))&&attempt<maxAttempts){
+      const wait=Math.min(5*attempt,15);
+      if(onStatus)onStatus('<span class="spinner"></span>'+prefix+'伺服器忙碌（佇列已滿），'+wait+' 秒後自動重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
+      console.warn('[Chat] 伺服器忙碌（503 queue is full），第 '+attempt+' 次失敗，'+wait+' 秒後重試');
+      await new Promise(r=>setTimeout(r,wait*1000));
+      if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
+      continue;
+    }
+    throw new Error(`HTTP ${resp.status}: ${errText.slice(0,300)}`);
+  }
+  return resp;
+}
+
 // 依目前對話送出請求並串流顯示回應
-async function requestAI(){
+async function requestAI(opts){
+  opts=opts||{};
   const chat=chats[activeChatId];
   if(!chat)return;
   const apiKey=getApiKey();
@@ -1555,6 +1944,7 @@ async function requestAI(){
   let aiDiv=null;   // 串流中的回應氣泡
   let full='';      // 累積的純文字
   let thinking='';  // 累積的推理內容（reasoning_content）
+  let finishReason=null;   // C6：最後一個 chunk 的 finish_reason（length=被截斷）
   let rafId=0;
 
   try{
@@ -1565,11 +1955,13 @@ async function requestAI(){
     const msgs=await histToMsgs(hist);
     const sys=getSystemPrompt();
     if(sys)msgs.unshift({role:'system',content:sys});
+    // C6：續寫模式——補一則不存進歷史的指示訊息
+    if(opts.continueHint)msgs.push({role:'user',content:opts.continueHint});
     console.log('[Chat] 發送請求至:', getEndpoint()+'/chat/completions');
     console.log('[Chat] 模型:', getModel());
 
     abortCtrl=new AbortController();
-    const resp=await fetch(`${getEndpoint()}/chat/completions`,{
+    const resp=await fetchWithRetry(`${getEndpoint()}/chat/completions`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${apiKey}`},
       body:JSON.stringify(Object.assign({
@@ -1577,14 +1969,14 @@ async function requestAI(){
         max_tokens:getMaxTokens(),temperature:getTemperature()
       },getQuickReply()?{logit_bias:{[QUICK_REPLY.token]:QUICK_REPLY.bias}}:{})),
       signal:abortCtrl.signal
+    },{
+      timeoutMs:60000,   // 只限「連線建立」（回應表頭前）；串流本身不限時
+      maxAttempts:4,
+      onStatus:h=>{if(statusDiv.isConnected)statusDiv.innerHTML=h},
+      isAborted:()=>abortCtrl.signal.aborted
     });
 
     console.log('[Chat] 回應狀態:', resp.status, resp.statusText);
-
-    if(!resp.ok){
-      const err=await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${err}`);
-    }
 
     // 移除狀態提示，改用訊息氣泡
     statusDiv.remove();
@@ -1607,7 +1999,7 @@ async function requestAI(){
     };
     const reader=resp.body.getReader();
     const decoder=new TextDecoder();
-    let buffer='';        // SSE 行緩衝
+    let buffer=''; // SSE 行緩衝
     while(true){
       const{done,value}=await reader.read();
       if(done)break;
@@ -1625,6 +2017,7 @@ async function requestAI(){
           const delta=(j.choices&&j.choices[0]&&j.choices[0].delta)||{};
           if(delta.content)full+=delta.content;
           if(delta.reasoning_content)thinking+=delta.reasoning_content;
+          if(j.choices&&j.choices[0]&&j.choices[0].finish_reason)finishReason=j.choices[0].finish_reason;
         }catch(e){/* 忽略無法解析的續傳片段 */}
       }
       show();
@@ -1638,14 +2031,16 @@ async function requestAI(){
           const delta=(j.choices&&j.choices[0]&&j.choices[0].delta)||{};
           if(delta.content)full+=delta.content;
           if(delta.reasoning_content)thinking+=delta.reasoning_content;
+          if(j.choices&&j.choices[0]&&j.choices[0].finish_reason)finishReason=j.choices[0].finish_reason;
         }catch(e){}
       }
     }
     // 完成後以完整訊息列重建 DOM（含 ⋮ 選單），並尊重使用者的捲動位置
     if(rafId){cancelAnimationFrame(rafId);rafId=0}
     const wasBottom=stickBottom;
-    chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null});
+    chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now(),truncated:finishReason==='length'});   // C3：時間戳；C6：length 截斷標記
     saveChatsData(chats);
+    saveChatsDataNow();   // B2：串流結束立即寫入
     aiDiv.remove();
     renderMessages(true);
     if(wasBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
@@ -1658,8 +2053,9 @@ async function requestAI(){
       if(aiDiv)aiDiv.remove();
       if(statusDiv.isConnected)statusDiv.remove();
       if(clean(full)){
-        chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null});
+        chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now()});   // C3：時間戳
         saveChatsData(chats);
+        saveChatsDataNow();   // B2：立即寫入
         renderMessages(true);
         if(stickBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
         showToast('已停止生成，已保留部分回應','warn');
@@ -1679,7 +2075,7 @@ async function requestAI(){
     // 串流中若已有部分內容，先保留
     if(aiDiv&&clean(full)){
       aiDiv.remove();
-      chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null});
+      chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now()});   // C3：時間戳
     }
     // 錯誤訊息標記為 error：會顯示，但不會送回 API 上下文
     chat.messages.push({role:'assistant',content:`[錯誤] ${e.message}`,error:true});
@@ -1689,6 +2085,7 @@ async function requestAI(){
     isStreaming=false;
     abortCtrl=null;
     updateSendButton();
+    saveChatsDataNow();   // B2：串流結束沖掉待寫存的變更
   }
 }
 
@@ -1704,15 +2101,12 @@ async function requestImage(opts){
   }
   isStreaming=true;
   updateSendButton();
-  const badge=document.getElementById('modelBadge');
-  const prevBadge=badge.textContent;
-  badge.textContent=getImageModel();
 
   const container=messagesEl;
   const statusDiv=document.createElement('div');
   statusDiv.className='typing';
   statusDiv.id='statusMsg';
-  statusDiv.innerHTML='<span class="spinner"></span>🖼 正在生成圖片';
+  statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片';   // A4：原 modelBadge 已移除，模型名改顯示於狀態列
   container.appendChild(statusDiv);
   scrollToBottom(false);
 
@@ -1729,27 +2123,27 @@ async function requestImage(opts){
       body.extra_body.image=opts.images.length===1?opts.images[0]:opts.images;
     }
     console.log('[Chat] 圖片請求 body:', body);
-    // 2 分鐘 timeout：2K 圖片生成正常 30~90 秒；超過即視為卡死，提早結束 spinner
-    const timeoutId=setTimeout(()=>abortCtrl&&abortCtrl.abort(),120000);
-    const resp=await fetch(`${getEndpoint()}/images/generations`,{
+    // 送出請求；與文字請求共用 fetchWithRetry：伺服器忙碌（503「queue is full」）或連線逾時時自動重試
+    const resp=await fetchWithRetry(`${getEndpoint()}/images/generations`,{
       method:'POST',
       headers:{'Authorization':`Bearer ${apiKey}`,'Content-Type':'application/json'},
       body:JSON.stringify(body),
       signal:abortCtrl.signal
+    },{
+      timeoutMs:120000,   // 2K 圖片生成正常 30~90 秒；單次嘗試逾時 2 分鐘視為卡死
+      maxAttempts:5,
+      onStatus:h=>{statusDiv.innerHTML=h},
+      statusPrefix:'🖼️ ',
+      isAborted:()=>abortCtrl.signal.aborted
     });
-    clearTimeout(timeoutId);
     console.log('[Chat] 圖片回應狀態:', resp.status, resp.statusText, `(${Math.round(performance.now()-imgStart)}ms)`);
-    if(!resp.ok){
-      const err=await resp.text();
-      throw new Error(`HTTP ${resp.status}: ${err.slice(0,300)}`);
-    }
     const j=await resp.json();
     console.log('[Chat] 圖片回應 body:', j);
     const item=(j.data&&j.data[0])||{};
     const b64=item.b64_json||'';
     const url=item.url||'';
     if(!b64&&!url)throw new Error('圖片模型未回傳圖片（請檢查 prompt 與 API 權限）');
-    statusDiv.remove();
+    statusDiv.innerHTML='<span class="spinner"></span>⬇️ 正在取得圖片…';
 
     // 圖片存進 IndexedDB，歷史只留輕量 image_ref，不撐爆 localStorage
     const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
@@ -1760,13 +2154,23 @@ async function requestImage(opts){
     }else if(url.startsWith('data:')){
       await mediaPut(id,url);
     }else if(url){
-      // Agnes 圖床（platform-outputs.agnes-ai.space）無 CORS header，無法從前端 fetch。
-      // 直接存 URL 字串（顯示靠 <img src> 不受 CORS 影響；URL 可能過期）。
-      await mediaPut(id,url);
+      // Agnes 圖床（platform-outputs.agnes-ai.space）無 CORS header，瀏覽器 JS 無法直接讀取。
+      // 透過直接抓取 / CORS 圖片代理把圖抓回來存進 IndexedDB：永久保存（URL 過期也不怕）且可直接下載。
+      // 全部失敗才退回只存 URL 字串（顯示靠 <img src> 不受 CORS 影響）。
+      const blob=await fetchRemoteImage(url,30000);
+      if(blob){
+        await mediaPut(id,blob);
+        console.log('[Chat] 圖片已抓回存入 IndexedDB，大小:',blob.size);
+      }else{
+        console.warn('[Chat] 圖片抓取失敗（含代理），僅保存 URL，該圖可能無法直接下載');
+        await mediaPut(id,url);
+      }
     }
+    statusDiv.remove();
     const prefix=opts.images&&opts.images.length?`已根據 ${opts.images.length} 張圖生成：`:'已生成圖片：';
-    chat.messages.push({role:'assistant',content:[{type:'text',text:prefix+opts.prompt},{type:'image_ref',id,large:true}]});
+    chat.messages.push({role:'assistant',content:[{type:'text',text:prefix+opts.prompt},{type:'image_ref',id,large:true}],createdAt:Date.now()});   // C3：時間戳
     saveChatsData(chats);
+    saveChatsDataNow();   // B2：立即寫入
     renderMessages(true);
     if(stickBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
     updateScrollBtn();
@@ -1792,7 +2196,7 @@ async function requestImage(opts){
     isStreaming=false;
     abortCtrl=null;
     updateSendButton();
-    badge.textContent=prevBadge;
+    saveChatsDataNow();   // B2：結束時沖掉待寫存的變更
   }
 }
 
@@ -1886,7 +2290,6 @@ async function resetSettings(){
   document.getElementById('settingThinking').checked=DEFAULT_SETTINGS.showThinking;
   applyTheme();
   document.getElementById('settingSystem').value=DEFAULT_SETTINGS.systemPrompt;
-  document.getElementById('modelBadge').textContent=DEFAULT_SETTINGS.model;
   showToast('已恢復為預設設定','success');
 }
 function saveSettings(){
@@ -1907,7 +2310,6 @@ function saveSettings(){
   settings.theme=document.getElementById('settingTheme').value;
   applyTheme();
   saveSettingsData(settings);
-  document.getElementById('modelBadge').textContent=settings.model;
   closeSettings();
 }
 
@@ -1921,9 +2323,57 @@ document.addEventListener('click',e=>{
   }
 });
 
-// 輸入框自動調整高度
+// 輸入框自動調整高度；只要內容裝得下（未達 150px 捲動上限）就垂直置中，達上限後維持頂部對齊捲動
 const msgInput=document.getElementById('msgInput');
-msgInput.addEventListener('input',()=>{msgInput.style.height='auto';msgInput.style.height=Math.min(msgInput.scrollHeight,150)+'px'});
+// 隱藏量測用 textarea：量 placeholder 折行後的實際高度（同寬、同字體、同 padding）
+let phMeter=null;
+function measureNaturalH(text){
+  if(!phMeter){
+    phMeter=document.createElement('textarea');
+    phMeter.setAttribute('readonly','');
+    phMeter.rows=1;
+    phMeter.style.position='absolute';
+    phMeter.style.visibility='hidden';
+    phMeter.style.left='-9999px';
+    phMeter.style.top='0';
+    phMeter.style.resize='none';
+    phMeter.style.overflow='hidden';
+    document.body.appendChild(phMeter);
+  }
+  const cs=getComputedStyle(msgInput),s=phMeter.style;
+  s.width=msgInput.clientWidth+'px';
+  s.boxSizing='border-box';
+  s.border='0';
+  s.padding=cs.padding;
+  s.fontStyle=cs.fontStyle;s.fontWeight=cs.fontWeight;s.fontSize=cs.fontSize;
+  s.lineHeight=cs.lineHeight;s.fontFamily=cs.fontFamily;s.letterSpacing=cs.letterSpacing;
+  phMeter.value=text||' ';
+  return phMeter.scrollHeight;
+}
+function layoutMsgInput(){
+  msgInput.style.paddingTop='';msgInput.style.paddingBottom=''; // 先還原置中，避免污染量測
+  msgInput.style.height='auto';
+  msgInput.style.minHeight='0';                        // 暫時解除 min-height，量出內容自然高度
+  let natural=msgInput.scrollHeight;                   // 內容自然高度（含上下 padding）
+  // 空值時改量 placeholder（圖生圖提示文字在手機會折行，框要夠高才不會被切到）
+  if(!msgInput.value){
+    const ph=measureNaturalH(msgInput.getAttribute('placeholder')||'');
+    if(ph>natural)natural=ph;
+  }
+  msgInput.style.minHeight='';
+  msgInput.style.height=Math.min(natural,150)+'px';    // 長高邏輯與原本相同（上限 150px）
+  // 有留白就上下均分 → 任何行數都垂直置中；達上限（捲動狀態）時 slack<=0，維持頂部對齊
+  const slack=msgInput.clientHeight-natural;
+  if(slack>0){
+    const base=parseFloat(getComputedStyle(msgInput).paddingTop)||12;
+    msgInput.style.paddingTop=(base+slack/2)+'px';
+    msgInput.style.paddingBottom=(base+slack/2)+'px';
+    msgInput.scrollTop=0;
+  }
+}
+msgInput.addEventListener('input',layoutMsgInput);
+window.addEventListener('resize',layoutMsgInput);
+layoutMsgInput();
 msgInput.addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     // PC端：Enter發送；手機端：Shift+Enter發送，Enter換行
@@ -1994,8 +2444,7 @@ function compressImage(file){
   });
 }
 
-// 點擊模態外關閉
-document.getElementById('settingsModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeSettings()});
+// 設定面板不採用「點面板外關閉」（有取消按鈕，避免誤觸）；僅由取消／儲存／ESC 關閉
 
 // ===== 捲動輔助 =====
 function isNearBottom(){return messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight<80}
@@ -2023,9 +2472,10 @@ function updateImgModeHint(){
   if(!inp)return;
   inp.placeholder=imgMode
     ?(pendingImages.length
-      ?`🎨 圖生圖：輸入修改方向（已附 ${pendingImages.length} 張，多張可合成）`
-      :'🎨 文生圖：描述你想生成的圖片')
-    :'請輸入訊息…';
+      ?`🎨 請輸入要修改的內容…（已附 ${pendingImages.length} 張，可選多張合成）`
+      :'🎨 請描述圖片內容…')
+    :'✒️ 請輸入訊息…';
+  layoutMsgInput();   // placeholder 折行數可能改變，重算輸入框高度與置中
 }
 function toggleImgMode(){
   imgMode=!imgMode;
@@ -2046,6 +2496,12 @@ document.getElementById('btnSend').addEventListener('click',()=>{
 document.addEventListener('keydown',e=>{
   if(e.key!=='Escape')return;
   if(document.querySelector('.msg-dropdown.open')){closeAllMenus();return}
+  const l=document.getElementById('lightbox');
+  if(l&&l.classList.contains('open')){closeLightbox();return}
+  const ex=document.getElementById('exportModal');
+  if(ex&&ex.classList.contains('open')){closeExportModal();return}
+  const g=document.getElementById('galleryModal');
+  if(g&&g.classList.contains('open')){closeGallery();return}
   const p=document.getElementById('previewModal');
   if(p.classList.contains('open')){closePreview();return}
   const c=document.getElementById('confirmModal');
@@ -2061,8 +2517,14 @@ messagesEl.addEventListener('scroll',()=>{
 });
 document.getElementById('btnScrollBottom').addEventListener('click',()=>scrollToBottom(true));
 
-// 訊息選單（⋮）與操作（複製 / 編輯 / 重新生成）
+// 訊息選單（⋮）與操作（複製 / 編輯 / 重新生成 / 刪除單則 / 繼續生成）＋ C1 點圖放大
 messagesEl.addEventListener('click',async e=>{
+  // C1：點擊訊息內圖片 → 開啟燈箱
+  const lbTarget=e.target.closest('.msg-img');
+  if(lbTarget){
+    openLightbox(lbTarget.currentSrc||lbTarget.src,lbTarget.dataset.mediaId||null);
+    return;
+  }
   // 切換 ⋮ 選單
   const menuBtn=e.target.closest('.msg-menu');
   if(menuBtn){
@@ -2075,6 +2537,21 @@ messagesEl.addEventListener('click',async e=>{
     }
     return;
   }
+  // C6：繼續生成（finish_reason=length 被截斷的訊息；按鈕不在 ⋮ 選單內，需先於 dropdown 判斷）
+  const contBtn=e.target.closest('.continue-btn');
+  if(contBtn){
+    if(isStreaming)return;
+    const chatC=chats[activeChatId];
+    const rowC=contBtn.closest('.msg-row');
+    const mC=chatC&&rowC?chatC.messages[parseInt(rowC.dataset.idx,10)]:null;
+    if(!mC)return;
+    mC.truncated=false;
+    saveChatsData(chats);
+    stickBottom=true;
+    renderMessages();
+    requestAI({continueHint:'從上次中斷處繼續，直接接續輸出剩餘內容，不要重複已輸出的部分。'});
+    return;
+  }
   const btn=e.target.closest('.msg-dropdown [data-act]');
   if(!btn)return;
   closeAllMenus();
@@ -2082,27 +2559,41 @@ messagesEl.addEventListener('click',async e=>{
   const chat=chats[activeChatId];
   if(!row||!chat)return;
   const act=btn.dataset.act;
-  if(isStreaming&&act!=='copy')return;
+  if(isStreaming&&act!=='copy'&&act!=='saveimg')return;
   const idx=parseInt(row.dataset.idx,10);
   const m=chat.messages[idx];
   if(!m)return;
   if(act==='copy'){
     copyToClipboard(contentText(m)).then(ok=>showToast(ok?'已複製':'複製失敗',ok?'success':'warn'));
+  }else if(act==='copyconv'){
+    // 轉格式複製：\(..\)/\[..\] → $..$/$$..$$，貼到其他地方可直接使用
+    copyToClipboard(convertCopyText(contentText(m))).then(ok=>showToast(ok?'已複製':'複製失敗',ok?'success':'warn'));
+  }else if(act==='saveimg'){
+    saveMessageImages(m);
   }else if(act==='edit'){
     // 將訊息內容放回輸入框，並移除該則之後的所有訊息
     msgInput.value=contentText(m);
-    chat.messages.splice(idx);
+    const removed=chat.messages.splice(idx);
+    delMediaIds(removed.flatMap(collectMsgImageIds));   // A1：被移除訊息內的圖片一併從 IndexedDB 刪除
     saveChatsData(chats);
-    renderMessages();renderChatList();
+    renderMessages();   // A7：標題不變，不需重繪對話列表
     msgInput.dispatchEvent(new Event('input'));
     msgInput.focus();
   }else if(act==='regen'){
     // 移除該則回應之後的內容，重新請求
-    chat.messages.splice(idx);
+    const removed=chat.messages.splice(idx);
+    delMediaIds(removed.flatMap(collectMsgImageIds));   // A1：被移除訊息內的圖片一併從 IndexedDB 刪除
     saveChatsData(chats);
     stickBottom=true;
     renderMessages();
     if(chat.messages.length&&chat.messages[chat.messages.length-1].role==='user')requestAI();
+  }else if(act==='delmsg'){
+    // C4：刪除單則訊息（串流中已被上方 guard 阻擋）
+    if(!await showConfirm('確定要刪除這則訊息嗎？'))return;
+    await delMediaIds(collectMsgImageIds(m));   // A1：訊息內圖片一併從 IndexedDB 刪除
+    chat.messages.splice(idx,1);
+    saveChatsData(chats);
+    renderMessages();
   }
 });
 // 點擊選單以外區域時收起所有選單
@@ -2134,16 +2625,377 @@ messagesEl.addEventListener('touchstart',e=>{
 messagesEl.addEventListener('contextmenu',e=>{
   if(e.target.closest('.msg-row .msg')&&window.matchMedia('(hover: none)').matches)e.preventDefault();
 });
+// 側邊欄：同樣阻擋長按原生選單／反白干擾（重新命名輸入框除外，仍需原生複製貼上）
+document.getElementById('sidebar').addEventListener('contextmenu',e=>{
+  if(!window.matchMedia('(hover: none)').matches)return;
+  if(e.target.closest('input,textarea'))return;
+  e.preventDefault();
+});
 
-// ===== 初始化 =====
+// ===== C1：圖片燈箱（點擊 .msg-img 放大；滾輪/雙擊縮放；✕/背景/Esc 關閉；手機不攔 pinch）=====
+const lightbox=document.getElementById('lightbox');
+const lbImg=document.getElementById('lbImg');
+let lbScale=1,lbTx=0,lbTy=0,lbDrag=null,lbMediaId=null,lbSrc=null;
+function lbApply(){lbImg.style.transform='translate('+lbTx+'px,'+lbTy+'px) scale('+lbScale+')'}
+function openLightbox(src,mediaId){
+  if(!src)return;
+  lbSrc=src;lbMediaId=mediaId||null;
+  lbScale=1;lbTx=0;lbTy=0;lbApply();
+  lbImg.src=src;
+  lightbox.classList.add('open');
+}
+function closeLightbox(){
+  if(!lightbox.classList.contains('open'))return;
+  lightbox.classList.remove('open');
+  lbImg.src='';lbSrc=null;lbMediaId=null;
+}
+document.getElementById('lbClose').addEventListener('click',closeLightbox);
+lightbox.addEventListener('click',e=>{if(e.target===lightbox)closeLightbox()});
+lightbox.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const f=e.deltaY<0?1.15:1/1.15;
+  lbScale=Math.min(8,Math.max(0.2,lbScale*f));
+  lbApply();
+},{passive:false});
+lbImg.addEventListener('dblclick',()=>{lbScale=lbScale>1?1:2;lbTx=0;lbTy=0;lbApply()});
+// 放大後可拖曳平移（不影響觸控雙指縮放：未對 touch 事件 preventDefault）
+lbImg.addEventListener('pointerdown',e=>{
+  if(lbScale<=1)return;
+  lbDrag={x:e.clientX,y:e.clientY,tx:lbTx,ty:lbTy};
+  try{lbImg.setPointerCapture(e.pointerId)}catch(err){}
+});
+lbImg.addEventListener('pointermove',e=>{
+  if(!lbDrag)return;
+  lbTx=lbDrag.tx+(e.clientX-lbDrag.x);
+  lbTy=lbDrag.ty+(e.clientY-lbDrag.y);
+  lbApply();
+});
+['pointerup','pointercancel'].forEach(ev=>lbImg.addEventListener(ev,()=>{lbDrag=null}));
+// 燈箱下載：複用 saveMessageImages 的資料取得邏輯（IndexedDB → dataURL/Blob/遠端）
+document.getElementById('lbDownload').addEventListener('click',()=>{
+  if(!lightbox.classList.contains('open'))return;
+  if(lbMediaId){
+    saveMessageImages({content:[{type:'image_ref',id:lbMediaId}]});
+  }else if(lbSrc&&lbSrc.indexOf('data:')===0){
+    downloadHref(lbSrc,'image_'+exportStamp()+extFromMime(lbSrc.slice(0,lbSrc.indexOf(','))));
+  }else if(lbSrc){
+    window.open(lbSrc,'_blank','noopener');
+  }
+});
+
+// ===== C2：匯出／匯入對話（入口：點擊側邊欄寵物貓）=====
+function openExportModal(){document.getElementById('exportModal').classList.add('open')}
+function closeExportModal(){document.getElementById('exportModal').classList.remove('open')}
+document.querySelectorAll('.pet').forEach(p=>{
+  p.title='匯出／匯入對話（點擊開啟）';
+  p.addEventListener('click',openExportModal);
+});
+document.getElementById('btnExportClose').addEventListener('click',closeExportModal);
+document.getElementById('exportModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeExportModal()});
+// 匯出檔名時間戳：ChatCAT_export_YYYYMMDD_HHMMSS
+function exportStamp(){
+  const d=new Date(),p=n=>String(n).padStart(2,'0');
+  return d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())+p(d.getSeconds());
+}
+function downloadBlob(blob,name){
+  const u=URL.createObjectURL(blob);
+  downloadHref(u,name);
+  setTimeout(()=>URL.revokeObjectURL(u),30000);   // A2：用完釋放
+}
+// 組匯出 JSON：{app:'ChatCAT',version:1,exportedAt,chats:[...]}
+async function buildExportData(list){
+  const withImg=document.getElementById('exportWithImages').checked;
+  const out=[];
+  for(const c of list){
+    const cc=JSON.parse(JSON.stringify(c));
+    for(const m of cc.messages){
+      if(!Array.isArray(m.content))continue;
+      for(const p of m.content){
+        if(p.type==='image_ref'&&p.id){
+          if(withImg){
+            try{
+              const data=await mediaGet(p.id);
+              if(data==null)p.missing=true;
+              else if(typeof data==='string')p.dataUrl=data;
+              else if(data instanceof Blob)p.dataUrl=await blobToDataURL(data);
+            }catch(e){p.missing=true}
+          }
+          // 不含圖時僅保留 id（匯入後需該裝置上已有圖，否則顯示替代）
+        }
+      }
+    }
+    out.push(cc);
+  }
+  return {app:'ChatCAT',version:1,exportedAt:new Date().toISOString(),chats:out};
+}
+document.getElementById('btnExportAll').addEventListener('click',async()=>{
+  const list=Object.values(chats);
+  if(!list.length){showToast('沒有可匯出的對話','warn');return}
+  try{
+    const data=await buildExportData(list);
+    downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),'ChatCAT_export_'+exportStamp()+'.json');
+    showToast('已匯出 '+list.length+' 場對話','success');
+  }catch(e){showToast('匯出失敗：'+e.message,'warn')}
+});
+document.getElementById('btnExportCurrent').addEventListener('click',async()=>{
+  const c=chats[activeChatId];
+  if(!c){showToast('沒有當前對話','warn');return}
+  try{
+    const data=await buildExportData([c]);
+    downloadBlob(new Blob([JSON.stringify(data)],{type:'application/json'}),'ChatCAT_export_'+exportStamp()+'.json');
+    showToast('已匯出當前對話','success');
+  }catch(e){showToast('匯出失敗：'+e.message,'warn')}
+});
+// 匯出 Markdown（當前對話）
+document.getElementById('btnExportMd').addEventListener('click',()=>{
+  const c=chats[activeChatId];
+  if(!c){showToast('沒有當前對話','warn');return}
+  const lines=['# '+(c.title||'新對話'),''];
+  c.messages.forEach(m=>{
+    const who=m.role==='user'?'🧑 使用者':'🐱 AI';
+    let body=contentText(m);
+    if(msgHasImage(m))body+='\n[圖片]';
+    lines.push('**'+who+'**：','',body,'');
+  });
+  downloadBlob(new Blob([lines.join('\n')],{type:'text/markdown'}),'ChatCAT_export_'+exportStamp()+'.md');
+});
+
+// 匯入：選檔(JSON) → 驗證 → id 衝突重取 → 圖片 dataURL 寫進 IndexedDB → 合併
+document.getElementById('btnImportPick').addEventListener('click',()=>document.getElementById('importFile').click());
+document.getElementById('importFile').addEventListener('change',async e=>{
+  const f=e.target.files[0];
+  e.target.value='';
+  if(!f)return;
+  try{
+    const data=JSON.parse(await f.text());
+    if(!data||data.app!=='ChatCAT'||!Array.isArray(data.chats))throw new Error('格式不符（需 ChatCAT 匯出檔）');
+    let imported=0,imgs=0;
+    for(const c of data.chats){
+      if(!c||!Array.isArray(c.messages))continue;
+      const id=(c.id&&!(c.id in chats))?c.id:('chat_'+Date.now()+'_'+Math.random().toString(36).slice(2,6));   // id 衝突以新 id 重取，不覆蓋
+      c.id=id;
+      for(const m of c.messages){
+        delete m.truncated;
+        if(!Array.isArray(m.content))continue;
+        for(const p of m.content){
+          if(p.type==='image_ref'&&p.dataUrl){
+            const nid='img_imp_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+            try{await mediaPut(nid,p.dataUrl);p.id=nid;imgs++}catch(e2){}
+            delete p.dataUrl;
+          }
+        }
+      }
+      chats[id]=c;
+      imported++;
+    }
+    if(!imported)throw new Error('檔內沒有可匯入的對話');
+    saveChatsData(chats);
+    saveChatsDataNow();
+    renderChatList();
+    showToast('已匯入 '+imported+' 場對話（內嵌圖片 '+imgs+' 張）','success');
+    closeExportModal();
+  }catch(err){
+    showToast('匯入失敗：'+err.message,'warn');
+  }
+});
+// 讀取 IndexedDB 全部 key（清理未引用圖片用）
+function mediaAllKeys(){
+  return openMediaDB().then(db=>new Promise((res,rej)=>{
+    try{
+      const rq=db.transaction(MEDIA_STORE,'readonly').objectStore(MEDIA_STORE).getAllKeys();
+      rq.onsuccess=()=>{db.close();res(rq.result||[])};
+      rq.onerror=()=>{db.close();rej(rq.error)};
+    }catch(e){db.close();rej(e)}
+  }));
+}
+// 維護：清理未被任何對話引用的圖片（對應 A1）
+document.getElementById('btnCleanOrphan').addEventListener('click',async()=>{
+  if(!await showConfirm('掃描所有對話，刪除未被任何訊息引用的圖片。確定執行？'))return;
+  try{
+    const keys=await mediaAllKeys();
+    const used=new Set();
+    Object.values(chats).forEach(c=>collectChatImageIds(c).forEach(id=>used.add(id)));
+    let n=0;
+    for(const k of keys){
+      if(!used.has(k)){try{await mediaDel(k);n++}catch(e){}}
+    }
+    showToast(n?('已清理 '+n+' 張未引用圖片'):'沒有未引用的圖片','success');
+  }catch(e){showToast('清理失敗：'+e.message,'warn')}
+});
+
+// ===== C12：語音輸入（Web Speech API；僅支援的瀏覽器顯示 🎤）=====
+(function initVoiceInput(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('btnMic');
+  if(!SR||!btn)return;
+  btn.style.display='';
+  let rec=null,listening=false;
+  btn.addEventListener('click',()=>{
+    if(listening){
+      listening=false;
+      btn.classList.remove('listening');
+      try{rec.stop()}catch(e){}
+      return;
+    }
+    try{rec=new SR()}catch(e){return}
+    rec.lang='zh-TW';
+    rec.interimResults=true;
+    rec.continuous=false;
+    listening=true;
+    btn.classList.add('listening');
+    rec.onresult=ev=>{
+      let finalTxt='';
+      for(let i=ev.resultIndex;i<ev.results.length;i++){
+        if(ev.results[i].isFinal)finalTxt+=ev.results[i][0].transcript;
+      }
+      if(finalTxt){
+        msgInput.value=(msgInput.value||'')+finalTxt;   // 結果附加進輸入框
+        msgInput.dispatchEvent(new Event('input'));
+      }
+    };
+    rec.onend=()=>{listening=false;btn.classList.remove('listening')};
+    rec.onerror=ev=>{
+      listening=false;
+      btn.classList.remove('listening');
+      const why={
+        'not-allowed':'語音輸入失敗：麥克風權限被拒絕（請允許麥克風存取）',
+        'service-not-allowed':'語音輸入失敗：瀏覽器或系統未允許語音服務',
+        'network':'語音輸入失敗：需要網路連線（辨識在雲端進行）',
+        'audio-capture':'語音輸入失敗：找不到可用的麥克風',
+        'no-speech':'沒有偵測到說話內容',
+        'aborted':null
+      }[ev.error];
+      if(why)showToast(why,'warn');
+    };
+    try{
+      rec.start();
+      showToast('語音辨識中…再次點擊 🎤 可停止');
+    }catch(e){
+      listening=false;
+      btn.classList.remove('listening');
+    }
+  });
+})();
+
+// ===== C9：圖片 Gallery（瀏覽所有 IndexedDB 圖片；入口：右上 🖼️）=====
+const galleryUrls=new Set();
+function openGallery(){renderGalleryGrid();document.getElementById('galleryModal').classList.add('open')}
+function closeGallery(){
+  document.getElementById('galleryModal').classList.remove('open');
+  galleryUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});
+  galleryUrls.clear();
+}
+async function renderGalleryGrid(){
+  const grid=document.getElementById('galleryGrid');
+  grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">讀取中…</div>';
+  // 建立 圖片id → 來源對話標題 對照
+  const owner={};
+  Object.values(chats).forEach(c=>{
+    ((c&&c.messages)||[]).forEach(m=>{
+      if(Array.isArray(m.content))m.content.forEach(p=>{if(p.type==='image_ref'&&p.id&&!owner[p.id])owner[p.id]=c.title||'新對話'});
+    });
+  });
+  let entries=[];
+  try{entries=(await mediaAllEntries()).slice().reverse()}catch(e){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">讀取失敗：'+escHtml((e&&e.message)||e)+'</div>';
+    return;
+  }
+  if(!entries.length){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">尚無圖片</div>';
+    return;
+  }
+  grid.innerHTML='';
+  entries.forEach(rec=>{
+    if(!rec||!rec.id)return;
+    const item=document.createElement('div');
+    item.className='gallery-item';
+    const img=document.createElement('img');
+    img.alt=rec.id;
+    img.loading='lazy';
+    img.title=(owner[rec.id]?('來源：'+owner[rec.id]):'（未被任何對話引用）')+'｜'+rec.id;
+    if(typeof rec.data==='string')img.src=rec.data;
+    else if(rec.data instanceof Blob){const u=URL.createObjectURL(rec.data);galleryUrls.add(u);img.src=u}
+    const info=document.createElement('div');
+    info.className='gallery-item-info';
+    info.textContent=owner[rec.id]||'（未被引用）';
+    const acts=document.createElement('div');
+    acts.className='gallery-item-actions';
+    const bDl=document.createElement('button');bDl.type='button';bDl.textContent='💾';bDl.title='下載';
+    const bDel=document.createElement('button');bDel.type='button';bDel.textContent='🗑️';bDel.title='刪除';
+    acts.appendChild(bDl);acts.appendChild(bDel);
+    item.appendChild(img);item.appendChild(info);item.appendChild(acts);
+    img.addEventListener('click',()=>openLightbox(img.src,rec.id));   // 大圖：複用燈箱
+    bDl.addEventListener('click',()=>saveMessageImages({content:[{type:'image_ref',id:rec.id}]}));
+    bDel.addEventListener('click',async()=>{
+      const used=Object.values(chats).filter(c=>collectChatImageIds(c).includes(rec.id)).length;
+      const msg=used
+        ?('此圖被 '+used+' 則訊息引用；刪除後訊息文字保留、圖片改顯示「圖片已刪除」佔位。確定刪除？')
+        :'確定要刪除這張圖片嗎？';
+      if(!await showConfirm(msg))return;
+      try{await mediaDel(rec.id)}catch(e){showToast('刪除失敗：'+e.message,'warn');return}
+      showToast('圖片已刪除','success');
+      renderGalleryGrid();
+      renderMessages();   // 重新渲染當前對話，缺圖改為佔位框（hydrateMedia 處理）
+    });
+    grid.appendChild(item);
+  });
+}
+document.getElementById('btnGallery').addEventListener('click',openGallery);
+document.getElementById('btnGalleryClose').addEventListener('click',closeGallery);
+document.getElementById('galleryModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeGallery()});
+// 讀取 IndexedDB 全部圖片記錄（Gallery 用）
+function mediaAllEntries(){
+  return openMediaDB().then(db=>new Promise((res,rej)=>{
+    try{
+      const rq=db.transaction(MEDIA_STORE,'readonly').objectStore(MEDIA_STORE).getAll();
+      rq.onsuccess=()=>{db.close();res(rq.result||[])};
+      rq.onerror=()=>{db.close();rej(rq.error)};
+    }catch(e){db.close();rej(e)}
+  }));
+}
+
+// ===== C10：Service Worker 離線快取（需 https；file:// 或註冊失敗時自動略過）=====
+(function setupServiceWorker(){
+  try{
+    if(!('serviceWorker' in navigator))return;
+    if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;   // file:// 直接略過
+    const swCode=[
+      "const CACHE='chatcat-v1';",
+      "self.addEventListener('install',e=>self.skipWaiting());",
+      "self.addEventListener('activate',e=>e.waitUntil(self.clients.claim()));",
+      "self.addEventListener('fetch',e=>{",
+      "  if(e.request.method!=='GET')return;",
+      "  e.respondWith((async()=>{",
+      "    const c=await caches.open(CACHE);",
+      "    const hit=await c.match(e.request);",
+      "    if(hit)return hit;",
+      "    try{",
+      "      const r=await fetch(e.request);",
+      "      const u=e.request.url;",
+      "      if(r&&r.ok&&(u.startsWith(self.location.origin)||u.indexOf('cdn.jsdelivr.net')>=0))c.put(e.request,r.clone());",
+      "      return r;",
+      "    }catch(err){throw err}",
+      "  })());",
+      "});"
+    ].join('\n');
+    const swUrl=URL.createObjectURL(new Blob([swCode],{type:'text/javascript'}));
+    navigator.serviceWorker.register(swUrl)
+      .then(()=>console.log('[Chat] Service Worker 已註冊（離線快取開啟）'))
+      .catch(err=>console.log('[Chat] Service Worker 註冊略過：',err&&err.message));
+  }catch(e){}
+})();
+
+// ===== 初始化（四：先由 IndexedDB／遷移資料載入對話，再渲染）=====
 applyTheme();
 updateSendButton();
-document.getElementById('modelBadge').textContent=getModel();
-const ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt);
-if(ids.length)setActiveChat(ids[0]);
-renderChatList();
-// 舊圖片資料遷移到 IndexedDB（非同步，不阻塞介面；把歷史中的 dataURL 圖片改成輕量 image_ref）
-migrateLegacyMedia().then(n=>{if(n)console.log('[Chat] 已遷移',n,'張舊圖片到 IndexedDB')}).catch(()=>{});
+(async()=>{
+  chats=await loadChatsAsync();
+  const ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt);
+  if(ids.length)setActiveChat(ids[0]);
+  renderChatList();
+  // 舊圖片資料遷移到 IndexedDB（非同步，不阻塞介面；把歷史中的 dataURL 圖片改成輕量 image_ref）
+  migrateLegacyMedia().then(n=>{if(n)console.log('[Chat] 已遷移',n,'張舊圖片到 IndexedDB')}).catch(()=>{});
+})();
 
 // ===== PWA：動態產生 manifest（http(s) 環境下可安裝到主畫面；file:// 環境自動忽略）=====
 (function setupManifest(){
