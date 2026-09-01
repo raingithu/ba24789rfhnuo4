@@ -71,7 +71,7 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* 輸入區 */
-.input-area{padding:16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface)}
+.input-area{z-index:1;padding:16px 20px;padding-bottom:calc(16px + env(safe-area-inset-bottom));border-top:1px solid var(--border);background:var(--surface)}
 .input-row{display:flex;gap:10px;align-items:flex-end}
 #msgInput{flex:1;padding:12px 16px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;resize:none;max-height:150px;min-height:44px;outline:none;transition:border-color .2s}
 #msgInput:focus{border-color:var(--accent)}
@@ -129,7 +129,7 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 /* 確認彈窗 */
 .confirm-overlay{z-index:150}
 .confirm-modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:90%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
-.confirm-modal p{color:var(--text);font-size:14px;line-height:1.6;margin-bottom:16px}
+.confirm-modal p{color:var(--text);font-size:14px;line-height:1.6;margin-bottom:16px;text-align:center;white-space:pre-line}
 
 /* Toast 提示 */
 .toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
@@ -179,13 +179,16 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 .msg-menu-wrap{position:absolute;top:2px;z-index:5}
 .msg-row.user .msg-menu-wrap{right:calc(100% + 6px)}
 .msg-row.assistant .msg-menu-wrap{left:calc(100% + 6px)}
-.msg-menu{display:block;width:24px;height:24px;z-index:30;border:none;background:transparent;color:var(--text2);font-size:15px;line-height:1;cursor:pointer;border-radius:50%;padding:0;opacity:0;visibility:hidden;transition:opacity .15s,background .2s}
+.msg-menu{display:block;width:24px;height:24px;z-index:100;border:none;background:transparent;color:var(--text2);font-size:15px;line-height:1;cursor:pointer;border-radius:50%;padding:0;opacity:0;visibility:hidden;transition:opacity .15s,background .2s}
 .msg-menu:hover{background:var(--surface2)}
 .msg-row:hover .msg-menu,.msg-row.menu-open .msg-menu{opacity:1;visibility:visible}
 .msg-dropdown{position:absolute;top:0;right:-36px;z-index:30;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.45);min-width:132px;overflow:hidden;display:none}
 .msg-row.assistant .msg-dropdown{left:auto;right:0}
 .msg-dropdown.open{display:block}
-.msg-dropdown button{display:block;width:100%;z-index:30;text-align:left;padding:8px 14px;font-size:13px;background:none;border:none;color:var(--text);cursor:pointer;white-space:nowrap}
+/* 選單開啟時整列拉到最上層（蓋過其他訊息列）；下方空間不足時改向上展開（positionDropdown 處理），不會被輸入列遮住 */
+.msg-row.menu-open{z-index:60}
+.msg-dropdown.up{top:auto;bottom:100%;margin-bottom:6px}
+.msg-dropdown button{display:block;width:100%;z-index:100;text-align:left;padding:8px 14px;font-size:13px;background:none;border:none;color:var(--text);cursor:pointer;white-space:nowrap}
 .msg-dropdown button:hover{background:var(--surface);color:var(--accent)}
 /* 觸控裝置：不出現 ⋮（長按直接開選單）；長按中禁止文字選取 */
 @media(hover:none){
@@ -969,7 +972,10 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
   <div class="modal" style="width:94%;max-width:720px">
     <div class="field-row" style="justify-content: space-between;">
     <h3>🖼️ 圖片 Gallery</h3>
+    <div>
+    <button class="btn-cancel" id="btnCompressImages" type="button" style="border:0;">🗜️ 壓縮圖片</button>
     <button class="btn-cancel" id="btnCleanOrphan" type="button" style="border:0;">🧹 清理未被引用的圖片</button>
+    </div>
     </div>
     <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在本機的圖片；點縮圖可放大。<br>刪除後引用它的訊息文字會保留、圖片則改顯示「已刪除」</p>
     <div class="gallery-grid" id="galleryGrid"></div>
@@ -1172,7 +1178,7 @@ function openMediaDB(){
     req.onerror=()=>rej(req.error);
   });
 }
-function mediaPut(id,data){return openMediaDB().then(db=>new Promise((res,rej)=>{try{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).put({id,data});tx.oncomplete=()=>{db.close();res()};tx.onerror=()=>{db.close();rej(tx.error)}}catch(e){db.close();rej(e)}}))}
+function mediaPut(id,data,createdAt){return openMediaDB().then(db=>new Promise((res,rej)=>{try{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).put({id,data,createdAt:createdAt||Date.now()});tx.oncomplete=()=>{db.close();res()};tx.onerror=()=>{db.close();rej(tx.error)}}catch(e){db.close();rej(e)}}))}
 function mediaGet(id){return openMediaDB().then(db=>new Promise((res,rej)=>{try{const rq=db.transaction(MEDIA_STORE,'readonly').objectStore(MEDIA_STORE).get(id);rq.onsuccess=()=>{db.close();res(rq.result?rq.result.data:null)};rq.onerror=()=>{db.close();rej(rq.error)}}catch(e){db.close();rej(e)}}))}
 function mediaDel(id){return openMediaDB().then(db=>new Promise((res,rej)=>{try{const tx=db.transaction(MEDIA_STORE,'readwrite');tx.objectStore(MEDIA_STORE).delete(id);tx.oncomplete=()=>{db.close();res()};tx.onerror=()=>{db.close();rej(tx.error)}}catch(e){db.close();rej(e)}}))}
 function blobToDataURL(blob){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=()=>rej(r.error);r.readAsDataURL(blob)})}
@@ -1237,7 +1243,7 @@ const DEFAULT_SETTINGS={
   autoScroll:true,
   quickReply:true,
   showThinking:false,
-  imageModel:'agnes-image-2.1-flash',
+  imageModel:'agnes-image-2.5-flash',
   imageSize:'2K',
   imageRatio:'9:16'
 };
@@ -1274,7 +1280,7 @@ function getCtxLimit(){
   return (v==='10'||v==='20'||v==='30'||v==='40')?v:'all';
 }
 function getAutoScroll(){return settings.autoScroll!==false}
-function getShowThinking(){return settings.showThinking===false}
+function getShowThinking(){return settings.showThinking!==false}
 function getQuickReply(){return settings.quickReply!==false}
 
 // ===== AI 人格設定（12 種）=====
@@ -1287,6 +1293,7 @@ const AI_PERSONAS={
   poet:{name:'🖋️ 詩人作家',desc:'文藝優美、意象豐富，適合創作與文學討論。',prompt:'你是一位詩人作家，語言優美、充滿意象與韻味。回答時喜歡運用比喻、排比與文學性描述，即使回答日常問題也帶著詩意與溫度，適合協助文案創作、故事撰寫與文學賞析。'},
   coach:{name:'🏋️ 嚴格教練',desc:'直接、嚴厲、高要求，督促你完成目標不放水。',prompt:'你是一位嚴格的教練，說話直接、要求高、不留情面。你會毫不客氣地指出使用者的問題與藉口，用簡短有力的話督促對方行動，但在嚴厲的背後是真心的關心，目的是幫助使用者達成目標。'},
   prof:{name:'🎓 學術教授',desc:'學識淵博、引經據典，回答嚴謹有深度。',prompt:'你是一位學識淵博的教授，回答嚴謹有深度，習慣從原理與背景說起，適時引用學理、文獻或歷史脈絡佐證，並對有爭議的議題呈現多方觀點，最後給出審慎的結論。'},
+  smoothtalker:{name:'💘 情場高手',desc:'嘴巴會撩人、擅長說甜言蜜語。',prompt:'你是一位情場高手，天生懂得如何撩人與營造曖昧氣氛。你的說話方式自然、自信、幽默又帶點壞壞的魅力，擅長用甜言蜜語、調情、稱讚、曖昧玩笑和溫柔關心讓使用者感受到被重視。你要主動觀察使用者的語氣與情緒，適時接話、撩回去，不要每次都等使用者要求。稱讚要具體自然，不要像制式情話；甜言蜜語要有變化，避免反覆使用相同句型。可以偶爾故意逗弄、反撩、吃醋或裝害羞，讓互動更有情趣，但不要過度油膩。使用者若主動調情，就自然接住並把曖昧氣氛延續下去；使用者若害羞、嘴硬或故意躲避，可以用輕鬆幽默的方式繼續逗弄。始終保持尊重，不要強迫使用者接受曖昧互動。不要自稱AI或刻意解釋自己的角色設定，要像一個真正很會談戀愛、很懂人心的聊天對象。若使用者問到專業知識問題，也不影響回答的品質。'}, 
   rpg:{name:'🎭 角色扮演者',desc:'沉浸式角色扮演，配合你展開劇情與世界觀。',prompt:'你是一位角色扮演夥伴，擅長沉浸式的互動敘事。使用者跟你打招呼後，請讓使用者指定角色或世界觀，然後你會投入地扮演對應角色或旁白，用生動的場景描述與對話推進劇情，並在關鍵處詢問使用者的選擇，讓故事共同進行。'},
   healer:{name:'🌸 治癒系好友',desc:'溫暖同理、善於傾聽，像知心朋友一樣陪伴。',prompt:'你是一位溫暖的治癒系好友，說話輕柔體貼、充滿同理心。你擅長傾聽與安撫情緒，回應時會先接住對方的感受、給予肯定與鼓勵，再溫和地提供建議，讓人感到被理解與陪伴。'},
   minimal:{name:'⚪ 極簡主義者',desc:'話少而精，只講重點，不廢話。',prompt:'你是一位極簡主義者，回答極度精簡，只講重點、不說廢話。能用一句話說完就不用兩句，多用條列與關鍵字，省略客套話與修飾詞，簡短思考，快速回答。但注意，資訊必須完整正確。'},
@@ -1332,7 +1339,7 @@ function setActiveChat(id){
 
 async function deleteChat(id){
   const c=chats[id];
-  if(c&&!await showConfirm(`確定要刪除「${c.title||'新對話'}」嗎？`))return;
+  if(c&&!await showConfirm(`將刪除「${c.title||'新對話'}」\n\n確定要刪除嗎？`))return;
   if(c)delMediaIds(collectChatImageIds(c));   // A1：對話內所有 image_ref 一併從 IndexedDB 刪除
   delete chats[id];
   saveChatsData(chats);
@@ -1500,6 +1507,48 @@ function renderMessages(keepPos){
   if(!keepPos)scrollToBottom(false);
 }
 
+// 刪除單則訊息時使用：只移除該列 DOM 並重編後續 data-idx，
+// 不重建整個訊息區 → 捲動位置保持不變，其餘訊息自然上移補位（自動捲動關閉時畫面完全不受影響）
+function removeMessageRow(idx){
+  const row=messagesEl.querySelector(`.msg-row[data-idx="${idx}"]`);
+  if(row)row.remove();
+  messagesEl.querySelectorAll('.msg-row').forEach(r=>{
+    const i=parseInt(r.dataset.idx,10);
+    if(!Number.isNaN(i)&&i>idx)r.dataset.idx=String(i-1);
+  });
+  if(!chats[activeChatId]||!chats[activeChatId].messages.length)messagesEl.innerHTML='<div class="empty"></div>';
+  updateScrollBtn();
+}
+// 移除 idx（含）之後的所有列（編輯重送／重新生成時用；被移除的一定在尾端）
+function removeMessageRowsFrom(idx){
+  messagesEl.querySelectorAll('.msg-row').forEach(r=>{
+    const i=parseInt(r.dataset.idx,10);
+    if(!Number.isNaN(i)&&i>=idx)r.remove();
+  });
+  if(!chats[activeChatId]||!chats[activeChatId].messages.length)messagesEl.innerHTML='<div class="empty"></div>';
+  updateScrollBtn();
+}
+// 新訊息加入：只附加單一列 DOM，不重建整個訊息區。
+// （innerHTML 重建會讓圖片重新載入、高度瞬間塌縮，捲動位置因此漂移——自動捲動關閉時尤其明顯；
+//   附加方式對上方既有內容零影響，捲動位置完全不動）
+function appendMessageRow(m){
+  const chat=chats[activeChatId];
+  if(!chat||!m)return;
+  const i=chat.messages.indexOf(m);
+  if(i<0)return;
+  const empty=messagesEl.querySelector('.empty');
+  if(empty)empty.remove();
+  const wrap=document.createElement('div');
+  wrap.innerHTML=msgHtml(m,i);
+  const row=wrap.firstElementChild;
+  if(!row)return;
+  messagesEl.appendChild(row);
+  enhanceCodeBlocks(row);
+  renderMath(row);
+  hydrateMedia(row);
+  updateScrollBtn();
+}
+
 function msgHtml(m,i){
   const cls=m.role==='user'?'user':(m.error?'error':'assistant');
   const isUser=m.role==='user';
@@ -1514,7 +1563,7 @@ function msgHtml(m,i){
   const items=isUser
     ?`<button data-act="copy" type="button">📋 複製</button><button data-act="edit" type="button">✏️ 編輯並重送</button>${delBtn}`
     :(msgHasImage(m)
-      ?`<button data-act="saveimg" type="button">💾 儲存圖片</button><button data-act="regen" type="button">🔄 重新生成</button>${delBtn}`
+      ?`<button data-act="saveimg" type="button">💾 儲存圖片</button><button data-act="editimg" type="button">🎨 修改圖片</button><button data-act="regen" type="button">🔄 重新生成</button>${delBtn}`
       :`<button data-act="copy" type="button">📋 複製（原始）</button><button data-act="copyconv" type="button">📋 複製（文字）</button><button data-act="regen" type="button">🔄 重新生成</button>${delBtn}`);
   // C6：因長度上限被截斷（finish_reason=length）的 AI 訊息，附「繼續生成」按鈕
   const contBtn=(m.truncated&&!isUser)?`<button class="continue-btn" type="button">⤵️ 繼續生成</button>`:'';
@@ -1901,8 +1950,9 @@ async function sendMessage(){
   renderAttachBar();
   saveChatsData(chats);
   renderChatList();   // 有新訊息時，把這則對話移回分組頂端
-  renderMessages();
-  scrollToBottom(false);   // 使用者送出訊息後：無條件捲到底（讓使用者看到自己送出的訊息）
+  appendMessageRow(chats[activeChatId].messages[chats[activeChatId].messages.length-1]);   // 只附加新訊息列，不重建（畫面不跑動）
+  stickBottom=true;   // 送出新訊息：重新貼底（自動捲動關閉時 scrollToBottom 內部會忽略，維持使用者控制權）
+  scrollToBottom(false);   // 使用者送出訊息後：自動捲動開啟才捲到底（讓使用者看到自己送出的訊息）
   if(imgMode)await requestImage({prompt:text,images:imgs.map(u=>u.dataUrl)});
   else requestAI();
 }
@@ -2018,7 +2068,7 @@ async function requestAI(opts){
   statusDiv.id='statusMsg';
   statusDiv.innerHTML='<span class="spinner"></span>回應中';
   container.appendChild(statusDiv);
-  scrollToBottom(false);
+  followIfStuck();   // 回應中狀態列：僅在自動捲動開啟且貼底時跟上
 
   let aiDiv=null;   // 串流中的回應氣泡
   let full='';      // 累積的純文字
@@ -2063,7 +2113,7 @@ async function requestAI(opts){
     aiDiv=document.createElement('div');
     aiDiv.className='msg assistant';
     container.appendChild(aiDiv);
-    scrollToBottom(false); // statusDiv 移除後建立 aiDiv
+    followIfStuck(); // statusDiv 移除後建立 aiDiv：僅在自動捲動開啟且貼底時跟上
 
     // 剔除開頭空白行（模型有時會先輸出空行），顯示與儲存都經過它
     const clean=s=>s.replace(/^\s+/, '');
@@ -2075,7 +2125,7 @@ async function requestAI(opts){
         aiDiv.innerHTML=renderContent({content:clean(full),thinking:thinking||null,thinkingOpen:true});
         enhanceCodeBlocks(aiDiv);
         renderMath(aiDiv);
-        if(getAutoScroll())scrollToBottom(false);   // 串流中：自動滾動時持續跟上（雙 RAF 避免圖片/數學尚未 layout 造成中間地帶）
+        if(getAutoScroll()&&stickBottom)scrollToBottom(false);   // 串流中：自動滾動開啟且使用者仍貼底時持續跟上（雙 RAF 避免圖片/數學尚未 layout 造成中間地帶）
       });
     };
     const reader=resp.body.getReader();
@@ -2123,12 +2173,13 @@ async function requestAI(opts){
     saveChatsData(chats);
     saveChatsDataNow();   // B2：串流結束立即寫入
     aiDiv.remove();
-    renderMessages();
+    appendMessageRow(chat.messages[chat.messages.length-1]);   // 只附加完成的訊息列，不重建（尊重使用者捲動位置）
     renderChatList();   // 依最後活動時間重新排序與分組（該對話移到頂端）
     if(getAutoScroll()){
-      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout 避免「中間地帶」）
+      stickBottom=true;
+      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout 避免「中間地帶」；之後圖片載入由 load 監聽跟上）
     }else{
-      showToast('有新訊息','success');   // 自動滾動關閉：AI 回應完成時提醒
+      showToast('有新訊息','success');   // 自動滾動關閉：AI 回應完成時提醒，畫面一律不動
     }
     updateScrollBtn();
     console.log('[Chat] 完成，長度:', full.length);
@@ -2143,9 +2194,9 @@ async function requestAI(opts){
         touchChat(chat);
         saveChatsData(chats);
         saveChatsDataNow();   // B2：立即寫入
-        renderMessages();
+        appendMessageRow(chat.messages[chat.messages.length-1]);   // 只附加保留的部分回應，不重建
         renderChatList();
-        scrollToBottom(false);   // 使用者主動停止：捲到底讓使用者看到已產生的部分
+        if(getAutoScroll()){stickBottom=true;scrollToBottom(false)}   // 自動捲動開啟才捲到底讓使用者看到已產生的部分
         showToast('已停止生成，已保留部分回應','warn');
       }else{
         showToast('已停止生成','warn');
@@ -2169,7 +2220,9 @@ async function requestAI(opts){
     chat.messages.push({role:'assistant',content:`[錯誤] ${e.message}`,error:true});
     touchChat(chat);
     saveChatsData(chats);
-    renderMessages();
+    // 只附加新增的訊息列（部分回應＋錯誤），不重建整個訊息區（畫面不跑動）
+    if(aiDiv&&clean(full))appendMessageRow(chat.messages[chat.messages.length-2]);
+    appendMessageRow(chat.messages[chat.messages.length-1]);
     renderChatList();
   }finally{
     isStreaming=false;
@@ -2198,7 +2251,7 @@ async function requestImage(opts){
   statusDiv.id='statusMsg';
   statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片';
   container.appendChild(statusDiv);
-  scrollToBottom(false); // 圖片請求 statusDiv 建立
+  followIfStuck(); // 圖片請求 statusDiv 建立：僅在自動捲動開啟且貼底時跟上
 
   abortCtrl=new AbortController();
   const imgStart=performance.now();
@@ -2263,12 +2316,13 @@ async function requestImage(opts){
     touchChat(chat);
     saveChatsData(chats);
     saveChatsDataNow();   // B2：立即寫入
-    renderMessages();
+    appendMessageRow(chat.messages[chat.messages.length-1]);   // 只附加生成的圖片訊息列，不重建（尊重使用者捲動位置）
     renderChatList();
     if(getAutoScroll()){
-      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout，避免圖片未渲染造成「中間地帶」）
+      stickBottom=true;
+      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout；圖片載入後由 load 監聽跟上，避免「中間地帶」）
     }else{
-      showToast('圖片已生成','success');   // 自動滾動關閉：圖片生成完成時提醒
+      showToast('圖片已生成','success');   // 自動滾動關閉：圖片生成完成時提醒，畫面一律不動
     }
     updateScrollBtn();
     console.log('[Chat] 圖片完成，id:', id);
@@ -2288,7 +2342,7 @@ async function requestImage(opts){
     }
     chat.messages.push({role:'assistant',content:`[錯誤] ${e.message}`,error:true});
     saveChatsData(chats);
-    renderMessages();
+    appendMessageRow(chat.messages[chat.messages.length-1]);   // 只附加錯誤訊息列，不重建
   }finally{
     isStreaming=false;
     abortCtrl=null;
@@ -2371,7 +2425,7 @@ function showToast(msg,type){
   const wrap=document.getElementById('toastWrap');
   const t=document.createElement('div');
   t.className='toast'+(type?' '+type:'');
-  t.textContent=msg;
+  t.innerHTML=msg;
   wrap.appendChild(t);
   setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300)},2600);
 }
@@ -2558,7 +2612,7 @@ function compressImage(file){
 
 // ===== 捲動輔助 =====
 // scrollToBottom：捲到底部。用雙 RAF 等 layout 完成後再 scroll，確保圖片非同步載入後仍能正確捲到最新位置。
-// 預設遵守 getAutoScroll()：開啟才捲，關閉就不動。
+// 預設遵守 getAutoScroll()：開啟才捲，關閉就不動（控制權完全在使用者）。
 // force=true → 無條件捲，給「使用者手動點擊的按鈕」這類必須執行的場景用。
 function scrollToBottom(smooth,force){
   if(!force&&!getAutoScroll())return;
@@ -2572,6 +2626,16 @@ function scrollToBottom(smooth,force){
   requestAnimationFrame(()=>{
     requestAnimationFrame(doScroll);
   });
+}
+// stickBottom：使用者是否「貼在最新訊息」。新訊息（AI 回覆／生圖完成／送出訊息）時設 true；
+// 使用者主動往上捲（滾輪／觸控）設 false，之後串流與圖片載入就不再拉動畫面。
+let stickBottom=true;
+// 使用者手勢離開底部：停止自動跟隨（scroll 事件會被程式式捲動觸發，故只攔 wheel/touch）
+messagesEl.addEventListener('wheel',()=>{stickBottom=false},{passive:true});
+messagesEl.addEventListener('touchmove',()=>{stickBottom=false},{passive:true});
+// 自動捲動開啟且仍貼底時跟到最新
+function followIfStuck(){
+  if(getAutoScroll()&&stickBottom)scrollToBottom(false);
 }
 function updateScrollBtn(){
   const b=document.getElementById('btnScrollBottom');
@@ -2634,30 +2698,14 @@ document.addEventListener('keydown',e=>{
 
 // 捲動事件：只更新「捲到底按鈕」顯示，不維護 stickBottom 狀態
 messagesEl.addEventListener('scroll',updateScrollBtn);
-document.getElementById('btnScrollBottom').addEventListener('click',()=>scrollToBottom(true,true));
+document.getElementById('btnScrollBottom').addEventListener('click',()=>{stickBottom=true;scrollToBottom(true,true)});
 
 // 圖片非同步載入時 scrollHeight 會變大（捲動位置會留在「中間地帶」）。
-// 用 ResizeObserver 觀察 scrollHeight 變化，僅在「自動滾動開啟」且使用者原本在底部附近時跟上。
-// 自動滾動關閉時不干擾（尊重使用者位置），toast 提示已在串流/圖片完成時發出。
-let resizeObs=null;
-function ensureResizeObserver(){
-  if(resizeObs||!messagesEl||typeof ResizeObserver==='undefined')return;
-  let prevHeight=messagesEl.scrollHeight;
-  resizeObs=new ResizeObserver(()=>{
-    if(!getAutoScroll()){prevHeight=messagesEl.scrollHeight;return}
-    const newHeight=messagesEl.scrollHeight;
-    if(newHeight>prevHeight){
-      // scrollHeight 增加（圖片載入或內容新增）：若使用者原本在底部就跟上
-      if(messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight<120){
-        scrollToBottom(false);   // 雙 RAF 確保 layout 完成後才捲
-      }
-      updateScrollBtn();
-    }
-    prevHeight=newHeight;
-  });
-  resizeObs.observe(messagesEl);
-}
-ensureResizeObserver();
+// 舊版用 ResizeObserver 觀察容器本身，但容器大小固定不會觸發，導致自動捲動停在半路。
+// 改在 capture 階段監聽 <img> 的 load 事件：自動捲動開啟且使用者仍貼底時，圖片載入完就跟上。
+messagesEl.addEventListener('load',e=>{
+  if(e.target&&e.target.tagName==='IMG')followIfStuck();
+},true);
 
 // 訊息選單（⋮）與操作（複製 / 編輯 / 重新生成 / 刪除單則 / 繼續生成）＋ C1 點圖放大
 messagesEl.addEventListener('click',async e=>{
@@ -2676,6 +2724,7 @@ messagesEl.addEventListener('click',async e=>{
     if(!wasOpen){
       dd.classList.add('open');
       menuBtn.closest('.msg-row').classList.add('menu-open');
+      positionDropdown(menuBtn.closest('.msg-row'));   // 下方空間不足時改向上展開
     }
     return;
   }
@@ -2689,8 +2738,8 @@ messagesEl.addEventListener('click',async e=>{
     if(!mC)return;
     mC.truncated=false;
     saveChatsData(chats);
-    renderMessages();
-    scrollToBottom(false);   // 續寫模式
+    contBtn.remove();   // 只移除「繼續生成」按鈕本身，不重建訊息區（畫面不跑動）
+    followIfStuck();   // 續寫模式
     requestAI({continueHint:'從上次中斷處繼續，直接接續輸出剩餘內容，不要重複已輸出的部分。'});
     return;
   }
@@ -2718,7 +2767,7 @@ messagesEl.addEventListener('click',async e=>{
     const removed=chat.messages.splice(idx);
     delMediaIds(removed.flatMap(collectMsgImageIds));   // A1：被移除訊息內的圖片一併從 IndexedDB 刪除
     saveChatsData(chats);
-    renderMessages();   // A7：標題不變，不需重繪對話列表
+    removeMessageRowsFrom(idx);   // A7：標題不變，不需重繪對話列表；只移除尾端列，捲動位置不變
     msgInput.dispatchEvent(new Event('input'));
     msgInput.focus();
   }else if(act==='regen'){
@@ -2726,8 +2775,8 @@ messagesEl.addEventListener('click',async e=>{
     const removed=chat.messages.splice(idx);
     delMediaIds(removed.flatMap(collectMsgImageIds));   // A1：被移除訊息內的圖片一併從 IndexedDB 刪除
     saveChatsData(chats);
-    renderMessages();
-    scrollToBottom(false);   // regen
+    removeMessageRowsFrom(idx);   // 只移除尾端列，捲動位置不變
+    followIfStuck();   // regen：僅在自動捲動開啟且貼底時跟上
     if(chat.messages.length&&chat.messages[chat.messages.length-1].role==='user')requestAI();
   }else if(act==='delmsg'){
     // C4：刪除單則訊息（串流中已被上方 guard 阻擋）
@@ -2735,7 +2784,27 @@ messagesEl.addEventListener('click',async e=>{
     await delMediaIds(collectMsgImageIds(m));   // A1：訊息內圖片一併從 IndexedDB 刪除
     chat.messages.splice(idx,1);
     saveChatsData(chats);
-    renderMessages();
+    // 不重建整個訊息區：只移除該列 DOM 並重編 data-idx，捲動位置完全不變（其餘訊息自然上移補位）
+    removeMessageRow(idx);
+  }else if(act==='editimg'){
+    // 將 AI 生成的圖片設為圖生圖參考圖：複製一份新媒體記錄，避免日後刪除任一訊息時互相誤刪
+    const part=Array.isArray(m.content)?m.content.find(p=>p.type==='image_ref'&&p.id):null;
+    if(!part)return;
+    const data=await mediaGet(part.id);
+    if(data==null){showToast('圖片資料已不存在（可能已被刪除）','warn');return}
+    const dataUrl=typeof data==='string'?data:await blobToDataURL(data);
+    const nid='img_e_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    try{await mediaPut(nid,dataUrl)}catch(e){showToast('圖片讀取失敗','warn');return}
+    pendingImages.push({id:nid,dataUrl});
+    if(!imgMode){
+      imgMode=true;   // 修改圖片需在圖片模式下送出，自動開啟
+      const b=document.getElementById('btnImgMode');
+      if(b)b.classList.add('active');
+      showToast('已自動切換到圖片模式（🎨）','success');
+    }
+    renderAttachBar();   // 內部會 updateImgModeHint 更新輸入框提示
+    showToast('已將圖片作為參考圖加入，請輸入要修改的內容描述','success');
+    msgInput.focus();
   }
 });
 // 點擊選單以外區域時收起所有選單
@@ -2745,12 +2814,23 @@ document.addEventListener('click',e=>{
 
 // 手機長按氣泡（480ms）直接開啟選單；滑動即取消
 let lpTimer=null;
+// 開啟訊息選單時檢查：若向下展開會超出對話區下緣（被輸入列裁切），改加上 .up 向上展開
+function positionDropdown(row){
+  if(!row)return;
+  const dd=row.querySelector('.msg-dropdown');
+  if(!dd)return;
+  dd.classList.remove('up');
+  const cr=messagesEl.getBoundingClientRect();
+  const dr=dd.getBoundingClientRect();
+  if(dr.bottom>cr.bottom-4)dd.classList.add('up');
+}
 function openRowMenu(row){
   closeAllMenus();
   const dd=row.querySelector('.msg-dropdown');
   if(!dd)return;
   dd.classList.add('open');
   row.classList.add('menu-open');
+  positionDropdown(row);
   if(navigator.vibrate){try{navigator.vibrate(15)}catch(e){}}
 }
 messagesEl.addEventListener('touchstart',e=>{
@@ -2952,7 +3032,7 @@ function mediaAllKeys(){
 }
 // 維護：清理未被任何對話引用的圖片（對應 A1）
 document.getElementById('btnCleanOrphan').addEventListener('click',async()=>{
-  if(!await showConfirm('掃描所有對話，刪除未被任何訊息引用的圖片。確定執行？'))return;
+  if(!await showConfirm('掃描所有對話，刪除未被任何訊息引用的圖片。\n\n確定執行？'))return;
   try{
     const keys=await mediaAllKeys();
     const used=new Set();
@@ -3047,7 +3127,12 @@ async function renderGalleryGrid(){
     });
   });
   let entries=[];
-  try{entries=(await mediaAllEntries()).slice().reverse()}catch(e){
+  try{
+    const all=await mediaAllEntries();
+    // 依生成時間新→舊排序：優先用記錄的 createdAt，舊記錄則從 id 解析 13 位時間戳（img_<ts>_ / img_u_<ts>_ / img_e_<ts>_ / img_mig_<ts>_）
+    const tsOf=rec=>{if(!rec)return 0;if(rec.createdAt)return rec.createdAt;const m=String(rec&&rec.id||'').match(/(\d{13})/);return m?+m[1]:0};
+    entries=all.slice().sort((a,b)=>tsOf(b)-tsOf(a));
+  }catch(e){
     grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">讀取失敗：'+escHtml((e&&e.message)||e)+'</div>';
     return;
   }
@@ -3080,13 +3165,13 @@ async function renderGalleryGrid(){
     bDel.addEventListener('click',async()=>{
       const used=Object.values(chats).filter(c=>collectChatImageIds(c).includes(rec.id)).length;
       const msg=used
-        ?('此圖被 '+used+' 則訊息引用；刪除後訊息文字保留、圖片改顯示「圖片已刪除」佔位。確定刪除？')
+        ?('此圖被 '+used+' 則訊息引用；刪除後訊息文字保留、圖片改顯示「圖片已刪除」佔位。\n\n確定刪除？')
         :'確定要刪除這張圖片嗎？';
       if(!await showConfirm(msg))return;
       try{await mediaDel(rec.id)}catch(e){showToast('刪除失敗：'+e.message,'warn');return}
       showToast('圖片已刪除','success');
       renderGalleryGrid();
-      renderMessages();   // 重新渲染當前對話，缺圖改為佔位框（hydrateMedia 處理）
+      renderMessages(true);   // 重新渲染當前對話，缺圖改為佔位框（hydrateMedia 處理）；保持捲動位置
     });
     grid.appendChild(item);
   });
@@ -3104,6 +3189,72 @@ function mediaAllEntries(){
     }catch(e){db.close();rej(e)}
   }));
 }
+
+// ===== C9-2：Gallery 一鍵壓縮（PNG → JPEG 品質 85%）=====
+// 不縮小尺寸、只轉檔：肉眼幾乎感覺不出差異，但 PNG（無損）轉 JPEG 通常可省 60~90% 空間。
+// 壓縮後若沒有比原檔小 10% 以上就不覆蓋，避免白工或反而變大。JPEG 不支援透明，透明處鋪白底。
+function fmtBytes(n){
+  if(n>=1048576)return (n/1048576).toFixed(2)+' MB';
+  if(n>=1024)return (n/1024).toFixed(1)+' KB';
+  return n+' B';
+}
+function isPngMedia(data){
+  if(typeof data==='string')return /^data:image\/png/i.test(data);
+  return data instanceof Blob&&(data.type==='image/png'||data.type==='');
+}
+// 壓縮單筆媒體資料；成功回傳 {data:Blob,saved:位元組數}，無法壓縮／不划算回傳 null
+function compressMediaData(data,quality){
+  return new Promise(resolve=>{
+    const srcSize=typeof data==='string'?Math.round((data.length-data.indexOf(',')-1)*0.75):data.size;
+    const srcUrl=typeof data==='string'?data:URL.createObjectURL(data);
+    const cleanup=()=>{if(typeof data!=='string'){try{URL.revokeObjectURL(srcUrl)}catch(e){}}};
+    const img=new Image();
+    img.onload=()=>{
+      try{
+        const cv=document.createElement('canvas');
+        cv.width=img.naturalWidth;cv.height=img.naturalHeight;
+        const ctx=cv.getContext('2d');
+        ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);   // 透明鋪白底
+        ctx.drawImage(img,0,0);
+        cv.toBlob(blob=>{
+          cleanup();
+          if(!blob)resolve(null);
+          else if(blob.size>=srcSize*0.9)resolve(null);   // 省不到 10% 就不覆蓋
+          else resolve({data:blob,saved:srcSize-blob.size});
+        },'image/jpeg',quality||0.85);
+      }catch(e){cleanup();resolve(null)}
+    };
+    img.onerror=()=>{cleanup();resolve(null)};
+    img.src=srcUrl;
+  });
+}
+document.getElementById('btnCompressImages').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnCompressImages');
+  if(btn.disabled)return;
+  let entries;
+  try{entries=await mediaAllEntries()}catch(e){showToast('讀取失敗：'+((e&&e.message)||e),'warn');return}
+  const cands=entries.filter(rec=>rec&&rec.id&&isPngMedia(rec.data));
+  if(!cands.length){showToast('沒有可壓縮的 PNG 圖片（JPEG／遠端連結不在處理範圍）','warn');return}
+  const msg=`將把 ${cands.length} 張 PNG 圖片轉存為 JPEG\n（品質 85%、尺寸不變、透明處鋪白底）。\n\n此動作不可還原，確定繼續？`;
+  if(!await showConfirm(msg))return;
+  btn.disabled=true;
+  const oldText=btn.textContent;
+  let done=0,savedBytes=0;
+  for(let i=0;i<cands.length;i++){
+    btn.textContent=`🗜️ 壓縮中 ${i+1}/${cands.length}…`;
+    try{
+      const r=await compressMediaData(cands[i].data,0.85);
+      if(r){await mediaPut(cands[i].id,r.data,cands[i].createdAt);done++;savedBytes+=r.saved}   // 壓縮覆寫保留原時間戳，排序不變
+    }catch(e){}
+  }
+  btn.disabled=false;btn.textContent=oldText;
+  if(done){
+    showToast(`已壓縮 ${done} 張圖片，節省 ${fmtBytes(savedBytes)}`,'success');
+    renderGalleryGrid();   // 刷新縮圖
+  }else{
+    showToast('沒有圖片需要壓縮','warn');
+  }
+});
 
 // ===== C10：Service Worker 離線快取（需 https；file:// 或註冊失敗時自動略過）=====
 (function setupServiceWorker(){
