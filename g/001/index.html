@@ -41,6 +41,7 @@ html,body{height:100%;font-family:'Noto Sans TC','Segoe UI','PingFang TC','Micro
 .chat-item .del,.chat-item .act{opacity:0;font-size:12px;color:var(--text2);transition:opacity .2s;background:none;border:none;cursor:pointer;padding:2px 3px}
 .chat-item:hover .del,.chat-item:hover .act{opacity:1}
 .chat-item .del:hover,.chat-item .act:hover{color:var(--accent)}
+.chat-group{font-size:11px;color:var(--text2);font-weight:600;letter-spacing:.5px;opacity:.85;padding:12px 12px 4px}
 .sidebar-footer{padding:12px;border-top:1px solid var(--border)}
 .btn-settings{width:100%;padding:10px;background:transparent;border:1px solid var(--border);color:var(--text2);border-radius:6px;cursor:pointer;font-size:13px;transition:all .2s}
 .btn-settings:hover{border-color:var(--accent);color:var(--text)}
@@ -1138,7 +1139,7 @@ async function loadChatsAsync(){
     const recs=await idbAllChats();
     if(recs&&recs.length){
       const out={};
-      recs.forEach(c=>{if(c&&c.id)out[c.id]=c});
+      recs.forEach(c=>{if(c&&c.id)out[c.id]=ensureChatMeta(c)});
       return out;
     }
   }catch(e){
@@ -1155,6 +1156,7 @@ async function loadChatsAsync(){
       console.warn('[Chat] 遷移寫入 IndexedDB 失敗，續用 localStorage：',e);
     }
   }
+  if(obj)Object.values(obj).forEach(ensureChatMeta);
   return obj||{};
 }
 
@@ -1316,7 +1318,7 @@ function getSystemPrompt(){
 
 function newChat(){
   const id='chat_'+Date.now();
-  chats[id]={id,title:'新對話',messages:[],createdAt:Date.now()};
+  chats[id]={id,title:'新對話',messages:[],createdAt:Date.now(),updatedAt:Date.now()};
   saveChatsData(chats);
   setActiveChat(id);   // A7：setActiveChat 內已呼叫 renderChatList，不再重複呼叫
 }
@@ -1336,19 +1338,64 @@ async function deleteChat(id){
   saveChatsData(chats);
   idbDeleteChat(id).catch(()=>{});   // 四：同步刪除 IndexedDB 內的對話記錄
   if(activeChatId===id){
-    const ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt);
+    const ids=Object.keys(chats).sort((a,b)=>chatLastTime(chats[b])-chatLastTime(chats[a]));
     setActiveChat(ids.length?ids[0]:null);   // 內部已呼叫 renderChatList
   }else{
     renderChatList();
   }
 }
 
+// 對話「最後活動時間」，排序與分組的依據：
+// 優先 updatedAt；舊資料沒有就回退 createdAt，再沒有就回退最後一則訊息的時間
+function chatLastTime(c){
+  if(c&&c.updatedAt)return c.updatedAt;
+  if(c&&c.createdAt)return c.createdAt;
+  if(c&&Array.isArray(c.messages)){
+    for(let i=c.messages.length-1;i>=0;i--){
+      const t=c.messages[i]&&c.messages[i].createdAt;
+      if(t)return t;
+    }
+  }
+  return 0;
+}
+// 補齊舊對話缺漏的 meta（updatedAt／createdAt／title），讓排序與分組一直穩定
+function ensureChatMeta(c){
+  if(!c||typeof c!=='object')return c;
+  if(!c.updatedAt)c.updatedAt=chatLastTime(c)||Date.now();
+  if(!c.createdAt)c.createdAt=c.updatedAt;
+  if(!c.title)c.title='新對話';
+  return c;
+}
+// 對話有新增活動（新訊息／新回應）時更新最後活動時間；c 可為 id 或對話物件
+function touchChat(c){
+  const obj=typeof c==='string'?chats[c]:c;
+  if(obj)obj.updatedAt=Date.now();
+}
+// 對話歷史分組標籤：今天 → 昨天 → 本週 → 上週 → 本月 → 月份（跨年加年份）
+function chatGroupLabel(t){
+  const MONTHS=['一月','二月','三月','四月','五月','六月','七月','八月','九月','十月','十一月','十二月'];
+  const now=new Date();
+  const d=new Date(t);
+  const sod=x=>{const v=new Date(x);v.setHours(0,0,0,0);return v.getTime()};
+  const day=sod(t);
+  const diff=(sod(now.getTime())-day)/86400000;
+  if(diff===0)return '今天';
+  if(diff===1)return '昨天';
+  const mon=new Date(sod(now.getTime()));
+  mon.setDate(mon.getDate()-((mon.getDay()+6)%7));   // 本週一（一週從週一起算）
+  const lastMon=new Date(mon);lastMon.setDate(lastMon.getDate()-7);
+  if(day>=mon.getTime())return '本週';
+  if(day>=lastMon.getTime())return '上週';
+  if(d.getFullYear()===now.getFullYear()&&d.getMonth()===now.getMonth())return '本月';
+  const label=MONTHS[d.getMonth()];
+  return d.getFullYear()===now.getFullYear()?label:(d.getFullYear()+' 年 '+label);
+}
+
 function renderChatList(){
   const list=document.getElementById('chatList');
   const q=(document.getElementById('chatSearch').value||'').trim().toLowerCase();
-  // 置頂優先，其餘依建立時間新→舊
-  let ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt)
-    .sort((a,b)=>(chats[b].pinned?1:0)-(chats[a].pinned?1:0));
+  // 依「最後活動時間」新→舊（有最新訊息的對話自然排到最上面）
+  let ids=Object.keys(chats).sort((a,b)=>chatLastTime(chats[b])-chatLastTime(chats[a]));
   if(q){
     ids=ids.filter(id=>{
       const c=chats[id];
@@ -1360,7 +1407,7 @@ function renderChatList(){
     list.innerHTML=`<div class="chatList-empty" style="text-align:center;">${q?'找不到符合的對話':'尚無對話'}</div>`;
     return;
   }
-  list.innerHTML=ids.map(id=>{
+  const itemHTML=id=>{
     const c=chats[id];
     return `<div class="chat-item ${id===activeChatId?'active':''}" data-id="${id}">
       <span class="icon">${c.pinned?'📌':'💬'}</span>
@@ -1369,7 +1416,22 @@ function renderChatList(){
       <button class="act" data-act="rename" type="button" title="重新命名">📝</button>
       <button class="del" data-act="del" type="button" title="刪除">❌</button>
     </div>`;
-  }).join('');
+  };
+  // 搜尋時顯示平鋪結果（不打亂搜尋結果）；平常依時間分組
+  if(q){
+    list.innerHTML=ids.map(itemHTML).join('');
+    return;
+  }
+  const rows=[];
+  let lastGroup=null;
+  const pushOne=id=>{
+    const g=chats[id].pinned?'📌 置頂':chatGroupLabel(chatLastTime(chats[id]));
+    if(g!==lastGroup){lastGroup=g;rows.push(`<div class="chat-group">${escHtml(g)}</div>`)}
+    rows.push(itemHTML(id));
+  };
+  ids.filter(id=>chats[id].pinned).forEach(pushOne);
+  ids.filter(id=>!chats[id].pinned).forEach(pushOne);
+  list.innerHTML=rows.join('');
 }
 // 取出訊息的純文字（支援多模態陣列）
 function contentText(m){
@@ -1833,10 +1895,12 @@ async function sendMessage(){
     ? [{type:'text',text},...pendingImages.map(u=>({type:'image_ref',id:u.id}))]
     : text;
   chats[activeChatId].messages.push({role:'user',content:userContent,createdAt:Date.now()});   // C3：記錄時間戳
+  touchChat(activeChatId);   // 最後活動時間更新：對話依此往頂端移動
   const imgs=pendingImages.slice();
   pendingImages=[];
   renderAttachBar();
   saveChatsData(chats);
+  renderChatList();   // 有新訊息時，把這則對話移回分組頂端
   renderMessages();
   scrollToBottom(false);   // 使用者送出訊息後：無條件捲到底（讓使用者看到自己送出的訊息）
   if(imgMode)await requestImage({prompt:text,images:imgs.map(u=>u.dataUrl)});
@@ -2055,10 +2119,12 @@ async function requestAI(opts){
     // 完成後以完整訊息列重建 DOM（含 ⋮ 選單），並尊重使用者的捲動位置
     if(rafId){cancelAnimationFrame(rafId);rafId=0}
     chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now(),truncated:finishReason==='length'});   // C3：時間戳；C6：length 截斷標記
+    touchChat(chat);   // 新回應完成：更新最後活動時間
     saveChatsData(chats);
     saveChatsDataNow();   // B2：串流結束立即寫入
     aiDiv.remove();
     renderMessages();
+    renderChatList();   // 依最後活動時間重新排序與分組（該對話移到頂端）
     if(getAutoScroll()){
       scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout 避免「中間地帶」）
     }else{
@@ -2074,9 +2140,11 @@ async function requestAI(opts){
       if(statusDiv.isConnected)statusDiv.remove();
       if(clean(full)){
         chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now()});   // C3：時間戳
+        touchChat(chat);
         saveChatsData(chats);
         saveChatsDataNow();   // B2：立即寫入
         renderMessages();
+        renderChatList();
         scrollToBottom(false);   // 使用者主動停止：捲到底讓使用者看到已產生的部分
         showToast('已停止生成，已保留部分回應','warn');
       }else{
@@ -2099,8 +2167,10 @@ async function requestAI(opts){
     }
     // 錯誤訊息標記為 error：會顯示，但不會送回 API 上下文
     chat.messages.push({role:'assistant',content:`[錯誤] ${e.message}`,error:true});
+    touchChat(chat);
     saveChatsData(chats);
     renderMessages();
+    renderChatList();
   }finally{
     isStreaming=false;
     abortCtrl=null;
@@ -2190,9 +2260,11 @@ async function requestImage(opts){
     statusDiv.remove();
     const prefix=opts.images&&opts.images.length?`已根據 ${opts.images.length} 張圖生成：`:'已生成圖片：';
     chat.messages.push({role:'assistant',content:[{type:'text',text:prefix+opts.prompt},{type:'image_ref',id,large:true}],createdAt:Date.now()});   // C3：時間戳
+    touchChat(chat);
     saveChatsData(chats);
     saveChatsDataNow();   // B2：立即寫入
     renderMessages();
+    renderChatList();
     if(getAutoScroll()){
       scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout，避免圖片未渲染造成「中間地帶」）
     }else{
@@ -2855,7 +2927,7 @@ document.getElementById('importFile').addEventListener('change',async e=>{
           }
         }
       }
-      chats[id]=c;
+      chats[id]=ensureChatMeta(c);
       imported++;
     }
     if(!imported)throw new Error('檔內沒有可匯入的對話');
@@ -3069,7 +3141,7 @@ applyTheme();
 updateSendButton();
 (async()=>{
   chats=await loadChatsAsync();
-  const ids=Object.keys(chats).sort((a,b)=>chats[b].createdAt-chats[a].createdAt);
+  const ids=Object.keys(chats).sort((a,b)=>chatLastTime(chats[b])-chatLastTime(chats[a]));
   if(ids.length)setActiveChat(ids[0]);
   renderChatList();
   // 舊圖片資料遷移到 IndexedDB（非同步，不阻塞介面；把歷史中的 dataURL 圖片改成輕量 image_ref）
