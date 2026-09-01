@@ -855,8 +855,8 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
         <option value="0.3">0.3：邏輯回答（知識問答、專業建議）</option>
         <option value="0.4">0.4：穩定回答（一般問題、教學解說）</option>
         <option value="0.5">0.5：自然回答（日常對話、一般創作）</option>
-        <option value="0.6">0.6：靈活回答（文案、故事內容改寫）</option>
-        <option value="0.7" selected>0.7：創意回答（角色設定、遊戲設計）</option>
+        <option value="0.6" selected>0.6：靈活回答（文案、故事內容改寫）</option>
+        <option value="0.7">0.7：創意回答（角色設定、遊戲設計）</option>
         <option value="0.8">0.8：高創意回答（小說劇情、世界觀創作）</option>
         <option value="0.9">0.9：更加有創意（腦力激盪、藝術性創作）</option>
         <option value="1.0">1.0：最大隨機性（自由發想、實驗性創作）</option>
@@ -1022,7 +1022,6 @@ let activeChatId=null;
 let isStreaming=false;
 let pendingImages=[];   // 待發送的圖片 {id,dataUrl} 陣列（dataUrl 用於預覽，原始資料已存 IndexedDB）
 let abortCtrl=null;     // 串流中斷控制器
-let stickBottom=true;   // 智慧捲動：使用者是否位於訊息區底部
 let imgMode=false;      // 圖片模式：ON 時送出改呼叫圖片模型（文生圖 / 圖生圖）
 
 // ===== A2：blob URL 追蹤（渲染建立的 objectURL 統一記錄，重建訊息區時釋放）=====
@@ -1250,18 +1249,18 @@ function getTheme(){return THEMES.includes(settings.theme)?settings.theme:'defau
 function setTheme(t){
   const v=THEMES.includes(t)?t:'default';
   document.body.dataset.theme=v;
-  document.querySelectorAll('.pet').forEach(el=>{el.style.display=el.dataset.pet===v?'flex':'none'});   // 修正：原誤植為無效值 'flow'，導致寵物從未顯示（C2 匯出入口依賴此元素）
+  document.querySelectorAll('.pet').forEach(el=>{el.style.display=el.dataset.pet===v?'flow':'none'});
 }
 function applyTheme(){setTheme(getTheme())}
 function previewTheme(v){setTheme(v)}
 function getModel(){return settings.model||'agnes-2.5-flash'}
 function getImageModel(){return settings.imageModel||'agnes-image-2.1-flash'}
 function getImageSize(){return settings.imageSize||'2K'}
-function getImageRatio(){return settings.imageRatio||'16:9'}
+function getImageRatio(){return settings.imageRatio||'9:16'}
 function getEndpoint(){return settings.endpoint||'https://apihub.agnes-ai.com/v1'}
 function getTemperature(){
-  const t=settings.temperature!=null?settings.temperature:0.7;
-  return Math.min(1,Math.max(0.1,Number(t)||0.7));
+  const t=settings.temperature!=null?settings.temperature:0.6;
+  return Math.min(1,Math.max(0.1,Number(t)||0.6));
 }
 function getUserSystemPrompt(){return settings.systemPrompt||''}
 function getMaxTokens(){
@@ -1270,10 +1269,10 @@ function getMaxTokens(){
 }
 function getCtxLimit(){
   const v=settings.ctxLimit;
-  return (v==='10'||v==='20'||v==='40')?v:'all';
+  return (v==='10'||v==='20'||v==='30'||v==='40')?v:'all';
 }
 function getAutoScroll(){return settings.autoScroll!==false}
-function getShowThinking(){return settings.showThinking===true}
+function getShowThinking(){return settings.showThinking===false}
 function getQuickReply(){return settings.quickReply!==false}
 
 // ===== AI 人格設定（12 種）=====
@@ -1291,7 +1290,7 @@ const AI_PERSONAS={
   minimal:{name:'⚪ 極簡主義者',desc:'話少而精，只講重點，不廢話。',prompt:'你是一位極簡主義者，回答極度精簡，只講重點、不說廢話。能用一句話說完就不用兩句，多用條列與關鍵字，省略客套話與修飾詞，簡短思考，快速回答。但注意，資訊必須完整正確。'},
   socrates:{name:'🧠 蘇格拉底導師',desc:'不直接給答案，用提問引導你自己想通。',prompt:'你是一位蘇格拉底式導師，習慣用引導式提問幫助使用者思考。面對問題時不直接給答案，而是拆解問題、提出關鍵問題引導使用者逐步推理、自己想通；若使用者卡住，才給予提示而非完整解答。'}
 };
-const DEFAULT_PERSONA='default';
+const DEFAULT_PERSONA='cat';
 function getPersonaId(){return AI_PERSONAS[settings.persona]?settings.persona:DEFAULT_PERSONA}
 function getPersona(){return AI_PERSONAS[getPersonaId()]}
 function fillPersonaOptions(){
@@ -1434,13 +1433,9 @@ function renderMessages(keepPos){
   enhanceCodeBlocks(messagesEl);
   renderMath(messagesEl);
   hydrateMedia(messagesEl);
-  if(keepPos){
-    // 保留目前捲動位置（串流剛完成時用），並依實際位置更新狀態
-    stickBottom=isNearBottom();
-    updateScrollBtn();
-  }else{
-    scrollToBottom(false);
-  }
+  updateScrollBtn();   // 重建後更新「捲到底按鈕」顯示
+  // 預設強制捲到底；keepPos=true 表示呼叫端會自行決定
+  if(!keepPos)scrollToBottom(false);
 }
 
 function msgHtml(m,i){
@@ -1842,8 +1837,8 @@ async function sendMessage(){
   pendingImages=[];
   renderAttachBar();
   saveChatsData(chats);
-  stickBottom=true;
   renderMessages();
+  scrollToBottom(false);   // 使用者送出訊息後：無條件捲到底（讓使用者看到自己送出的訊息）
   if(imgMode)await requestImage({prompt:text,images:imgs.map(u=>u.dataUrl)});
   else requestAI();
 }
@@ -1886,6 +1881,7 @@ async function fetchWithRetry(url,options,cfg){
   const timeoutMs=cfg.timeoutMs||60000;       // 單次嘗試的連線逾時（回應表頭前）
   const maxAttempts=cfg.maxAttempts||4;       // 最多嘗試次數
   const onStatus=cfg.onStatus||null;          // 重試進度回呼（更新狀態列）
+  const onWait=cfg.onWait||null;              // 等待重試間隔的 callback（讓呼叫端把狀態文字切回「正在…」，避免「伺服器忙碌」殘留至下一輪請求完成）
   const prefix=cfg.statusPrefix||'';          // 狀態文字前綴（如 '🖼️ '）
   const isAborted=cfg.isAborted||(()=>false); // 等待重試間隔時檢查是否已被中止
   let resp=null,attempt=0,timedOut=false;
@@ -1904,6 +1900,7 @@ async function fetchWithRetry(url,options,cfg){
       console.warn('[Chat] 連線逾時，自動重試第 '+(attempt+1)+' 次');
       await new Promise(r=>setTimeout(r,wait*1000));
       if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
+      if(onWait)onWait(attempt+1);   // 把狀態文字切回「正在…」避免「連線逾時」殘留
       continue;
     }
     clearTimeout(timeoutId);
@@ -1916,9 +1913,23 @@ async function fetchWithRetry(url,options,cfg){
       console.warn('[Chat] 伺服器忙碌（503 queue is full），第 '+attempt+' 次失敗，'+wait+' 秒後重試');
       await new Promise(r=>setTimeout(r,wait*1000));
       if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
+      if(onWait)onWait(attempt+1);   // 把狀態文字切回「正在…」避免「伺服器忙碌」殘留 30~90 秒
       continue;
     }
-    throw new Error(`HTTP ${resp.status}: ${errText.slice(0,300)}`);
+    // 重試次數用盡：把常見錯誤代碼轉成友善中文訊息，避免把 JSON 錯誤內容直接丟給使用者
+    const err=new Error();
+    if(resp.status===503||/queue is full|please retry later/i.test(errText)){
+      err.message='伺服器忙碌中，請稍後再試';
+    }else if(resp.status===429){
+      err.message='請求過於頻繁，請稍後再試';
+    }else if(resp.status===401||resp.status===403){
+      err.message='API Key 無效或權限不足';
+    }else if(resp.status>=500){
+      err.message='伺服器錯誤（'+resp.status+'），請稍後再試';
+    }else{
+      err.message=`HTTP ${resp.status}: ${errText.slice(0,300)}`;
+    }
+    throw err;
   }
   return resp;
 }
@@ -1977,6 +1988,7 @@ async function requestAI(opts){
       timeoutMs:60000,   // 只限「連線建立」（回應表頭前）；串流本身不限時
       maxAttempts:4,
       onStatus:h=>{if(statusDiv.isConnected)statusDiv.innerHTML=h},
+      onWait:()=>{if(statusDiv.isConnected)statusDiv.innerHTML='<span class="spinner"></span>回應中'},
       isAborted:()=>abortCtrl.signal.aborted
     });
 
@@ -1987,6 +1999,7 @@ async function requestAI(opts){
     aiDiv=document.createElement('div');
     aiDiv.className='msg assistant';
     container.appendChild(aiDiv);
+    scrollToBottom(false); // statusDiv 移除後建立 aiDiv
 
     // 剔除開頭空白行（模型有時會先輸出空行），顯示與儲存都經過它
     const clean=s=>s.replace(/^\s+/, '');
@@ -1998,7 +2011,7 @@ async function requestAI(opts){
         aiDiv.innerHTML=renderContent({content:clean(full),thinking:thinking||null,thinkingOpen:true});
         enhanceCodeBlocks(aiDiv);
         renderMath(aiDiv);
-        if(getAutoScroll()&&stickBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
+        if(getAutoScroll())scrollToBottom(false);   // 串流中：自動滾動時持續跟上（雙 RAF 避免圖片/數學尚未 layout 造成中間地帶）
       });
     };
     const reader=resp.body.getReader();
@@ -2041,13 +2054,16 @@ async function requestAI(opts){
     }
     // 完成後以完整訊息列重建 DOM（含 ⋮ 選單），並尊重使用者的捲動位置
     if(rafId){cancelAnimationFrame(rafId);rafId=0}
-    const wasBottom=stickBottom;
     chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now(),truncated:finishReason==='length'});   // C3：時間戳；C6：length 截斷標記
     saveChatsData(chats);
     saveChatsDataNow();   // B2：串流結束立即寫入
     aiDiv.remove();
-    renderMessages(true);
-    if(wasBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
+    renderMessages();
+    if(getAutoScroll()){
+      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout 避免「中間地帶」）
+    }else{
+      showToast('有新訊息','success');   // 自動滾動關閉：AI 回應完成時提醒
+    }
     updateScrollBtn();
     console.log('[Chat] 完成，長度:', full.length);
   }catch(e){
@@ -2060,8 +2076,8 @@ async function requestAI(opts){
         chat.messages.push({role:'assistant',content:clean(full),thinking:thinking||null,createdAt:Date.now()});   // C3：時間戳
         saveChatsData(chats);
         saveChatsDataNow();   // B2：立即寫入
-        renderMessages(true);
-        if(stickBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
+        renderMessages();
+        scrollToBottom(false);   // 使用者主動停止：捲到底讓使用者看到已產生的部分
         showToast('已停止生成，已保留部分回應','warn');
       }else{
         showToast('已停止生成','warn');
@@ -2110,9 +2126,9 @@ async function requestImage(opts){
   const statusDiv=document.createElement('div');
   statusDiv.className='typing';
   statusDiv.id='statusMsg';
-  statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片';   // A4：原 modelBadge 已移除，模型名改顯示於狀態列
+  statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片';
   container.appendChild(statusDiv);
-  scrollToBottom(false);
+  scrollToBottom(false); // 圖片請求 statusDiv 建立
 
   abortCtrl=new AbortController();
   const imgStart=performance.now();
@@ -2137,17 +2153,18 @@ async function requestImage(opts){
       timeoutMs:120000,   // 2K 圖片生成正常 30~90 秒；單次嘗試逾時 2 分鐘視為卡死
       maxAttempts:5,
       onStatus:h=>{statusDiv.innerHTML=h},
+      onWait:()=>{statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片'},   // 重試間隔後立刻把狀態文字切回，避免「伺服器忙碌」殘留 30~90 秒
       statusPrefix:'🖼️ ',
       isAborted:()=>abortCtrl.signal.aborted
     });
     console.log('[Chat] 圖片回應狀態:', resp.status, resp.statusText, `(${Math.round(performance.now()-imgStart)}ms)`);
+    statusDiv.innerHTML='<span class="spinner"></span>⬇️ 正在取得圖片';   // 重試成功後立刻切換狀態文字，避免「伺服器忙碌」殘留
     const j=await resp.json();
     console.log('[Chat] 圖片回應 body:', j);
     const item=(j.data&&j.data[0])||{};
     const b64=item.b64_json||'';
     const url=item.url||'';
     if(!b64&&!url)throw new Error('圖片模型未回傳圖片（請檢查 prompt 與 API 權限）');
-    statusDiv.innerHTML='<span class="spinner"></span>⬇️ 正在取得圖片';
 
     // 圖片存進 IndexedDB，歷史只留輕量 image_ref，不撐爆 localStorage
     const id='img_'+Date.now()+'_'+Math.random().toString(36).slice(2,8);
@@ -2175,8 +2192,12 @@ async function requestImage(opts){
     chat.messages.push({role:'assistant',content:[{type:'text',text:prefix+opts.prompt},{type:'image_ref',id,large:true}],createdAt:Date.now()});   // C3：時間戳
     saveChatsData(chats);
     saveChatsDataNow();   // B2：立即寫入
-    renderMessages(true);
-    if(stickBottom)messagesEl.scrollTop=messagesEl.scrollHeight;
+    renderMessages();
+    if(getAutoScroll()){
+      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout，避免圖片未渲染造成「中間地帶」）
+    }else{
+      showToast('圖片已生成','success');   // 自動滾動關閉：圖片生成完成時提醒
+    }
     updateScrollBtn();
     console.log('[Chat] 圖片完成，id:', id);
   }catch(e){
@@ -2464,17 +2485,29 @@ function compressImage(file){
 // 設定面板不採用「點面板外關閉」（有取消按鈕，避免誤觸）；僅由取消／儲存／ESC 關閉
 
 // ===== 捲動輔助 =====
-function isNearBottom(){return messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight<80}
-function scrollToBottom(smooth){
-  stickBottom=true;
-  messagesEl.scrollTo({top:messagesEl.scrollHeight,behavior:smooth?'smooth':'auto'});
-  updateScrollBtn();
+// scrollToBottom：捲到底部。用雙 RAF 等 layout 完成後再 scroll，確保圖片非同步載入後仍能正確捲到最新位置。
+// 預設遵守 getAutoScroll()：開啟才捲，關閉就不動。
+// force=true → 無條件捲，給「使用者手動點擊的按鈕」這類必須執行的場景用。
+function scrollToBottom(smooth,force){
+  if(!force&&!getAutoScroll())return;
+  const doScroll=()=>{
+    messagesEl.scrollTo({
+      top:messagesEl.scrollHeight-messagesEl.clientHeight,
+      behavior:smooth?'smooth':'auto'
+    });
+    updateScrollBtn();
+  };
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(doScroll);
+  });
 }
 function updateScrollBtn(){
   const b=document.getElementById('btnScrollBottom');
   if(!b)return;
+  // 「回到最新訊息」按鈕：自動滾動關閉且有訊息時顯示，提醒使用者有新訊息可看
   const hasMsg=chats[activeChatId]&&chats[activeChatId].messages.length>0;
-  b.classList.toggle('show',!!hasMsg&&!isNearBottom());
+  const showBtn=!!hasMsg&&(!getAutoScroll()||(messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight)>80);
+  b.classList.toggle('show',showBtn);
 }
 
 // ===== 事件綁定 =====
@@ -2527,12 +2560,32 @@ document.addEventListener('keydown',e=>{
   if(s.classList.contains('open'))closeSettings();
 });
 
-// 智慧捲動：偵測使用者是否在底部
-messagesEl.addEventListener('scroll',()=>{
-  stickBottom=isNearBottom();
-  updateScrollBtn();
-});
-document.getElementById('btnScrollBottom').addEventListener('click',()=>scrollToBottom(true));
+// 捲動事件：只更新「捲到底按鈕」顯示，不維護 stickBottom 狀態
+messagesEl.addEventListener('scroll',updateScrollBtn);
+document.getElementById('btnScrollBottom').addEventListener('click',()=>scrollToBottom(true,true));
+
+// 圖片非同步載入時 scrollHeight 會變大（捲動位置會留在「中間地帶」）。
+// 用 ResizeObserver 觀察 scrollHeight 變化，僅在「自動滾動開啟」且使用者原本在底部附近時跟上。
+// 自動滾動關閉時不干擾（尊重使用者位置），toast 提示已在串流/圖片完成時發出。
+let resizeObs=null;
+function ensureResizeObserver(){
+  if(resizeObs||!messagesEl||typeof ResizeObserver==='undefined')return;
+  let prevHeight=messagesEl.scrollHeight;
+  resizeObs=new ResizeObserver(()=>{
+    if(!getAutoScroll()){prevHeight=messagesEl.scrollHeight;return}
+    const newHeight=messagesEl.scrollHeight;
+    if(newHeight>prevHeight){
+      // scrollHeight 增加（圖片載入或內容新增）：若使用者原本在底部就跟上
+      if(messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight<120){
+        scrollToBottom(false);   // 雙 RAF 確保 layout 完成後才捲
+      }
+      updateScrollBtn();
+    }
+    prevHeight=newHeight;
+  });
+  resizeObs.observe(messagesEl);
+}
+ensureResizeObserver();
 
 // 訊息選單（⋮）與操作（複製 / 編輯 / 重新生成 / 刪除單則 / 繼續生成）＋ C1 點圖放大
 messagesEl.addEventListener('click',async e=>{
@@ -2564,8 +2617,8 @@ messagesEl.addEventListener('click',async e=>{
     if(!mC)return;
     mC.truncated=false;
     saveChatsData(chats);
-    stickBottom=true;
     renderMessages();
+    scrollToBottom(false);   // 續寫模式
     requestAI({continueHint:'從上次中斷處繼續，直接接續輸出剩餘內容，不要重複已輸出的部分。'});
     return;
   }
@@ -2601,8 +2654,8 @@ messagesEl.addEventListener('click',async e=>{
     const removed=chat.messages.splice(idx);
     delMediaIds(removed.flatMap(collectMsgImageIds));   // A1：被移除訊息內的圖片一併從 IndexedDB 刪除
     saveChatsData(chats);
-    stickBottom=true;
     renderMessages();
+    scrollToBottom(false);   // regen
     if(chat.messages.length&&chat.messages[chat.messages.length-1].role==='user')requestAI();
   }else if(act==='delmsg'){
     // C4：刪除單則訊息（串流中已被上方 guard 阻擋）
@@ -2837,6 +2890,7 @@ document.getElementById('btnCleanOrphan').addEventListener('click',async()=>{
       if(!used.has(k)){try{await mediaDel(k);n++}catch(e){}}
     }
     showToast(n?('已清理 '+n+' 張未引用圖片'):'沒有未引用的圖片','success');
+    if(document.getElementById('galleryModal').classList.contains('open'))renderGalleryGrid();   // Gallery 若開著則即時刷新
   }catch(e){showToast('清理失敗：'+e.message,'warn')}
 });
 
@@ -2908,6 +2962,9 @@ function closeGallery(){
   galleryUrls.clear();
 }
 async function renderGalleryGrid(){
+  // 先釋放上一輪的 blob URL，避免孤兒清理後殘留殭屍 URL
+  galleryUrls.forEach(u=>{try{URL.revokeObjectURL(u)}catch(e){}});
+  galleryUrls.clear();
   const grid=document.getElementById('galleryGrid');
   grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">讀取中…</div>';
   // 建立 圖片id → 來源對話標題 對照
