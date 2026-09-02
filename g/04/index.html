@@ -402,10 +402,19 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 .lightbox{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center}
 .lightbox.open{display:flex}
 .lightbox img{max-width:94vw;max-height:88vh;transform-origin:center center;cursor:grab;user-select:none;-webkit-user-drag:none}
-.lightbox-btn{position:fixed;top:14px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-size:18px;cursor:pointer;z-index:1001}
-.lightbox-btn:hover{background:rgba(255,255,255,.15)}
-#lbClose{right:14px}
-#lbDownload{right:64px}
+.lightbox-btn{position:fixed;top:14px;width:30px;height:30px;border-radius:50%;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.45);color:#fff;font-size:15px;cursor:pointer;z-index:1002;transition:transform .15s ease,background .15s ease}
+.lightbox-btn:hover{transform:scale(1.1);box-shadow:0 0 0 1px rgba(255,255,255,.4)}
+#lbClose{right:10px}
+#lbDelete{right:50px}
+#lbDownload{right:90px}
+/* 燈箱左右切換：游標靠左右邊緣才顯示的箭頭（一般不顯示）；手機以滑動切換 */
+.lb-nav{position:fixed;top:0;bottom:0;width:64px;display:none;align-items:center;justify-content:center;color:#fff;font-size:44px;cursor:pointer;opacity:0;transition:opacity .2s;z-index:1001;user-select:none;-webkit-user-select:none}
+.lb-prev{left:0;background:linear-gradient(to right,rgba(0,0,0,.4),transparent)}
+.lb-next{right:0;background:linear-gradient(to left,rgba(0,0,0,.4),transparent)}
+.lightbox:hover .lb-nav.avail{display:flex}
+.lb-nav.avail:hover{opacity:1}
+/* 從燈箱刪除圖片時，確認彈窗暫時拉到燈箱上層 */
+#confirmModal.above-lightbox{z-index:1100}
 /* C6 繼續生成按鈕 */
 .continue-btn{display:block;margin-top:8px;padding:6px 12px;font-size:12px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);cursor:pointer}
 .continue-btn:hover{color:var(--accent);border-color:var(--accent)}
@@ -939,8 +948,11 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 <!-- C1 圖片燈箱 -->
 <div class="lightbox" id="lightbox">
   <button class="lightbox-btn" id="lbClose" type="button" title="關閉 (Esc)">✕</button>
+  <button class="lightbox-btn" id="lbDelete" type="button" title="刪除圖片">🗑️</button>
   <button class="lightbox-btn" id="lbDownload" type="button" title="下載圖片">💾</button>
   <img id="lbImg" alt="放大圖片">
+  <div class="lb-nav lb-prev" id="lbPrev" title="上一張">‹</div>
+  <div class="lb-nav lb-next" id="lbNext" title="下一張">›</div>
 </div>
 
 <!-- C2 匯出／匯入對話 -->
@@ -969,15 +981,15 @@ body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient
 
 <!-- C9 圖片 Gallery -->
 <div class="modal-overlay" id="galleryModal">
-  <div class="modal" style="width:94%;max-width:720px">
+  <div class="modal" style="max-width:720px">
     <div class="field-row" style="justify-content: space-between;">
-    <h3>🖼️ 圖片 Gallery</h3>
-    <div>
-    <button class="btn-cancel" id="btnCompressImages" type="button" style="border:0;">🗜️ 壓縮圖片</button>
-    <button class="btn-cancel" id="btnCleanOrphan" type="button" style="border:0;">🧹 清理未被引用的圖片</button>
+    <h3>🖼️ 圖片庫</h3>
+    <div style="margin-top:6px">
+    <button class="btn-cancel" id="btnCompressImages" type="button" style="font-size:11px;border:0;">🗜️ 壓縮圖片</button>
+    <button class="btn-cancel" id="btnCleanOrphan" type="button" style="font-size:11px;border:0;">🧹 清理未被引用的圖片</button>
     </div>
     </div>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在本機的圖片；點縮圖可放大。<br>刪除後引用它的訊息文字會保留、圖片則改顯示「已刪除」</p>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:8px">瀏覽所有保存在裝置上的圖片；點縮圖可放大。<br>刪除後，引用它的訊息文字會保留、圖片則顯示「已刪除」</p>
     <div class="gallery-grid" id="galleryGrid"></div>
     <div class="modal-actions" style="margin-top:8px">
       <button class="btn-cancel" id="btnGalleryClose" type="button">關閉</button>
@@ -1243,7 +1255,7 @@ const DEFAULT_SETTINGS={
   autoScroll:true,
   quickReply:true,
   showThinking:false,
-  imageModel:'agnes-image-2.5-flash',
+  imageModel:'agnes-image-2.1-flash',
   imageSize:'2K',
   imageRatio:'9:16'
 };
@@ -2854,14 +2866,59 @@ document.getElementById('sidebar').addEventListener('contextmenu',e=>{
   e.preventDefault();
 });
 
-// ===== C1：圖片燈箱（點擊 .msg-img 放大；滾輪/雙擊縮放；✕/背景/Esc 關閉；手機不攔 pinch）=====
+// ===== C1：圖片燈箱（點擊 .msg-img 放大；滾輪/雙擊縮放；✕/🗑️/💾/背景/Esc；左右切換：PC 拖曳＋邊緣箭頭、手機滑動）=====
 const lightbox=document.getElementById('lightbox');
 const lbImg=document.getElementById('lbImg');
-let lbScale=1,lbTx=0,lbTy=0,lbDrag=null,lbMediaId=null,lbSrc=null;
-function lbApply(){lbImg.style.transform='translate('+lbTx+'px,'+lbTy+'px) scale('+lbScale+')'}
+const lbPrev=document.getElementById('lbPrev');
+const lbNext=document.getElementById('lbNext');
+let lbScale=1,lbTx=0,lbTy=0,lbDrag=null,lbSwipe=null,lbMediaId=null,lbSrc=null;
+let lbList=[],lbPos=-1;   // 燈箱左右切換：目前情境可瀏覽的圖片 id 清單與位置
+function lbApply(){
+  lbImg.style.transform='translate('+lbTx+'px,'+lbTy+'px) scale('+lbScale+')';
+  updateLbNav();
+}
+// 邊緣箭頭：一般不顯示；有前/後一張可切換且未放大時，游標靠近左右緣才顯示
+function updateLbNav(){
+  const on=lbScale<=1&&lbList.length>1;
+  lbPrev.classList.toggle('avail',on&&lbPos>0);
+  lbNext.classList.toggle('avail',on&&lbPos>=0&&lbPos<lbList.length-1);
+}
+// 依開啟來源建立切換清單：Gallery 開啟 → 全部圖片（照圖庫排序）；訊息開啟 → 目前對話的圖片順序
+function lbBuildList(currentId){
+  lbList=[];lbPos=-1;
+  if(!currentId)return;
+  let ids=[];
+  if(document.getElementById('galleryModal').classList.contains('open')&&galleryIds.length){
+    ids=galleryIds.slice();
+  }else{
+    const chat=chats[activeChatId];
+    if(chat)chat.messages.forEach(m=>{
+      if(Array.isArray(m.content))m.content.forEach(p=>{if(p.type==='image_ref'&&p.id&&!ids.includes(p.id))ids.push(p.id)});
+    });
+  }
+  const i=ids.indexOf(currentId);
+  if(i>=0){lbList=ids;lbPos=i}
+  else{lbList=[currentId];lbPos=0}
+}
+async function lbShow(id){
+  const data=await mediaGet(id);
+  if(data==null){showToast('圖片資料已不存在','warn');return}
+  lbMediaId=id;
+  lbSrc=(typeof data==='string')?data:trackBlobUrl(URL.createObjectURL(data));
+  lbScale=1;lbTx=0;lbTy=0;
+  lbImg.src=lbSrc;
+  lbApply();
+}
+function lbNav(dir){
+  const np=lbPos+dir;
+  if(np<0||np>=lbList.length)return;
+  lbPos=np;
+  lbShow(lbList[lbPos]);
+}
 function openLightbox(src,mediaId){
   if(!src)return;
   lbSrc=src;lbMediaId=mediaId||null;
+  lbBuildList(lbMediaId);
   lbScale=1;lbTx=0;lbTy=0;lbApply();
   lbImg.src=src;
   lightbox.classList.add('open');
@@ -2869,10 +2926,11 @@ function openLightbox(src,mediaId){
 function closeLightbox(){
   if(!lightbox.classList.contains('open'))return;
   lightbox.classList.remove('open');
-  lbImg.src='';lbSrc=null;lbMediaId=null;
+  lbImg.src='';lbSrc=null;lbMediaId=null;lbList=[];lbPos=-1;lbDrag=null;lbSwipe=null;
 }
 document.getElementById('lbClose').addEventListener('click',closeLightbox);
 lightbox.addEventListener('click',e=>{if(e.target===lightbox)closeLightbox()});
+lightbox.addEventListener('contextmenu',e=>e.preventDefault());   // 燈箱內停用瀏覽器右鍵／長按選單，避免干擾拖曳與滑動切換
 lightbox.addEventListener('wheel',e=>{
   e.preventDefault();
   const f=e.deltaY<0?1.15:1/1.15;
@@ -2880,9 +2938,13 @@ lightbox.addEventListener('wheel',e=>{
   lbApply();
 },{passive:false});
 lbImg.addEventListener('dblclick',()=>{lbScale=lbScale>1?1:2;lbTx=0;lbTy=0;lbApply()});
-// 放大後可拖曳平移（不影響觸控雙指縮放：未對 touch 事件 preventDefault）
+// 放大後拖曳平移；未放大時水平拖曳切換上/下一張（不影響觸控雙指縮放：未對 touch 事件 preventDefault）
 lbImg.addEventListener('pointerdown',e=>{
-  if(lbScale<=1)return;
+  if(lbScale<=1){
+    lbSwipe={x:e.clientX,y:e.clientY};
+    try{lbImg.setPointerCapture(e.pointerId)}catch(err){}
+    return;
+  }
   lbDrag={x:e.clientX,y:e.clientY,tx:lbTx,ty:lbTy};
   try{lbImg.setPointerCapture(e.pointerId)}catch(err){}
 });
@@ -2892,7 +2954,29 @@ lbImg.addEventListener('pointermove',e=>{
   lbTy=lbDrag.ty+(e.clientY-lbDrag.y);
   lbApply();
 });
-['pointerup','pointercancel'].forEach(ev=>lbImg.addEventListener(ev,()=>{lbDrag=null}));
+['pointerup','pointercancel'].forEach(ev=>lbImg.addEventListener(ev,e=>{
+  if(ev==='pointerup'&&lbSwipe){
+    const dx=e.clientX-lbSwipe.x,dy=e.clientY-lbSwipe.y;
+    lbSwipe=null;
+    if(lbScale<=1&&Math.abs(dx)>80&&Math.abs(dx)>Math.abs(dy)*1.2)lbNav(dx<0?1:-1);
+  }
+  lbDrag=null;
+}));
+// 手機：在燈箱上直接左右滑動切換（右滑→上一張＝左側、左滑→下一張＝右側）
+let lbTouch=null;
+lightbox.addEventListener('touchstart',e=>{
+  if(e.touches.length!==1||lbScale>1)return;
+  lbTouch={x:e.touches[0].clientX,y:e.touches[0].clientY};
+},{passive:true});
+lightbox.addEventListener('touchend',e=>{
+  if(!lbTouch)return;
+  const t=e.changedTouches[0];
+  const dx=t.clientX-lbTouch.x,dy=t.clientY-lbTouch.y;
+  lbTouch=null;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.2)lbNav(dx<0?1:-1);
+},{passive:true});
+lbPrev.addEventListener('click',()=>lbNav(-1));
+lbNext.addEventListener('click',()=>lbNav(1));
 // 燈箱下載：複用 saveMessageImages 的資料取得邏輯（IndexedDB → dataURL/Blob/遠端）
 document.getElementById('lbDownload').addEventListener('click',()=>{
   if(!lightbox.classList.contains('open'))return;
@@ -2903,6 +2987,25 @@ document.getElementById('lbDownload').addEventListener('click',()=>{
   }else if(lbSrc){
     window.open(lbSrc,'_blank','noopener');
   }
+});
+// 燈箱刪除：與 Gallery 刪除同一套確認提示；確認彈窗暫時拉到燈箱上層（modal-overlay 預設 z-index 低於燈箱）
+document.getElementById('lbDelete').addEventListener('click',async()=>{
+  if(!lightbox.classList.contains('open'))return;
+  if(!lbMediaId){showToast('此圖片未儲存在本機，無法刪除','warn');return}
+  const used=Object.values(chats).filter(c=>collectChatImageIds(c).includes(lbMediaId)).length;
+  const msg=used
+    ?('此圖被 '+used+' 則訊息引用；刪除後訊息文字保留、圖片改顯示「圖片已刪除」佔位。確定刪除？')
+    :'確定要刪除這張圖片嗎？';
+  const cm=document.getElementById('confirmModal');
+  cm.classList.add('above-lightbox');
+  const ok=await showConfirm(msg);
+  cm.classList.remove('above-lightbox');
+  if(!ok)return;
+  try{await mediaDel(lbMediaId)}catch(e){showToast('刪除失敗：'+((e&&e.message)||e),'warn');return}
+  showToast('圖片已刪除','success');
+  closeLightbox();
+  if(document.getElementById('galleryModal').classList.contains('open'))renderGalleryGrid();   // Gallery 開著則即時刷新
+  renderMessages(true);   // 當前對話缺圖改為佔位框（hydrateMedia 處理）；保持捲動位置
 });
 
 // ===== C2：匯出／匯入對話（入口：點擊側邊欄寵物貓）=====
@@ -3107,6 +3210,7 @@ document.getElementById('btnCleanOrphan').addEventListener('click',async()=>{
 
 // ===== C9：圖片 Gallery（瀏覽所有 IndexedDB 圖片；入口：右上 🖼️）=====
 const galleryUrls=new Set();
+let galleryIds=[];   // 圖庫目前排序的圖片 id 清單（燈箱左右切換用）
 function openGallery(){renderGalleryGrid();document.getElementById('galleryModal').classList.add('open')}
 function closeGallery(){
   document.getElementById('galleryModal').classList.remove('open');
@@ -3132,6 +3236,7 @@ async function renderGalleryGrid(){
     // 依生成時間新→舊排序：優先用記錄的 createdAt，舊記錄則從 id 解析 13 位時間戳（img_<ts>_ / img_u_<ts>_ / img_e_<ts>_ / img_mig_<ts>_）
     const tsOf=rec=>{if(!rec)return 0;if(rec.createdAt)return rec.createdAt;const m=String(rec&&rec.id||'').match(/(\d{13})/);return m?+m[1]:0};
     entries=all.slice().sort((a,b)=>tsOf(b)-tsOf(a));
+    galleryIds=entries.map(rec=>rec&&rec.id).filter(Boolean);   // 記下圖庫排序，燈箱左右切換依此順序
   }catch(e){
     grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:var(--text2);font-size:13px;padding:20px">讀取失敗：'+escHtml((e&&e.message)||e)+'</div>';
     return;
