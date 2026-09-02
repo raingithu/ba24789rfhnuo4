@@ -3003,7 +3003,22 @@ messagesEl.addEventListener('click',async e=>{
     saveChatsData(chats);
     removeMessageRowsFrom(idx);   // 只移除尾端列，捲動位置不變
     followIfStuck();   // regen：僅在自動捲動開啟且貼底時跟上
-    if(chat.messages.length&&chat.messages[chat.messages.length-1].role==='user')requestAI();
+    if(chat.messages.length&&chat.messages[chat.messages.length-1].role==='user'){
+      const last=chat.messages[chat.messages.length-1];
+      // 被重新生成的是圖片訊息（含 image_ref）→ 改呼叫圖片模型，用最後一則使用者訊息重建 prompt 與參考圖
+      const wasImage=Array.isArray(m.content)&&m.content.some(p=>p.type==='image_ref');
+      if(wasImage){
+        const parts=Array.isArray(last.content)?last.content:[{type:'text',text:String(last.content||'')}];
+        const prompt=parts.filter(p=>p.type==='text'&&p.text).map(p=>p.text).join('\n').trim();
+        const refIds=parts.filter(p=>p.type==='image_ref'&&p.id).map(p=>p.id);
+        const images=[];
+        for(const rid of refIds){
+          const data=await mediaGet(rid);
+          if(data!=null)images.push(typeof data==='string'?data:await blobToDataURL(data));
+        }
+        requestImage({prompt,images});
+      }else requestAI();
+    }
   }else if(act==='delmsg'){
     // C4：刪除單則訊息（串流中已被上方 guard 阻擋）
     if(!await showConfirm('確定要刪除這則訊息嗎？'))return;
