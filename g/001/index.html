@@ -203,6 +203,11 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
 .msg-menu{display:block;width:24px;height:24px;z-index:100;border:none;background:transparent;color:var(--text2);font-size:15px;line-height:1;cursor:pointer;border-radius:50%;padding:0;opacity:0;visibility:hidden;transition:opacity .15s,background .2s}
 .msg-menu:hover{background:var(--surface2)}
 .msg-row:hover .msg-menu,.msg-row.menu-open .msg-menu{opacity:1;visibility:visible}
+/* 朗讀中：正在朗讀的那則訊息，⋮ 下方顯示 ⏹ 停止朗讀（不需 hover，朗讀期間常駐可見；觸控裝置也看得到） */
+.msg-tts-stop{display:none;width:24px;height:24px;margin-top:4px;border:none;background:transparent;color:#ef5350;font-size:12px;line-height:1;cursor:pointer;border-radius:50%;padding:0;animation:ttsPulse 1.4s ease-in-out infinite}
+.msg-tts-stop:hover{background:var(--surface2)}
+.msg-row.speaking .msg-tts-stop{display:block}
+@keyframes ttsPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
 .msg-dropdown{position:absolute;top:0;right:-36px;z-index:30;background:var(--surface2);border:1px solid var(--border);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.45);min-width:132px;overflow:hidden;display:none}
 .msg-row.assistant .msg-dropdown{left:auto;right:0}
 .msg-dropdown.open{display:block}
@@ -2794,6 +2799,7 @@ function renderMessages(keepPos){
   if(findQ)highlightRenderedRows();   // 重建後補回搜尋高亮（findQ 為空時不做）
   setupMsgTopObserver();
   updateScrollBtn();   // 重建後更新「捲到底按鈕」顯示
+  updateTtsBtn();   // 朗讀中重建訊息區（切換對話回來／設定變更重繪）：把 ⏹ 停止朗讀補回正在朗讀的那則
   // 預設強制捲到底；keepPos=true 表示呼叫端會自行決定
   if(!keepPos)scrollToBottom(false);
 }
@@ -2868,7 +2874,7 @@ function msgHtml(m,i){
   const contBtn=(m.truncated&&!isUser)?`<button class="continue-btn" type="button">⤵️ 繼續生成</button>`:'';
   // B2：串流出錯但已有部分內容時，錯誤原因直接標在該則下方（不再多一則 [錯誤] 氣泡）
   const errNote=(!isUser&&m.errorNote)?`<div class="msg-errnote">⚠️ ${escHtml(m.errorNote)}</div>`:'';
-  return `<div class="msg-row ${cls}${m.bm?' bm':''}" data-idx="${i}"><div class="msg ${cls}">${finalBodyHtml(m)}${timeBadge}${bmFlag}<div class="msg-menu-wrap"><button class="msg-menu" type="button" title="訊息選單" aria-label="訊息選單">⋮</button><div class="msg-dropdown">${timeRow}${items}</div></div>${errNote}${contBtn}</div></div>`;
+  return `<div class="msg-row ${cls}${m.bm?' bm':''}" data-idx="${i}"><div class="msg ${cls}">${finalBodyHtml(m)}${timeBadge}${bmFlag}<div class="msg-menu-wrap"><button class="msg-menu" type="button" title="訊息選單" aria-label="訊息選單">⋮</button><button class="msg-tts-stop" type="button" title="停止朗讀" aria-label="停止朗讀">⏹</button><div class="msg-dropdown">${timeRow}${items}</div></div>${errNote}${contBtn}</div></div>`;
 }
 
 // 關閉所有訊息選單
@@ -3115,9 +3121,19 @@ function ttsVoice(){
     return vs.find(v=>/zh[-_]?(TW|Hant)/i.test(v.lang||''))||vs.find(v=>/^zh/i.test(v.lang||''))||null;
   }catch(e){return null}
 }
+// 朗讀狀態 → 畫面：正在朗讀的那則訊息加 .speaking，讓 ⋮ 下方的 ⏹ 顯示出來（其餘列清除）
+function updateTtsBtn(){
+  document.querySelectorAll('.msg-row.speaking').forEach(r=>r.classList.remove('speaking'));
+  if(!ttsMsg||!chats[activeChatId])return;
+  const idx=chats[activeChatId].messages.indexOf(ttsMsg);
+  if(idx<0)return;   // 該則已被刪除或屬於其他對話：不顯示
+  const row=document.querySelector(`.msg-row[data-idx="${idx}"]`);
+  if(row)row.classList.add('speaking');
+}
 function ttsStop(){
   try{speechSynthesis.cancel()}catch(e){}
   ttsUtter=null;ttsMsg=null;
+  updateTtsBtn();
 }
 function toggleSpeak(m){
   if(!ttsSupported()){showToast('此瀏覽器不支援語音朗讀','warn');return}
@@ -3135,13 +3151,22 @@ function toggleSpeak(m){
   const v=ttsVoice();if(v)u.voice=v;
   u.rate=1.25;
   u.pitch=1.8;
-  u.onend=()=>{ttsUtter=null;ttsMsg=null};
-  u.onerror=()=>{ttsUtter=null;ttsMsg=null;};
+  u.onend=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
+  u.onerror=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
   ttsUtter=u;ttsMsg=m;
-  try{speechSynthesis.speak(u);showToast('朗讀中… 再點一次「🔊 朗讀」可停止','success')}
-  catch(e){ttsUtter=null;ttsMsg=null;showToast('朗讀失敗','warn')}
+  try{speechSynthesis.speak(u);updateTtsBtn();showToast('朗讀中… 可點訊息旁的 ⏹ 停止','success')}
+  catch(e){ttsUtter=null;ttsMsg=null;updateTtsBtn();showToast('朗讀失敗','warn')}
 }
 window.addEventListener('beforeunload',ttsStop);
+// ⏹ 停止朗讀按鈕（在 .msg-menu-wrap 內，不在 dropdown 選單裡）：用捕捉層先攔，避免觸發其他文件級 handler
+document.addEventListener('click',e=>{
+  const b=e.target&&e.target.closest?e.target.closest('.msg-tts-stop'):null;
+  if(!b)return;
+  e.stopPropagation();
+  if(!ttsUtter)return;
+  ttsStop();
+  showToast('已停止朗讀','warn');
+},true);
 
 // ===== 儲存訊息圖片 =====
 function extFromMime(t){
