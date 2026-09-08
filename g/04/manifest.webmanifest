@@ -2,7 +2,7 @@
   "name": "ChatCAT",
   "short_name": "ChatCAT",
   "description": "ChatCAT：AI 聊天前端，支援多對話、圖片附件、網路搜尋（台灣用語中文）。",
-  "start_url": "./chat.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

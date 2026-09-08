@@ -1,15 +1,25 @@
 // ChatCAT Service Worker（離線快取）
 // 每次更新 chat.html 請把 CACHE 版號遞增一碼（例如 chatcat-v3 → chatcat-v4），
 // activate 時會自動砍掉舊快取。
-const CACHE = 'chatcat-v3';
+const CACHE = 'chatcat-v4';
 const CDN_HOSTS = ['cdn.jsdelivr.net', 'unpkg.com'];
 
 // 預先快取 app shell：開機時離線仍能開啟
-const APP_SHELL = ['./chat.html', './manifest.webmanifest'];
+// 部署到 GitHub Pages 時是 index.html；本機直接開則可能是 chat.html，兩者都嘗試
+const APP_SHELL = ['./', './index.html', './chat.html', './manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   self.skipWaiting();
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(APP_SHELL).catch(() => {})));
+  e.waitUntil((async () => {
+    const c = await caches.open(CACHE);
+    // 逐項快取，單一項目 404（例如 chat.html 不存在）不會讓整個 install 失敗
+    await Promise.all(APP_SHELL.map(async (u) => {
+      try {
+        const r = await fetch(u, { cache: 'no-cache' });
+        if (r && r.ok) await c.put(u, r.clone());
+      } catch (_) {}
+    }));
+  })());
 });
 
 self.addEventListener('activate', (e) => {
@@ -41,9 +51,9 @@ self.addEventListener('fetch', (e) => {
       if (r && r.ok) c.put(req, r.clone());
       return r;
     } catch (err) {
-      // 離線且快取沒有 → 同源導覽回 app shell
+      // 離線且快取沒有 → 同源導覽回 app shell（index.html / chat.html 都試）
       if (url.origin === self.location.origin && req.mode === 'navigate') {
-        const shell = await c.match('./chat.html');
+        const shell = (await c.match('./index.html')) || (await c.match('./chat.html')) || (await c.match('./'));
         if (shell) return shell;
       }
       throw err;
