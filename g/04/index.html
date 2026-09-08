@@ -70,7 +70,7 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
 .menu-btn:not(:hover) .arrow{animation:arrowLeave 217ms ease-in reverse backwards}
 .model-badge{padding:4px 10px;background:var(--surface2);border-radius:4px;font-size:12px;color:var(--text2)}
 .messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
-.msg{max-width:75%;padding:12px 16px;border-radius:14px;line-height:1.6;font-size:15px;word-break:break-word;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
+.msg{max-width:75%;padding:12px 16px;border-radius:14px;line-height:1.6;font-size:17px;word-break:break-word;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
 .msg.user{color:var(--msg-user);
   background:linear-gradient(150deg,rgba(92,132,166,.92),rgba(70,105,140,.85));
   border-bottom-right-radius:4px;border:1px solid rgba(160,200,230,.35)}
@@ -130,14 +130,14 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
 /* 設定彈窗 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:96%;max-width:420px;max-height:640px;overflow-y:auto}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:98%;max-width:420px;max-height:640px;overflow-y:auto}
 .modal h3{margin-bottom:16px;color:var(--accent)}
 #personaPrompt{width:100%;height:24px;overflow-y:hidden}
 #settingSystem{background:var(--input-bg);color:var(--text);width:100%;height:60px;padding:4px;border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color .2s}
 #settingSystem:focus{border-color:var(--accent)}
 .field input::placeholder,.field textarea::placeholder{color:var(--text2);opacity:.75}
 .field{margin-bottom:3px}
-.field label{display:block;font-size:12px;color:var(--text2);margin:3px}
+.field label{display:block;font-size:11px;color:var(--text2);margin:3px}
 .field input,.field select{width:100%;padding:4px;background:var(--input-bg);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;outline:none}
 .field input:focus,.field select:focus{border-color:var(--accent)}
 .modal-actions{display:flex;gap:18px;justify-content:center;margin-top:16px}
@@ -277,7 +277,7 @@ body[data-theme="inkgold"]{--ai-stop-bg:linear-gradient(150deg,#20362c,#152822);
 }
 
 /* 設定欄位並排（模型 + 主題 各50%） */
-.field-row{display:flex;gap:10px}
+.field-row{display:flex;gap:6px}
 .field-row>.field{flex:1;min-width:0}
 
 body[data-theme="default"]{
@@ -1275,9 +1275,10 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 <!-- C9 圖片 Gallery -->
 <div class="modal-overlay" id="galleryModal">
   <div class="modal" style="max-width:720px">
-    <div class="field-row" style="justify-content: space-between;">
     <h3>🖼️ 圖片庫</h3>
-    <div style="margin-top:5px;font-size:13px">
+    <div class="field-row" style="justify-content: space-between;">
+    <h3> </h3>
+    <div style="margin-top:-20px;font-size:13px">
     <span id="galleryUsage" style="color:var(--accent)"></span>
     </div>
     </div>
