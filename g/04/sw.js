@@ -1,7 +1,7 @@
 // ChatCAT Service Worker（離線快取）
 // 每次更新 chat.html 請把 CACHE 版號遞增一碼（例如 chatcat-v3 → chatcat-v4），
 // activate 時會自動砍掉舊快取。
-const CACHE = 'chatcat-v4';
+const CACHE = 'chatcat-v5';
 const CDN_HOSTS = ['cdn.jsdelivr.net', 'unpkg.com'];
 
 // 預先快取 app shell：開機時離線仍能開啟
