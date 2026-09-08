@@ -3154,7 +3154,7 @@ function toggleSpeak(m){
   u.onend=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
   u.onerror=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
   ttsUtter=u;ttsMsg=m;
-  try{speechSynthesis.speak(u);updateTtsBtn();showToast('朗讀中… 可點訊息旁的 ⏹ 停止','success')}
+  try{speechSynthesis.speak(u);updateTtsBtn();showToast('朗讀中… 點 ⏹ 可停止朗讀','success')}
   catch(e){ttsUtter=null;ttsMsg=null;updateTtsBtn();showToast('朗讀失敗','warn')}
 }
 window.addEventListener('beforeunload',ttsStop);
