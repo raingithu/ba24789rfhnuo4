@@ -156,9 +156,11 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 
 /* Toast 提示 */
 .toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+/* Toast：更新提示那顆可點擊；其餘維持不可點避免擋訊息操作 */
 .toast{padding:10px 18px;border-radius:10px;font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.4);animation:toastIn .25s ease;max-width:80vw;word-break:break-word}
 .toast.success{border-color:rgba(120,180,120,.6);color:var(--msg-ai)}
 .toast.warn{border-color:rgba(200,170,90,.6);color:#e0c98a}
+.toast.action{pointer-events:auto;cursor:pointer;border-color:var(--accent);color:var(--text2);text-decoration:underline;text-underline-offset:3px}
 .toast.out{animation:toastOut .3s ease forwards}
 @keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes toastOut{to{opacity:0;transform:translateY(-10px)}}
@@ -590,6 +592,9 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 /* 對話內搜尋列（Ctrl+F） */
 .header-btn{background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1}
 .header-btn:hover{background:var(--surface2);color:var(--accent)}
+.header-btn.update{display:none;border:1px solid var(--accent);color:var(--accent);font-size:13px;padding:5px 10px;white-space:nowrap;animation:updatePulse 1.6s ease-in-out infinite}
+.header-btn.update.show{display:inline-block}
+@keyframes updatePulse{0%,100%{box-shadow:0 0 0 0 rgba(155,191,219,0)}50%{box-shadow:0 0 0 4px rgba(155,191,219,.18)}}
 .find-bar{display:none;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
 .find-bar.open{display:flex}
 .find-bar input{flex:1;min-width:0;padding:6px 10px;border:1px solid var(--border);border-radius:8px;background:var(--input-bg);color:var(--text);font-size:13px;outline:none}
@@ -1105,6 +1110,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
         <path d="M7.25 2.5h9.5A2.75 2.75 0 0 1 19.5 5.25V21a1 1 0 0 1-1.58.81L12 17.68l-5.92 4.13A1 1 0 0 1 4.5 21V5.25A2.75 2.75 0 0 1 7.25 2.5Zm0 2A.75.75 0 0 0 6.5 5.25v13.83l4.93-3.44a1 1 0 0 1 1.14 0l4.93 3.44V5.25a.75.75 0 0 0-.75-.75h-9.5Z"/>
       </svg>
       </button>
+      <button class="header-btn update" id="btnAppUpdate" type="button" title="有新版本，點此重整更新" aria-label="更新到新版本" hidden>⟳ 更新</button>
       <button class="header-btn" id="btnFind" type="button" title="在這個對話中搜尋（Ctrl+F）" aria-label="在這個對話中搜尋">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
         <circle cx="11.5" cy="11.5" r="6.6"/>
@@ -2938,7 +2944,7 @@ function renderMessages(keepPos){
   revokeRenderBlobUrls();    // A2：釋放上一輪渲染建立的 objectURL
   if(msgTopObs){msgTopObs.disconnect();msgTopObs=null}
   const chat=chats[activeChatId];
-  if(!chat||!chat.messages.length){messagesEl.innerHTML='<div class="empty"></div>';msgRenderedFrom=0;scrollToBottom(false);return}
+  if(!chat||!chat.messages.length){messagesEl.innerHTML='<div class="empty"></div>';msgRenderedFrom=0;scrollToBottom(false);updateScrollBtn();return}   // 空對話也要同步重算按鈕，否則舊對話的 ↓ 會殘留
   const total=chat.messages.length;
   msgRenderedFrom=Math.max(0,total-MSG_PAGE);   // P2：開場只 render 最後一批
   // P1：msgHtml 內部使用 finalBodyHtml（已含程式碼按鈕與 KaTeX，且整列 HTML 有快取）
@@ -5209,6 +5215,35 @@ function showToast(msg,type){
   t.innerHTML=msg;
   wrap.appendChild(t);
   setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),300)},2600);
+  return t;
+}
+// ===== PWA 新版更新提示（記憶體旗標：本輪只提示一次、不騷擾）=====
+let appUpdateToastShown=false;   // 本輪是否已顯示過「有新版本」toast
+let appUpdatePending=false;      // 是否有待套用的新版（header 更新鈕顯示依據）
+function setAppUpdatePending(on){
+  appUpdatePending=!!on;
+  const b=document.getElementById('btnAppUpdate');
+  if(b){b.hidden=!appUpdatePending;b.classList.toggle('show',appUpdatePending)}
+}
+function notifyAppUpdateAvailable(){
+  setAppUpdatePending(true);
+  if(appUpdateToastShown)return;   // 已提示過：只留 header 更新鈕，不再彈 toast
+  appUpdateToastShown=true;
+  const t=showToast('有新版本可用，點此重整更新','action');
+  if(t)t.addEventListener('click',()=>applyAppUpdate());
+}
+function applyAppUpdate(){
+  // 串流生成中禁止重整：避免 AI 回覆／生圖被中斷；請使用者等完成後再點 header 的更新鈕
+  if(typeof isStreaming!=='undefined'&&isStreaming){showToast('AI 回覆生成中，稍後再更新（避免中斷）','warn');return}
+  try{
+    if(draftTimer){clearTimeout(draftTimer);draftTimer=null}
+    if(typeof saveDraft==='function')saveDraft();               // 輸入框草稿先存
+    if(typeof saveChatsDataNow==='function')saveChatsDataNow(); // 待寫存的對話先沖掉
+    if(typeof saveDrafts==='function')saveDrafts();
+  }catch(e){}
+  // controller 已換手時 reload 必定拿到新殼；若新 SW 還在背景裝，給它一點時間再重整
+  if(navigator.serviceWorker&&navigator.serviceWorker.controller)setAppUpdatePending(false),location.reload();
+  else setTimeout(()=>location.reload(),1200);
 }
 // D3：常駐進度提示（匯出／壓縮大量項目時用；與 toast 不同，不會自動消失）
 let progressToastEl=null;
@@ -6857,12 +6892,30 @@ document.getElementById('btnCompressImages').addEventListener('click',async()=>{
 
 // ===== C10：Service Worker 離線快取（需 https；file:// 或註冊失敗時自動略過）=====
 // 改為指向實體 ./sw.js 與 ./manifest.webmanifest；可離線使用，devtool 可看到快取
+// 新版流程：註冊成功後監聽 updatefound／controllerchange；偵測到新 SW 接管就提示一次
+// toast（可點立即更新），不點則只留 header「⟳ 更新」鈕；串流中擋更新避免中斷。
 (function setupServiceWorker(){
   try{
     if(!('serviceWorker' in navigator))return;
     if(location.protocol!=='https:'&&location.hostname!=='localhost'&&location.hostname!=='127.0.0.1')return;   // file:// 直接略過
+    const btn=document.getElementById('btnAppUpdate');
+    if(btn)btn.addEventListener('click',()=>applyAppUpdate());
+    // 若新 SW 已在背景裝好並接管（例如上一輪已下載、本輪才 controllerchange），直接提示
+    navigator.serviceWorker.addEventListener('controllerchange',()=>notifyAppUpdateAvailable());
     navigator.serviceWorker.register('./sw.js')
-      .then(()=>dbg('[Chat] Service Worker 已註冊（離線快取開啟）'))
+      .then(reg=>{
+        dbg('[Chat] Service Worker 已註冊（離線快取開啟）');
+        // 已有新版在 waiting（上一輪下載完但舊頁還沒關）：本輪打開就提示，不用再等一次
+        if(reg.waiting)notifyAppUpdateAvailable();
+        reg.addEventListener('updatefound',()=>{
+          const nw=reg.installing;
+          if(!nw)return;
+          nw.addEventListener('statechange',()=>{
+            // 新 SW 裝好（installed）且已有舊 controller 代表「有新版待套用」
+            if(nw.state==='installed'&&navigator.serviceWorker.controller)notifyAppUpdateAvailable();
+          });
+        });
+      })
       .catch(err=>dbg('[Chat] Service Worker 註冊略過：',err&&err.message));
   }catch(e){}
 })();
