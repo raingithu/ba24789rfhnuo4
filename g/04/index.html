@@ -52,7 +52,6 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .menu-btn{display:none;background:none;border:none;color:var(--text);cursor:pointer;padding:0;border-radius:8px;line-height:0;width:36px;height:36px;flex-shrink:0;align-items:center;justify-content:center;transition:background .2s}
 .menu-btn:hover{background:var(--surface2);color:var(--accent)}
 .menu-btn svg{width:24px;height:24px;display:block;overflow:visible}
-
 .arrow{transform-box:fill-box;transform-origin:center}
 @keyframes arrowEnter{
   0%{transform:translate(52.95%,50.625%) matrix(0.6,0,0,-0.6,0,0);opacity:0;stroke-opacity:0.2}
@@ -77,7 +76,6 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .msg.assistant{color:var(--msg-ai);
   background:linear-gradient(150deg,rgba(88,108,88,.78),rgba(70,90,75,.82));
   border-bottom-left-radius:4px;border:1px solid rgba(160,200,160,.3)}
-
 .msg.system{align-self:center;background:transparent;color:var(--text2);font-size:12px;border:none;padding:4px}
 .msg .msg-img{max-width:220px;max-height:220px;border-radius:8px;display:block;margin-bottom:8px;border:1px solid var(--border)}
 #statusMsg.typing{color:var(--msg-ai);}
@@ -94,6 +92,9 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 #personaNameInput{width:100%;box-sizing:border-box;margin-bottom:16px;padding:8px 12px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
 #personaNameInput:focus{border-color:var(--accent)}
 #personaNameInput::placeholder{color:var(--text2)}
+#bookmarkRenameInput{width:100%;box-sizing:border-box;margin-bottom:16px;padding:8px 12px;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;color:var(--text);font-size:14px;outline:none;transition:border-color .2s}
+#bookmarkRenameInput:focus{border-color:var(--accent)}
+#bookmarkRenameInput::placeholder{color:var(--text2)}
 #msgInput:focus{border-color:var(--accent)}
 #msgInput::placeholder{color:var(--text2)}
 .btn-attach{width:44px;height:44px;background:linear-gradient(160deg,rgba(255,255,255,.22),rgba(180,215,245,.06) 50%,rgba(120,160,210,.18));
@@ -180,6 +181,10 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .msg hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
 .msg a{color:var(--accent)}
 .msg :not(pre)>code{background:rgba(0,0,0,.25);padding:1px 6px;border-radius:4px;font-size:.9em;font-family:Consolas,Menlo,monospace}
+/* 訊息內嵌 SVG：限制最大尺寸避免撐破氣泡；消毒後若只剩空殼由 stripEmptySvg 移除，這裡只是保險 */
+.msg svg{max-width:100%;height:auto;max-height:360px}
+.msg p>svg:only-child{display:block;margin:.2em 0}
+.msg svg:empty{display:none}
 .msg pre{position:relative;background:rgba(0,0,0,.16);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;margin:.5em 0}
 /* KaTeX：預設 .katex-display 不換行會撐破氣泡；強制容器內水平滾動 */
 .msg .katex-display{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:.2em 0}
@@ -187,7 +192,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .msg .katex-display>.katex{display:inline-block;white-space:nowrap}
 .msg pre code{font-family:Consolas,Menlo,'Courier New',monospace;font-size:13px;line-height:1.5;background:none;padding:0}
 .code-copy{position:absolute;top:6px;right:6px;padding:2px 8px;font-size:11px;background:var(--surface2);color:var(--text2);border:1px solid var(--border);border-radius:4px;cursor:pointer;opacity:0;transition:opacity .2s}
-.code-view{right:54px}
+.code-view{right:60px}
 .msg pre:hover .code-copy{opacity:1}
 .code-copy:hover{color:var(--accent);border-color:var(--accent)}
 
@@ -368,8 +373,8 @@ body[data-theme="priconne"] .btn-settings{background:#ffe2f8;border-radius:12px}
 body[data-theme="priconne"] .chat-item{border-radius:12px}
 body[data-theme="priconne"] .chat-item.active{border:1px solid #ff9ec6}
 body[data-theme="priconne"] .model-badge{border-radius:12px;border:1px solid #ffbcd8}
-body[data-theme="priconne"] #msgInput,body[data-theme="priconne"] #personaNameInput{border-radius:16px;border:1px solid #ffbcd8}
-body[data-theme="priconne"] #msgInput:focus,body[data-theme="priconne"] #personaNameInput:focus{border-color:#ff7fb2}
+body[data-theme="priconne"] #msgInput,body[data-theme="priconne"] #personaNameInput,body[data-theme="priconne"] #bookmarkRenameInput{border-radius:16px;border:1px solid #ffbcd8}
+body[data-theme="priconne"] #msgInput:focus,body[data-theme="priconne"] #personaNameInput:focus,body[data-theme="priconne"] #bookmarkRenameInput:focus{border-color:#ff7fb2}
 body[data-theme="priconne"] .modal{border-radius:18px;border:1px solid #ffbcd8;box-shadow:0 10px 40px rgba(224,92,156,.35),inset 0 0 0 2px rgba(255,214,230,.45)}
 body[data-theme="priconne"] .modal h3,body[data-theme="priconne"] .sidebar-header h2{color:#e05c9c}
 body[data-theme="priconne"] .field input,body[data-theme="priconne"] .field select{border-radius:10px;border:1px solid #ffbcd8}
@@ -438,6 +443,7 @@ body[data-theme="cream"] .modal,body[data-theme="matcha"] .modal,body[data-theme
 body[data-theme="cream"] .confirm-modal,body[data-theme="matcha"] .confirm-modal,body[data-theme="blue"] .confirm-modal,body[data-theme="orange"] .confirm-modal{border-radius:18px;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,.12)}
 body[data-theme="cream"] #msgInput,body[data-theme="matcha"] #msgInput,body[data-theme="blue"] #msgInput,body[data-theme="orange"] #msgInput,
 body[data-theme="cream"] #personaNameInput,body[data-theme="matcha"] #personaNameInput,body[data-theme="blue"] #personaNameInput,body[data-theme="orange"] #personaNameInput,
+body[data-theme="cream"] #bookmarkRenameInput,body[data-theme="matcha"] #bookmarkRenameInput,body[data-theme="blue"] #bookmarkRenameInput,body[data-theme="orange"] #bookmarkRenameInput,
 body[data-theme="cream"] .field input,body[data-theme="matcha"] .field input,body[data-theme="blue"] .field input,body[data-theme="orange"] .field input,
 body[data-theme="cream"] .field select,body[data-theme="matcha"] .field select,body[data-theme="blue"] .field select,body[data-theme="orange"] .field select{border-radius:10px}
 body[data-theme="cream"] .btn-reset,body[data-theme="matcha"] .btn-reset,body[data-theme="blue"] .btn-reset,body[data-theme="orange"] .btn-reset,
@@ -529,8 +535,8 @@ body[data-theme="inkgold"] .btn-settings{border-radius:12px;border:1px solid #3a
 body[data-theme="inkgold"] .chat-item{border-radius:12px}
 body[data-theme="inkgold"] .chat-item.active{border:1px solid #d19621;background:rgba(216,187,131,.12)}
 body[data-theme="inkgold"] .model-badge{border-radius:12px;border:1px solid #d19621;color:#d19621}
-body[data-theme="inkgold"] #msgInput,body[data-theme="inkgold"] #personaNameInput{border-radius:12px;border:1px solid #3a5a48}
-body[data-theme="inkgold"] #msgInput:focus,body[data-theme="inkgold"] #personaNameInput:focus{border-color:#d19621}
+body[data-theme="inkgold"] #msgInput,body[data-theme="inkgold"] #personaNameInput,body[data-theme="inkgold"] #bookmarkRenameInput{border-radius:12px;border:1px solid #3a5a48}
+body[data-theme="inkgold"] #msgInput:focus,body[data-theme="inkgold"] #personaNameInput:focus,body[data-theme="inkgold"] #bookmarkRenameInput:focus{border-color:#d19621}
 body[data-theme="inkgold"] .field input,body[data-theme="inkgold"] .field select{border-radius:10px;border:1px solid #3a5a48}
 body[data-theme="inkgold"] .field input:focus,body[data-theme="inkgold"] .field select:focus{border-color:#d19621}
 body[data-theme="inkgold"] .modal,body[data-theme="inkgold"] .confirm-modal{border-radius:16px;border:1px solid #d19621;box-shadow:0 10px 40px rgba(0,0,0,.55),inset 0 0 0 2px rgba(216,187,131,.12)}
@@ -582,10 +588,15 @@ body[data-theme="inkgold"] .btn-reset,body[data-theme="inkgold"] .btn-cancel,bod
 .bookmark-item{display:flex;align-items:flex-start;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer}
 .bookmark-item:hover{border-color:var(--accent)}
 .bookmark-item .bm-main{flex:1;min-width:0}
-.bookmark-item .bm-chat{font-size:11px;color:var(--text2);margin-bottom:2px}
+.bookmark-item .bm-chat{font-size:15px;color:var(--text2);margin-bottom:2px;display:flex;align-items:center;gap:4px;min-width:0}
+.bookmark-item .bm-chat .bm-title{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bookmark-item .bm-rename{background:none;border:none;color:var(--text2);cursor:pointer;font-size:12px;padding:1px 5px;border-radius:6px;flex-shrink:0;line-height:1;opacity:.55;transition:opacity .2s,background .2s}
+.bookmark-item .bm-chat:hover .bm-rename,.bookmark-item .bm-rename:focus-visible{opacity:1}
+.bookmark-item .bm-rename:hover{background:var(--surface);color:var(--accent);opacity:1}
 .bookmark-item .bm-text{font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bookmark-item .bm-time{font-size:11px;color:var(--text2);margin-top:2px}
-.bookmark-item .bm-del{background:none;border:none;color:var(--text2);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0}
+.bookmark-item .bm-del{background:none;border:none;color:var(--text2);cursor:pointer;font-size:12px;padding:2px 4px;flex-shrink:0;opacity:.55;transition:opacity .2s,background .2s}
+.bookmark-item .bm-del:hover{opacity:1}
 .bookmark-empty{text-align:center;color:var(--text2);font-size:13px;padding:20px}
 /* 拖曳圖片到視窗上傳時的提示框 */
 body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
@@ -1149,7 +1160,6 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
     <h3>⚙ 設定</h3>
-
     <div class="field-row">
       <div class="field">
         <label>API 端點</label>
@@ -1314,6 +1324,18 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
   </div>
 </div>
 
+<!-- 書籤重新命名彈窗（疊在書籤清單上；僅改書籤顯示，不動原對話） -->
+<div class="modal-overlay confirm-overlay" id="bookmarkRenameModal">
+  <div class="confirm-modal">
+    <p id="bookmarkRenameMsg"></p>
+    <input type="text" id="bookmarkRenameInput" maxlength="30" placeholder="請輸入書籤名稱">
+    <div class="modal-actions" style="margin-top:0">
+      <button class="btn-cancel" id="bookmarkRenameNo">取消</button>
+      <button class="btn-save" id="bookmarkRenameYes">確定</button>
+    </div>
+  </div>
+</div>
+
 <!-- 三之1 搜尋來源面板（🔍 徽章／選單「查看來源」開啟）-->
 <div class="modal-overlay" id="sourcesModal">
   <div class="modal" style="max-width:520px">
@@ -1427,7 +1449,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <h3>🔖 書籤</h3>
     <div id="bookmarkList" class="bookmark-list"></div>
     <div class="modal-actions">
-      <button class="btn-cancel" id="btnBookmarkClose" type="button">✕ 關閉</button>
+      <button class="btn-cancel" id="btnBookmarkClose" type="button">關閉</button>
     </div>
   </div>
 </div>
@@ -2425,7 +2447,8 @@ function updatePersonaDesc(){
     if(desc){desc.style.display='';desc.textContent=p?(p.desc||''):''}
   }
 }
-// 自訂人格命名／重新命名共用彈窗：回傳名稱（取消或空白 → null）
+// 自訂人格命名／重新命名共用彈窗：回傳名稱（取消或空白 → null，本輪不關閉條件：點背景不關，只接受取消/ESC/返回鍵/確定）
+// 點背景不關閉：避免命名中誤觸關掉；空白確定視同取消、不修改
 function promptPersonaName(msg,defaultName){
   return new Promise(resolve=>{
     const modal=document.getElementById('personaNameModal');
@@ -2444,13 +2467,11 @@ function promptPersonaName(msg,defaultName){
       histPop('personaName');   // 同步退掉推入的狀態（popstate 端旗標已清，不會重複關閉）
       yes.removeEventListener('click',onYes);
       no.removeEventListener('click',onNo);
-      modal.removeEventListener('click',onBg);
       input.removeEventListener('keydown',onKey);
       resolve(v);
     };
     const onYes=()=>done(input.value.trim()||null);
     const onNo=()=>done(null);
-    const onBg=e=>{if(e.target===modal)done(null)};
     const onKey=e=>{
       if(e.isComposing)return;   // IME 組字中：Enter 是上字，不能視同「確定」
       if(e.key==='Enter'){e.preventDefault();onYes()}
@@ -2458,7 +2479,6 @@ function promptPersonaName(msg,defaultName){
     };
     yes.addEventListener('click',onYes);
     no.addEventListener('click',onNo);
-    modal.addEventListener('click',onBg);
     input.addEventListener('keydown',onKey);
   });
 }
@@ -2679,7 +2699,7 @@ function jumpToSearchMatches(q){
   ensureMsgRendered(idxs[0]);   // P2：目標可能在尚未載入的區段，先補進 DOM
   const row=messagesEl.querySelector(`.msg-row[data-idx="${idxs[0]}"]`);
   if(row){
-    row.scrollIntoView({block:'center'});
+    row.scrollIntoView({block:'start'});
     row.classList.add('search-flash');
     setTimeout(()=>row.classList.remove('search-flash'),2500);
   }
@@ -2779,7 +2799,7 @@ function findGoto(pos){
     highlightRow(row);
     messagesEl.querySelectorAll('mark.chatcat-hit.cur').forEach(m=>m.classList.remove('cur'));
     row.querySelectorAll('mark.chatcat-hit').forEach(m=>m.classList.add('cur'));
-    row.scrollIntoView({block:'center'});
+    row.scrollIntoView({block:'start'});
   }
   updateFindCount();
 }
@@ -2944,7 +2964,7 @@ function renderMessages(keepPos){
   revokeRenderBlobUrls();    // A2：釋放上一輪渲染建立的 objectURL
   if(msgTopObs){msgTopObs.disconnect();msgTopObs=null}
   const chat=chats[activeChatId];
-  if(!chat||!chat.messages.length){messagesEl.innerHTML='<div class="empty"></div>';msgRenderedFrom=0;scrollToBottom(false);updateScrollBtn();return}   // 空對話也要同步重算按鈕，否則舊對話的 ↓ 會殘留
+  if(!chat||!chat.messages.length){messagesEl.innerHTML='<div class="empty"></div>';msgRenderedFrom=0;if(shouldAutoScroll())scrollToBottom(false);updateScrollBtn();return}   // 空對話也要同步重算按鈕，否則舊對話的 ↓ 會殘留
   const total=chat.messages.length;
   msgRenderedFrom=Math.max(0,total-MSG_PAGE);   // P2：開場只 render 最後一批
   // P1：msgHtml 內部使用 finalBodyHtml（已含程式碼按鈕與 KaTeX，且整列 HTML 有快取）
@@ -2957,8 +2977,8 @@ function renderMessages(keepPos){
   setupMsgTopObserver();
   updateScrollBtn();   // 重建後更新「捲到底按鈕」顯示
   updateTtsBtn();   // 朗讀中重建訊息區（切換對話回來／設定變更重繪）：把 ⏹ 停止朗讀補回正在朗讀的那則
-  // 預設強制捲到底；keepPos=true 表示呼叫端會自行決定
-  if(!keepPos)scrollToBottom(false);
+  // 預設強制捲到底；keepPos=true 表示呼叫端會自行決定（注意：scrollToBottom 會再問一次 shouldAutoScroll，關閉或已往上捲就不動）
+  if(!keepPos&&shouldAutoScroll())scrollToBottom(false);
 }
 
 // 刪除單則訊息時使用：只移除該列 DOM 並重編後續 data-idx，
@@ -3184,8 +3204,11 @@ function mdToHtml(text){
       const html=DOMPurify.sanitize(marked.parse(shielded,{breaks:true}));
       // 最後一道保險：清掉 <a> 前後殘留的 $，確保點開網址永遠不會多出 $ 而失誤
       const safeHtml=sanitizeAnchors(html);
+      // SVG 空殼清理：foreignObject/script/事件屬性被 DOMPurify 拔掉後，可能留下
+      // <svg width height> 空殼（看不見卻佔位）；這裡整顆移除，不放寬消毒器
+      const noEmptySvg=stripEmptySvg(safeHtml);
       // 所有對外連結另開分頁，避免離開聊天頁；rel 加 noopener+noreferrer 防 opener 控制與 Referer 外洩
-      const withBlank=safeHtml.replace(/<a\s+([^>]*?)>/gi,(m,attrs)=>{
+      const withBlank=noEmptySvg.replace(/<a\s+([^>]*?)>/gi,(m,attrs)=>{
         if(!/href=/i.test(attrs))return m;   // 沒 href 不處理
         if(/target=/i.test(attrs))return m;   // 已設 target 不覆蓋
         return `<a ${attrs} target="_blank" rel="noopener noreferrer">`;
@@ -3221,6 +3244,27 @@ function sanitizeAnchors(html){
       if(t!==a.firstChild.textContent)a.firstChild.textContent=t;
     }
   }
+  return tmp.innerHTML;
+}
+
+// 移除消毒後殘留的 SVG 空殼（foreignObject/script 動畫被拔掉後只剩 <svg width height>）
+// DOMPurify 預設允許 svg/circle/rect 等圖形標籤但擋 foreignObject/script/on*；
+// foreignObject 包排版文字的卡片型 SVG 消毒後就變「看不見但佔 width×height 的空盒」。
+// 不放寬消毒器（XSS 風險），改為整顆移除；<pre><code> 內的原始碼文字不受影響。
+function stripEmptySvg(html){
+  if(!html||html.indexOf('<svg')<0)return html;
+  const tmp=document.createElement('div');
+  tmp.innerHTML=html;
+  tmp.querySelectorAll('svg').forEach(svg=>{
+    // 有實際圖形子元素（path/circle/rect/ellipse/line/polyline/polygon/text/use/image/g）就保留
+    if(svg.querySelector('path,circle,rect,ellipse,line,polyline,polygon,text,use,image,g'))return;
+    svg.remove();
+  });
+  // 空殼被移除後若留下空 <p>（只有 <br> 或空白），一併清掉避免殘留大段空白
+  tmp.querySelectorAll('p').forEach(p=>{
+    if(p.querySelector('svg,img,pre,code,a,table,.katex'))return;
+    if((p.textContent||'').trim()==='')p.remove();
+  });
   return tmp.innerHTML;
 }
 
@@ -3481,6 +3525,7 @@ const HIST_LAYERS={
   gallery:'chatcatGallery',        // 圖片庫
   settings:'chatcatSettings',      // 設定
   personaName:'chatcatPersonaName', // 自訂人格命名／重命名彈窗（疊在設定面板上）
+  bmRename:'chatcatBmRename',     // 書籤重新命名彈窗（疊在書籤清單上）
   export:'chatcatExport',          // 匯出／匯入
   preview:'chatcatPreview',        // 程式碼即時預覽
   editBranch:'chatcatEditBranch',  // 「編輯並重送」確認
@@ -3602,8 +3647,7 @@ async function sendMessage(){
   saveChatsData(chats,activeChatId);   // A1：只標記這場對話 dirty
   renderChatList();   // 有新訊息時，把這則對話移回分組頂端
   appendMessageRow(chats[activeChatId].messages[chats[activeChatId].messages.length-1]);   // 只附加新訊息列，不重建（畫面不跑動）
-  stickBottom=true;   // 送出新訊息：重新貼底（自動捲動關閉時 scrollToBottom 內部會忽略，維持使用者控制權）
-  scrollToBottom(false);   // 使用者送出訊息後：自動捲動開啟才捲到底（讓使用者看到自己送出的訊息）
+  if(shouldAutoScroll())scrollToBottom(false);   // 使用者送出訊息後：自動捲動開啟且仍貼底才捲到底；關閉或已往上捲就不動（維持使用者控制權）
   if(imgMode){
     const imgData=[];   // 送出前才把 Blob 轉成 dataURL（模型要的是可內嵌的資料）
     for(const it of imgs){
@@ -4696,7 +4740,7 @@ async function requestAI(opts){
         aiDiv.innerHTML=renderContent({content:clean(fixStream(full)),thinking:thinking||null,thinkingOpen:true},true);
         enhanceCodeBlocks(aiDiv);
         if(now-lastMath>=STREAM_MATH_MS){lastMath=now;renderMath(aiDiv)}
-        if(getAutoScroll()&&stickBottom)scrollToBottom(false);   // 串流中：自動滾動開啟且使用者仍貼底時持續跟上（雙 RAF 避免圖片/數學尚未 layout 造成中間地帶）
+        if(shouldAutoScroll())scrollToBottom(false);   // 串流中：自動滾動開啟且使用者仍貼底時持續跟上（雙 RAF 避免圖片/數學尚未 layout 造成中間地帶）
       });
     };
     const reader=resp.body.getReader();
@@ -4860,7 +4904,7 @@ async function requestAI(opts){
     }
     if(getAutoScroll()){
       stickBottom=true;
-      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout 避免「中間地帶」；之後圖片載入由 load 監聽跟上）
+      scrollToLatestStart(false,true);   // 自動滾動開啟：短回覆捲到底、長回覆停在最後一則開頭從頭讀（強制執行，stickBottom 剛設 true 不再被擋；雙 RAF 等 layout 避免「中間地帶」；之後圖片載入由 load 監聽跟上）
     }else{
       showToast('有新訊息','success');   // 自動滾動關閉：AI 回應完成時提醒，畫面一律不動
     }
@@ -4887,7 +4931,7 @@ async function requestAI(opts){
         saveChatsDataNow();   // B2：立即寫入
         appendMessageRow(chat.messages[chat.messages.length-1]);   // 只附加保留的部分回應，不重建
         renderChatList();
-        if(getAutoScroll()){stickBottom=true;scrollToBottom(false)}   // 自動捲動開啟才捲到底讓使用者看到已產生的部分
+        if(shouldAutoScroll())scrollToBottom(false);   // 自動捲動開啟且使用者仍貼底才捲到底（使用者已往上捲就不拉回，只提示）
         showToast('已停止生成，已保留部分回應','warn');
       }else{
         showToast('已停止生成','warn');
@@ -5053,7 +5097,7 @@ async function requestImage(opts){
     renderChatList();
     if(getAutoScroll()){
       stickBottom=true;
-      scrollToBottom(false);   // 自動滾動開啟：捲到最新（雙 RAF 等 layout；圖片載入後由 load 監聽跟上，避免「中間地帶」）
+      scrollToBottom(false,true);   // 自動滾動開啟：捲到最新（強制執行，stickBottom 剛設 true 不再被擋；雙 RAF 等 layout；圖片載入後由 load 監聽跟上，避免「中間地帶」）
     }else{
       showToast('圖片已生成','success');   // 自動滾動關閉：圖片生成完成時提醒，畫面一律不動
     }
@@ -5623,12 +5667,16 @@ function compressToJpeg(source,opt){
 
 // 設定面板不採用「點面板外關閉」（有取消按鈕，避免誤觸）；僅由取消／儲存／ESC 關閉
 
-// ===== 捲動輔助 =====
+// ===== 捲動輔助（單一真相來源：應不應該自動捲，一律問 shouldAutoScroll）=====
+// shouldAutoScroll：在「自動捲動訊息」開啟 且 使用者仍貼底（stickBottom）時才回 true。
+// scrollToBottom 內部不再自己檢查開關，呼叫端一律先問 shouldAutoScroll() 再決定，
+// 避免「外層問一次、內層又問一次、還有 force 繞過」三種語意互相打架。
+function shouldAutoScroll(){return getAutoScroll()&&stickBottom}
 // scrollToBottom：捲到底部。用雙 RAF 等 layout 完成後再 scroll，確保圖片非同步載入後仍能正確捲到最新位置。
-// 預設遵守 getAutoScroll()：開啟才捲，關閉就不動（控制權完全在使用者）。
-// force=true → 無條件捲，給「使用者手動點擊的按鈕」這類必須執行的場景用。
+// force=true → 無條件捲，給「使用者手動點擊 ↓ 按鈕」這類必須執行的場景用；其餘一律先問 shouldAutoScroll()。
 function scrollToBottom(smooth,force){
-  if(!force&&!getAutoScroll())return;
+  if(!force&&!shouldAutoScroll())return;
+  stickBottom=true;   // 程式觸發的捲動（自動跟隨／完成／手動回到底）：回到貼底狀態
   const doScroll=()=>{
     messagesEl.scrollTo({
       top:messagesEl.scrollHeight-messagesEl.clientHeight,
@@ -5636,26 +5684,48 @@ function scrollToBottom(smooth,force){
     });
     updateScrollBtn();
   };
+  if(smooth){doScroll();return}   // 手動平滑回到底：立即執行才有動畫感，不等 RAF
   requestAnimationFrame(()=>{
     requestAnimationFrame(doScroll);
   });
 }
+// scrollToLatestStart：捲到「最後一則訊息的開頭」（長回覆完成時用，從頭開始讀）。
+// force 語意同 scrollToBottom；短回覆（一屏能看完）會退化成捲到底，避免底部留白。
+function scrollToLatestStart(smooth,force){
+  if(!force&&!shouldAutoScroll())return;
+  stickBottom=true;
+  const doScroll=()=>{
+    try{
+      const rows=messagesEl.querySelectorAll('.msg-row');
+      const last=rows.length?rows[rows.length-1]:null;
+      if(last&&last.offsetHeight>messagesEl.clientHeight*1.5)last.scrollIntoView({block:'start',behavior:smooth?'smooth':'auto'});
+      else messagesEl.scrollTo({top:messagesEl.scrollHeight-messagesEl.clientHeight,behavior:smooth?'smooth':'auto'});
+    }catch(e){try{messagesEl.scrollTop=messagesEl.scrollHeight}catch(_){}}
+    updateScrollBtn();
+  };
+  if(smooth){doScroll();return}
+  requestAnimationFrame(()=>{requestAnimationFrame(doScroll)});   // 雙 RAF：等最終排版完成再定位，避免開頭量錯
+}
 // stickBottom：使用者是否「貼在最新訊息」。新訊息（AI 回覆／生圖完成／送出訊息）時設 true；
 // 使用者主動往上捲（滾輪／觸控）設 false，之後串流與圖片載入就不再拉動畫面。
+// 注意：送出訊息／完成／圖片載入跟上時不要直接 stickBottom=true，
+// 先問 shouldAutoScroll() 再決定，避免「使用者已往上捲卻被強制拉回」的打架。
 let stickBottom=true;
 // 使用者手勢離開底部：停止自動跟隨（scroll 事件會被程式式捲動觸發，故只攔 wheel/touch）
 messagesEl.addEventListener('wheel',()=>{stickBottom=false},{passive:true});
 messagesEl.addEventListener('touchmove',()=>{stickBottom=false},{passive:true});
 // 自動捲動開啟且仍貼底時跟到最新
 function followIfStuck(){
-  if(getAutoScroll()&&stickBottom)scrollToBottom(false);
+  if(shouldAutoScroll())scrollToBottom(false);
 }
 function updateScrollBtn(){
   const b=document.getElementById('btnScrollBottom');
   if(!b)return;
-  // 「回到最新訊息」按鈕：自動滾動關閉且有訊息時顯示，提醒使用者有新訊息可看
+  // 「回到最新訊息」按鈕：開關無關，只要有訊息、且使用者不在底部就顯示；
+  // 開啟時平常貼底所以自然隱藏，往上捲仍可手動一鍵回到底（點按鈕用 force，不受開關影響）
   const hasMsg=chats[activeChatId]&&chats[activeChatId].messages.length>0;
-  const showBtn=!!hasMsg&&((messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight)>80);
+  const away=(messagesEl.scrollHeight-messagesEl.scrollTop-messagesEl.clientHeight)>80;
+  const showBtn=!!hasMsg&&away;
   b.classList.toggle('show',showBtn);
 }
 
@@ -5711,6 +5781,8 @@ document.addEventListener('keydown',e=>{
   }
   if(e.key!=='Escape')return;
   if(document.querySelector('.msg-dropdown.open')){closeAllMenus();return}
+  const brm=document.getElementById('bookmarkRenameModal');
+  if(brm&&brm.classList.contains('open')){document.getElementById('bookmarkRenameNo').click();return}   // 命名框疊在書籤上：先關命名框（視同取消），書籤清單保留
   const pm2=document.getElementById('personaNameModal');
   if(pm2&&pm2.classList.contains('open')){document.getElementById('personaNameNo').click();return}
   const l=document.getElementById('lightbox');
@@ -6109,6 +6181,9 @@ window.addEventListener('popstate',e=>{
     },
     personaName(){   // 自訂人格命名／重命名彈窗：視同按「取消」（走 done(null) 讓 await 正常結束）
       document.getElementById('personaNameNo').click();
+    },
+    bmRename(){   // 書籤重新命名彈窗：視同按「取消」（走 done(null) 讓 await 正常結束），書籤清單保留
+      document.getElementById('bookmarkRenameNo').click();
     },
     export(){
       const em=document.getElementById('exportModal');
@@ -6527,10 +6602,64 @@ function collectBookmarks(){
   Object.keys(chats).forEach(cid=>{
     const c=chats[cid];
     if(!c||!Array.isArray(c.messages))return;
-    c.messages.forEach((m,i)=>{if(m&&m.bm)out.push({chatId:cid,idx:i,m:m,title:c.title||'新對話'})});
+    c.messages.forEach((m,i)=>{
+      if(!m||!m.bm)return;
+      // bm 為 true（舊資料）或 {name} 物件（新資料）都視為書籤；自訂名稱只影響書籤顯示，原對話標題不動
+      const bmName=(m.bm&&typeof m.bm==='object'&&(m.bm.name||'').trim())||'';
+      out.push({chatId:cid,idx:i,m:m,title:bmName||c.title||'新對話',custom:!!bmName});
+    });
   });
   out.sort((a,b)=>(b.m.createdAt||0)-(a.m.createdAt||0));   // 新→舊
   return out;
+}
+// 書籤重新命名共用彈窗：回傳 {name}／null（取消；空白 Enter/確定也視同取消、不修改、不恢復標題）
+// 點背景不關閉：避免命名中誤觸關掉；只有取消按鈕、ESC、手機返回鍵能關
+function promptBookmarkRename(msg,defaultName){
+  return new Promise(resolve=>{
+    const modal=document.getElementById('bookmarkRenameModal');
+    const input=document.getElementById('bookmarkRenameInput');
+    const yes=document.getElementById('bookmarkRenameYes');
+    const no=document.getElementById('bookmarkRenameNo');
+    document.getElementById('bookmarkRenameMsg').textContent=msg;
+    input.value=defaultName||'';
+    modal.classList.add('open');
+    input.focus();input.select();
+    histPush('bmRename');   // 疊在書籤清單上：手機返回鍵關命名框（視同取消），書籤清單保留
+    let settled=false;
+    const done=v=>{
+      if(settled)return;settled=true;
+      modal.classList.remove('open');
+      histPop('bmRename');   // 同步退掉推入的狀態（popstate 端旗標已清，不會重複關閉）
+      yes.removeEventListener('click',onYes);
+      no.removeEventListener('click',onNo);
+      input.removeEventListener('keydown',onKey);
+      resolve(v);
+    };
+    const onYes=()=>{
+      const v=input.value.trim();
+      done(v?{name:v.slice(0,30)}:null);   // 空白送出視同取消：不修改、不恢復標題
+    };
+    const onNo=()=>done(null);
+    const onKey=e=>{
+      if(e.isComposing)return;   // IME 組字中：Enter 是上字，不能視同「確定」
+      if(e.key==='Enter'){e.preventDefault();onYes()}
+      else if(e.key==='Escape'){e.preventDefault();e.stopPropagation();done(null)}
+    };
+    yes.addEventListener('click',onYes);
+    no.addEventListener('click',onNo);
+    input.addEventListener('keydown',onKey);
+  });
+}
+async function renameBookmark(chatId,idx){
+  const c=chats[chatId];const m=c&&c.messages[idx];
+  if(!m||!m.bm){showToast('書籤已不存在','warn');renderBookmarkList();return}
+  const cur=(m.bm&&typeof m.bm==='object'&&(m.bm.name||'').trim())||'';
+  const r=await promptBookmarkRename('書籤重新命名（僅改變書籤顯示，不動原對話）',cur);
+  if(r==null)return;   // 取消或空白送出：不修改、不恢復標題
+  m.bm={name:r.name};
+  saveChatsData(chats,chatId);
+  renderBookmarkList();
+  showToast('書籤已重新命名','success');
 }
 function renderBookmarkList(){
   const box=document.getElementById('bookmarkList');
@@ -6545,11 +6674,11 @@ function renderBookmarkList(){
     const time=b.m.createdAt?new Date(b.m.createdAt).toLocaleString('zh-TW'):'';
     return `<div class="bookmark-item" data-chat="${escHtml(b.chatId)}" data-idx="${b.idx}">
       <div class="bm-main">
-        <div class="bm-chat">💬 ${escHtml(b.title)}</div>
+        <div class="bm-chat"><span class="bm-title" title="${escHtml(b.title)}">💬 ${escHtml(b.title)}</span><button class="bm-rename" data-rename="1" type="button" title="重新命名書籤（僅改書籤顯示）">✏️</button></div>
         <div class="bm-text">${escHtml(t)}</div>
         <div class="bm-time">🕒 ${escHtml(time)}</div>
       </div>
-      <button class="bm-del" data-del="1" type="button" title="移除書籤">✕</button>
+      <button class="bm-del" data-del="1" type="button" title="移除書籤">❌</button>
     </div>`;
   }).join('');
 }
@@ -6570,6 +6699,7 @@ document.getElementById('bookmarkList').addEventListener('click',e=>{
   const item=e.target.closest('.bookmark-item');
   if(!item)return;
   const chatId=item.dataset.chat,idx=parseInt(item.dataset.idx,10);
+  if(e.target.closest('[data-rename]')){e.stopPropagation();renameBookmark(chatId,idx);return}   // ✏️：只改書籤顯示，不動原對話
   if(e.target.closest('[data-del]')){   // ✕：移除書籤
     const c=chats[chatId];const m=c&&c.messages[idx];
     if(m){
