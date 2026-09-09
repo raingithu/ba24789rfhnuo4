@@ -1121,13 +1121,13 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
         <path d="M7.25 2.5h9.5A2.75 2.75 0 0 1 19.5 5.25V21a1 1 0 0 1-1.58.81L12 17.68l-5.92 4.13A1 1 0 0 1 4.5 21V5.25A2.75 2.75 0 0 1 7.25 2.5Zm0 2A.75.75 0 0 0 6.5 5.25v13.83l4.93-3.44a1 1 0 0 1 1.14 0l4.93 3.44V5.25a.75.75 0 0 0-.75-.75h-9.5Z"/>
       </svg>
       </button>
-      <button class="header-btn update" id="btnAppUpdate" type="button" title="有新版本，點此重整更新" aria-label="更新到新版本" hidden>⟳ 更新</button>
       <button class="header-btn" id="btnFind" type="button" title="在這個對話中搜尋（Ctrl+F）" aria-label="在這個對話中搜尋">
       <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
         <circle cx="11.5" cy="11.5" r="6.6"/>
         <line x1="18" y1="18" x2="23" y2="23"/>
       </svg>
       </button>
+      <button class="header-btn update" id="btnAppUpdate" type="button" title="有新版本，點此可更新版本" aria-label="更新到新版本" hidden>⟳ 更新</button>
       <button class="gallery-btn" id="btnGallery" type="button" title="圖片 Gallery" aria-label="圖片 Gallery">☰</button>
     </div>
     <div class="find-bar" id="findBar">
@@ -5273,12 +5273,12 @@ function notifyAppUpdateAvailable(){
   setAppUpdatePending(true);
   if(appUpdateToastShown)return;   // 已提示過：只留 header 更新鈕，不再彈 toast
   appUpdateToastShown=true;
-  const t=showToast('有新版本可用，點此重整更新','action');
+  const t=showToast('有新版本，可更新','action');
   if(t)t.addEventListener('click',()=>applyAppUpdate());
 }
 function applyAppUpdate(){
   // 串流生成中禁止重整：避免 AI 回覆／生圖被中斷；請使用者等完成後再點 header 的更新鈕
-  if(typeof isStreaming!=='undefined'&&isStreaming){showToast('AI 回覆生成中，稍後再更新（避免中斷）','warn');return}
+  if(typeof isStreaming!=='undefined'&&isStreaming){showToast('AI 回覆中，請稍後更新','warn');return}
   try{
     if(draftTimer){clearTimeout(draftTimer);draftTimer=null}
     if(typeof saveDraft==='function')saveDraft();               // 輸入框草稿先存
