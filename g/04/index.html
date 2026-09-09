@@ -6707,7 +6707,11 @@ document.getElementById('bookmarkList').addEventListener('click',e=>{
       saveChatsData(chats,chatId);
       if(chatId===activeChatId){
         const row=messagesEl.querySelector('.msg-row[data-idx="'+idx+'"]');
-        if(row)row.classList.remove('bm');
+        if(row){
+          row.classList.remove('bm');
+          const bmBtn=row.querySelector('[data-act="bookmark"]');
+          if(bmBtn)bmBtn.textContent='🔖 加入書籤';
+        }
       }
       renderBookmarkList();
       showToast('已移除書籤','success');
