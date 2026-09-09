@@ -130,7 +130,7 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
 /* 設定彈窗 */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;display:none;align-items:center;justify-content:center}
 .modal-overlay.open{display:flex}
-.modal{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;width:98%;max-width:420px;max-height:640px;overflow-y:auto}
+.modal{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:20px;width:98%;max-width:420px;max-height:640px;overflow-y:auto}
 .modal h3{margin-bottom:16px;color:var(--accent)}
 #personaPrompt{width:100%;height:24px;overflow-y:hidden}
 #settingSystem{background:var(--input-bg);color:var(--text);width:100%;height:60px;padding:4px;border:1px solid var(--border);border-radius:6px;outline:none;transition:border-color .2s}
@@ -176,7 +176,7 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
 .msg hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
 .msg a{color:var(--accent)}
 .msg :not(pre)>code{background:rgba(0,0,0,.25);padding:1px 6px;border-radius:4px;font-size:.9em;font-family:Consolas,Menlo,monospace}
-.msg pre{position:relative;background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;margin:.5em 0}
+.msg pre{position:relative;background:rgba(0,0,0,.16);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;margin:.5em 0}
 /* KaTeX：預設 .katex-display 不換行會撐破氣泡；強制容器內水平滾動 */
 .msg .katex-display{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:.2em 0}
 .msg .katex{white-space:normal}
@@ -253,7 +253,7 @@ html,body{height:100%;font-family:'IBM Plex Mono',ui-monospace,SFMono-Regular,Co
   color:var(--text);
   display:block;
   border: 1px solid #ffffff30;
-  box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);
+  box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(128, 120, 128, .3);
 }
 .scroll-bottom:hover{color:var(--accent);border-color:var(--accent)}
 
@@ -313,29 +313,31 @@ body[data-theme="default"]{
   .modal {box-shadow: 0 0 0 1px #d9d5f066, inset 0 0 12px #ffffff30;}
   .btn-settings {padding: 20px;box-shadow: inset 0 -1px 20px 8px rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(25, 20, 25, .88);}
   #msgInput {box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);}
+  .scroll-bottom.show{box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);}
 }
 
 /* ===== 主題：粉嫩公主（可愛風）===== */
 body[data-theme="priconne"]{
-  --bg:#fde5ef;--surface:#ffeef6;--surface2:#ffd4e6;--accent:#f56ba4;
-  --text:#8a4a66;--text2:#c47ba0;--border:#ffbcd8;--input-bg:#fff3f8;
+  --bg:#fde5ef;--surface:#fff7fb;--surface2:#ffd4e6;--accent:#f56ba4;
+  --text:#f893bf;--text2:#c47ba0;--border:#ffbcd8;--input-bg:#e9d6ffb0;
   --msg-user:#fff;--msg-ai:#8a5fb8;--scrollbar:#ffb0d0;
   --msg-user-bg:rgba(245,107,164,.85);--msg-ai-bg:rgba(231,214,250,.9);
   --cat-fur:#ffb3d2;--cat-fur2:#fcdef0;--cat-fur3:#ffc4ea;--cat-inner:#ff7fb2;--cat-belly:#fee0f2;--cat-paw:#fd9ec4;
   --cat-eye:#5b3b78;--cat-blush:#ffbfe6;--cat-nose:#e05c9c;--cat-detail:#d97aa8;
   background-image:radial-gradient(rgba(245,107,164,.22) 1.5px,transparent 1.5px);
   background-size:22px 22px;
+  .btn-save{color:#fff}
 }
 body[data-theme="priconne"] .msg{border-radius:18px;box-shadow:0 4px 14px rgba(255,143,188,.28),inset 0 1px 0 rgba(255,255,255,.6)}
 body[data-theme="priconne"] .msg.user{color:#fff;background:linear-gradient(150deg,#ff9ec6,#f77fb2);border:1px solid rgba(255,255,255,.7)}
 body[data-theme="priconne"] .msg.assistant{color:#7c4a9e;background:linear-gradient(150deg,#eee0ff,#d9c4fa);border:1px solid rgba(180,140,230,.55)}
 body[data-theme="priconne"] .typing{color:var(--msg-ai);background:linear-gradient(150deg,#eee0ff,#d9c4fa);border:1px solid rgba(180,140,230,.55);border-radius:14px}
-body[data-theme="priconne"] .btn-attach{border:1px solid #f78fb8;color:#d14884;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 8px rgba(245,107,164,.3);border-radius:14px}
+body[data-theme="priconne"] .btn-attach{background:linear-gradient(160deg, rgb(248,118,154,.75), rgb(238,128,174,.6) 50%, rgb(238,118,150,.3));border:1px solid #f78fb8;color:#d14884;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 8px rgba(245,107,164,.3);border-radius:14px}
 body[data-theme="priconne"] .btn-send{background:linear-gradient(160deg,#ff9ec6,#f06ba2);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 8px rgba(245,107,164,.4);border-radius:14px}
 body[data-theme="priconne"] .btn-attach:hover,body[data-theme="priconne"] .btn-send:hover{border-color:#f56ba4;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 6px 14px rgba(245,107,164,.45)}
 body[data-theme="priconne"] .btn-attach:active,body[data-theme="priconne"] .btn-send:active{transform:translateY(0);box-shadow:inset 0 2px 8px rgba(214,84,143,.4)}
-body[data-theme="priconne"] .btn-new{border-radius:20px;background:linear-gradient(160deg,#ff9ec6,#f06ba2);box-shadow:0 3px 8px rgba(245,107,164,.35)}
-body[data-theme="priconne"] .btn-settings{border-radius:12px}
+body[data-theme="priconne"] .btn-new{color:#fff;border-radius:20px;background:linear-gradient(160deg,#ffd4e6,#f06ba2);box-shadow:0 3px 8px rgba(245,107,164,.35)}
+body[data-theme="priconne"] .btn-settings{background:#ffe2f8;border-radius:12px}
 body[data-theme="priconne"] .chat-item{border-radius:12px}
 body[data-theme="priconne"] .chat-item.active{border:1px solid #ff9ec6}
 body[data-theme="priconne"] .model-badge{border-radius:12px;border:1px solid #ffbcd8}
@@ -356,49 +358,52 @@ body[data-theme="priconne"] .toast.warn{border-color:rgba(230,180,90,.7)}
 body[data-theme="cream"]{
   --bg:#f0e8d5;--surface:#f8f2e2;--surface2:#e4d7b8;--accent:#a8843c;
   --text:#5d4e36;--text2:#96835e;--border:#d9c9a2;--input-bg:#f4eddb;
-  --msg-user:#4a3c22;--msg-ai:#6b5e3c;--scrollbar:#cbb894;
+  --msg-user:#f5ead6;--msg-ai:#6b5e3c;--scrollbar:#cbb894;
   --msg-user-bg:rgba(173,143,78,.85);--msg-ai-bg:rgba(220,212,180,.9);
   background-image:radial-gradient(rgba(168,132,60,.2) 1.5px,transparent 1.5px);
   background-size:22px 22px;
+  .btn-save{color:#f5ead6}
 }
-body[data-theme="cream"] .msg.user{color:#4a3c22;background:linear-gradient(150deg,#e0cda0,#c8ac74);border:1px solid rgba(150,120,60,.4)}
+body[data-theme="cream"] .msg.user{color:#f5ead6;background:linear-gradient(150deg,#e0cda0,#c8ac74);border:1px solid rgba(150,120,60,.4)}
 body[data-theme="cream"] .msg.assistant{color:#6b5e3c;background:linear-gradient(150deg,#ece7d2,#dcd4b4);border:1px solid rgba(160,140,90,.4)}
-body[data-theme="cream"] .btn-attach{border:1px solid #b39455;color:#7a6330;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(150,120,60,.25);border-radius:14px}
+body[data-theme="cream"] .btn-attach{background:linear-gradient(160deg, rgb(204,178,124,.75), rgb(206,180,128,.7) 50%, rgb(224,198,96,.1));border:1px solid #b39455;color:#7a6330;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(150,120,60,.25);border-radius:14px}
 body[data-theme="cream"] .btn-send{background:linear-gradient(160deg,#cdb278,#ad8f4e);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(150,120,60,.35);border-radius:14px}
 body[data-theme="cream"] .btn-attach:hover,body[data-theme="cream"] .btn-send:hover{border-color:#97783a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(150,120,60,.4)}
-body[data-theme="cream"] .btn-new{border-radius:20px;background:linear-gradient(160deg,#cdb278,#ad8f4e);box-shadow:0 3px 8px rgba(150,120,60,.35)}
+body[data-theme="cream"] .btn-new{color:#efe2cc;border-radius:20px;background:linear-gradient(160deg,#cdb278,#ad8f4e);box-shadow:0 3px 8px rgba(150,120,60,.35)}
 
 /* ===== 主題：和風清新 ===== */
 body[data-theme="matcha"]{
   --bg:#e8efdc;--surface:#f3f7e9;--surface2:#d8e4c4;--accent:#5d8a44;
   --text:#3f5233;--text2:#7a9163;--border:#bcd0a4;--input-bg:#eef4e0;
-  --msg-user:#2e4022;--msg-ai:#55663d;--scrollbar:#b5cba0;
+  --msg-user:#dff3d0;--msg-ai:#55663d;--scrollbar:#b5cba0;
   --msg-user-bg:rgba(111,154,82,.85);--msg-ai-bg:rgba(223,228,198,.9);
   background-image:radial-gradient(rgba(93,138,68,.18) 1.5px,transparent 1.5px);
   background-size:22px 22px;
+  .btn-save{color:#dff3d0}
 }
-body[data-theme="matcha"] .msg.user{color:#2e4022;background:linear-gradient(150deg,#c2d9a4,#96bd7a);border:1px solid rgba(90,130,60,.45)}
+body[data-theme="matcha"] .msg.user{color:#dff3d0;background:linear-gradient(150deg,#c2d9a4,#96bd7a);border:1px solid rgba(90,130,60,.45)}
 body[data-theme="matcha"] .msg.assistant{color:#55663d;background:linear-gradient(150deg,#f0f2df,#dfe4c6);border:1px solid rgba(130,150,90,.4)}
-body[data-theme="matcha"] .btn-attach{border:1px solid #8fae6e;color:#4a6634;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(93,138,68,.25);border-radius:14px}
+body[data-theme="matcha"] .btn-attach{background:linear-gradient(160deg, rgb(160,196,132,.75), rgb(156,200,128,.7) 50%, rgb(110,224,96,.1));border:1px solid #8fae6e;color:#4a6634;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(93,138,68,.25);border-radius:14px}
 body[data-theme="matcha"] .btn-send{background:linear-gradient(160deg,#9cc07e,#6f9a52);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(93,138,68,.35);border-radius:14px}
 body[data-theme="matcha"] .btn-attach:hover,body[data-theme="matcha"] .btn-send:hover{border-color:#5d8a44;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(93,138,68,.4)}
-body[data-theme="matcha"] .btn-new{border-radius:20px;background:linear-gradient(160deg,#9cc07e,#6f9a52);box-shadow:0 3px 8px rgba(93,138,68,.35)}
+body[data-theme="matcha"] .btn-new{color:#ccefcd;border-radius:20px;background:linear-gradient(160deg,#9cc07e,#6f9a52);box-shadow:0 3px 8px rgba(93,138,68,.35)}
 
 /* ===== 主題：晴空水藍 ===== */
 body[data-theme="blue"]{
   --bg:#e2eef7;--surface:#eef6fc;--surface2:#cfe4f2;--accent:#3e8ec2;
   --text:#33526b;--text2:#6e93ae;--border:#b0d2e8;--input-bg:#e8f3fa;
-  --msg-user:#16394f;--msg-ai:#2f5a78;--scrollbar:#a3c8e0;
+  --msg-user:#ceecff;--msg-ai:#2f5a78;--scrollbar:#a3c8e0;
   --msg-user-bg:rgba(78,150,196,.85);--msg-ai-bg:rgba(207,230,245,.9);
   background-image:radial-gradient(rgba(62,142,194,.15) 1.5px,transparent 1.5px);
   background-size:22px 22px;
+  .btn-save{color:#e2f1fe}
 }
-body[data-theme="blue"] .msg.user{color:#16394f;background:linear-gradient(150deg,#9ccbea,#6cabd6);border:1px solid rgba(255,255,255,.65)}
+body[data-theme="blue"] .msg.user{color:#ceecff;background:linear-gradient(150deg,#9ccbea,#6cabd6);border:1px solid rgba(255,255,255,.65)}
 body[data-theme="blue"] .msg.assistant{color:#2f5a78;background:linear-gradient(150deg,#e4f2fc,#cfe6f5);border:1px solid rgba(100,150,190,.45)}
-body[data-theme="blue"] .btn-attach{border:1px solid #7aa8c8;color:#34688c;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(62,142,194,.25);border-radius:14px}
+body[data-theme="blue"] .btn-attach{background:linear-gradient(160deg, rgb(124,182,224,.75), rgb(128,190,208,.7) 50%, rgb(96,204,224,.1));border:1px solid #7aa8c8;color:#34688c;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(62,142,194,.25);border-radius:14px}
 body[data-theme="blue"] .btn-send{background:linear-gradient(160deg,#7ab8de,#4e96c4);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(62,142,194,.35);border-radius:14px}
 body[data-theme="blue"] .btn-attach:hover,body[data-theme="blue"] .btn-send:hover{border-color:#3e8ec2;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(62,142,194,.4)}
-body[data-theme="blue"] .btn-new{border-radius:20px;background:linear-gradient(160deg,#7ab8de,#4e96c4);box-shadow:0 3px 8px rgba(62,142,194,.35)}
+body[data-theme="blue"] .btn-new{color:#e1eff4;border-radius:20px;background:linear-gradient(160deg,#7ab8de,#4e96c4);box-shadow:0 3px 8px rgba(62,142,194,.35)}
 
 /* 淺色主題共通圓角 */
 body[data-theme="cream"] .msg,body[data-theme="matcha"] .msg,body[data-theme="blue"] .msg,body[data-theme="orange"] .msg{border-radius:18px;box-shadow:0 4px 12px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.55)}
@@ -420,9 +425,10 @@ body[data-theme="wine"]{
   --text:#c9a3ad;--text2:#9c7a86;--border:#4a2c36;--input-bg:#261519;
   --msg-user:#ffe4ea;--msg-ai:#d8aeb9;--scrollbar:#4a2c36;
   --msg-user-bg:rgba(138,58,82,.85);--msg-ai-bg:rgba(74,44,56,.85);
+  .scroll-bottom.show{box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(25, 20, 25, .28);}
 }
-body[data-theme="wine"] .msg.user{color:#ffe4ea;background:linear-gradient(150deg,#8a3a52,#6e2c42);border:1px solid rgba(212,122,143,.4)}
-body[data-theme="wine"] .msg.assistant{color:#d8aeb9;background:linear-gradient(150deg,#4a2c38,#38222b);border:1px solid rgba(160,100,118,.35)}
+body[data-theme="wine"] .msg.user{color:#ffe4ea;background:linear-gradient(150deg,#8a3a52,#6e2c42);border:2px solid rgba(212,122,143,.4)}
+body[data-theme="wine"] .msg.assistant{color:#d8aeb9;background:linear-gradient(150deg,#4a2c38,#38222b);border:2px solid rgba(160,100,118,.35)}
 body[data-theme="wine"] .btn-attach{border:1px solid rgba(212,122,143,.4);color:#d8aeb9}
 body[data-theme="wine"] .btn-send{background:linear-gradient(160deg,#a04a64,#7e364c);border:0;color:#ffe8ee}
 body[data-theme="wine"] .btn-attach:hover,body[data-theme="wine"] .btn-send:hover{color:#fff;border-color:rgba(212,122,143,.7)}
@@ -433,9 +439,11 @@ body[data-theme="gray"]{
   --text:#9aa2ac;--text2:#767e88;--border:#323438;--input-bg:#1a1b1d;
   --msg-user:#dde2e8;--msg-ai:#b0b8c2;--scrollbar:#323438;
   --msg-user-bg:rgba(90,98,108,.8);--msg-ai-bg:rgba(58,64,72,.85);
+  .scroll-bottom.show{box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(25, 20, 25, .28);}
+  .btn-new{color:#e5e9ee}
 }
-body[data-theme="gray"] .msg.user{color:#dde2e8;background:linear-gradient(150deg,#4e565f,#3d444c);border:1px solid rgba(168,176,186,.3)}
-body[data-theme="gray"] .msg.assistant{color:#b0b8c2;background:linear-gradient(150deg,#34383d,#2b2f34);border:1px solid rgba(120,128,138,.3)}
+body[data-theme="gray"] .msg.user{color:#dde2e8;background:linear-gradient(150deg,#4e565f,#3d444c);border:3px solid rgba(168,176,186,.3)}
+body[data-theme="gray"] .msg.assistant{color:#b0b8c2;background:linear-gradient(150deg,#34383d,#2b2f34);border:3px solid rgba(120,128,138,.3)}
 body[data-theme="gray"] .btn-attach{border:1px solid rgba(168,176,186,.35);color:#b0b8c2}
 body[data-theme="gray"] .btn-send{background:linear-gradient(160deg,#4e565f,#3a4048);border:0;color:#e8ecf0}
 body[data-theme="gray"] .btn-attach:hover,body[data-theme="gray"] .btn-send:hover{color:#fff;border-color:rgba(168,176,186,.6)}
@@ -444,17 +452,18 @@ body[data-theme="gray"] .btn-attach:hover,body[data-theme="gray"] .btn-send:hove
 body[data-theme="orange"]{
   --bg:#faeacd;--surface:#fdf3dd;--surface2:#f5e0b0;--accent:#d8821e;
   --text:#6b4c1e;--text2:#a3813f;--border:#ecd39a;--input-bg:#fbeed3;
-  --msg-user:#59380e;--msg-ai:#7a5624;--scrollbar:#e8c084;
+  --msg-user:#ffe2c6;--msg-ai:#7a5624;--scrollbar:#e8c084;
   --msg-user-bg:rgba(221,138,32,.85);--msg-ai-bg:rgba(244,221,176,.9);
   background-image:radial-gradient(rgba(216,130,30,.16) 1.5px,transparent 1.5px);
   background-size:22px 22px;
+  .btn-save{color:#ffe2c6}
 }
-body[data-theme="orange"] .msg.user{color:#59380e;background:linear-gradient(150deg,#fcc878,#f0a13e);border:1px solid rgba(255,255,255,.65)}
+body[data-theme="orange"] .msg.user{color:#ffe2c6;background:linear-gradient(150deg,#fcc878,#f0a13e);border:1px solid rgba(255,255,255,.65)}
 body[data-theme="orange"] .msg.assistant{color:#7a5624;background:linear-gradient(150deg,#fbeed2,#f4ddb0);border:1px solid rgba(200,150,70,.45)}
-body[data-theme="orange"] .btn-attach{border:1px solid #cf9a3e;color:#8a5f14;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(216,130,30,.25);border-radius:14px}
+body[data-theme="orange"] .btn-attach{background:linear-gradient(160deg, rgb(245,176,84,.75), rgb(218,164,54,.7) 50%, rgb(214,160,80,.1));border:1px solid #cf9a3e;color:#8a5f14;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(216,130,30,.25);border-radius:14px}
 body[data-theme="orange"] .btn-send{background:linear-gradient(160deg,#f2ac4a,#dd8a20);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(216,130,30,.35);border-radius:14px}
 body[data-theme="orange"] .btn-attach:hover,body[data-theme="orange"] .btn-send:hover{border-color:#d8821e;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(216,130,30,.4)}
-body[data-theme="orange"] .btn-new{border-radius:20px;background:linear-gradient(160deg,#f2ac4a,#dd8a20);box-shadow:0 3px 8px rgba(216,130,30,.35)}
+body[data-theme="orange"] .btn-new{color:#fdf3dd;border-radius:20px;background:linear-gradient(160deg,#f2ac4a,#dd8a20);box-shadow:0 3px 8px rgba(216,130,30,.35)}
 
 /* ===== 主題：墨玉鎏金（暗色墨綠深底＋鎏金框線＋玉綠點綴）===== */
 body[data-theme="inkgold"]{
@@ -479,13 +488,14 @@ body[data-theme="inkgold"]{
   .header {border-bottom: 5px solid var(--border);}
   .modal {box-shadow: 0 0 0 1px #d9d5f066, inset 0 0 12px #ffffff30;}
   .btn-settings {padding: 20px;box-shadow: inset 0 -1px 20px 8px rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(25, 20, 25, .88);}
+  .scroll-bottom.show{box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(25, 20, 25, .28);}
 }
 body[data-theme="inkgold"] .msg{box-shadow:0 4px 16px rgba(0,0,0,.4)}
-body[data-theme="inkgold"] .msg.user{background:linear-gradient(150deg,#5a604c,#1c3f30);border:1px solid #d19621}
-body[data-theme="inkgold"] .msg.assistant{background:linear-gradient(150deg,#182b22,#7d734f);border:1px solid #d19621}
+body[data-theme="inkgold"] .msg.user{background:linear-gradient(150deg,#5a604c,#1c3f30);border:1.8px solid #d19621}
+body[data-theme="inkgold"] .msg.assistant{background:linear-gradient(150deg,#182b22,#7d734f);border:1.8px solid #d19621}
 body[data-theme="inkgold"] .typing{color:#b9924f;background:linear-gradient(150deg,#182b22,#0f1d17);border:1px solid #2e4438}
 body[data-theme="inkgold"] .btn-send{background:linear-gradient(160deg,#dcc8a0,#b9924f);border:0;color:#0b1512;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
-body[data-theme="inkgold"] .btn-attach{border:1px solid #3f6b52}
+body[data-theme="inkgold"] .btn-attach{background:linear-gradient(160deg, rgb(6,68,34,.75), rgb(64,102,76,.7) 50%, rgb(26,76,20,.3));border:1px solid #3f6b52}
 body[data-theme="inkgold"] .btn-attach:hover,body[data-theme="inkgold"] .btn-send:hover{border-color:#d19621;color:#0b1512}
 body[data-theme="inkgold"] .btn-new{border-radius:20px;color:#d19621;box-shadow:0 3px 8px rgba(216,187,131,.28)}
 body[data-theme="inkgold"] .btn-settings{border-radius:12px;border:1px solid #3a5a48}
@@ -756,20 +766,32 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       </svg>
     </div>
 
-    <!-- 小寵物：典雅米白（熱茶）-->
+    <!-- 小寵物：典雅米白（奶油茶點）-->
     <div id="petCream" class="pet" data-pet="cream" style="text-align:center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="熱茶">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="奶油茶點">
         <g class="breath">
-          <path class="steam" d="M94,132 C88,120 100,112 94,100 C90,92 96,84 98,78" fill="none" stroke="#c9b68a" stroke-width="4" stroke-linecap="round"/>
-          <path class="steam" style="animation-delay:1.4s" d="M114,130 C108,118 120,110 114,98 C110,90 116,82 118,76" fill="none" stroke="#c9b68a" stroke-width="4" stroke-linecap="round"/>
-          <path class="steam" style="animation-delay:2.8s" d="M132,132 C126,120 138,112 132,100 C128,92 134,84 136,78" fill="none" stroke="#c9b68a" stroke-width="4" stroke-linecap="round"/>
-          <ellipse cx="110" cy="201" rx="62" ry="11" fill="#e3d4ae"/>
-          <ellipse cx="110" cy="197" rx="62" ry="12" fill="#f0e4c4"/>
-          <path d="M70,146 L73,182 C74,194 88,201 110,201 C132,201 146,194 147,182 L150,146 Z" fill="#fffdf6" stroke="#d8c69c" stroke-width="2"/>
-          <path d="M150,154 C168,150 176,164 166,174 C161,179 153,181 147,180" fill="none" stroke="#d8c69c" stroke-width="5" stroke-linecap="round"/>
-          <ellipse cx="110" cy="146" rx="40" ry="11" fill="#e8dcba"/>
-          <ellipse cx="110" cy="145" rx="33" ry="8" fill="#c9a86a"/>
-          <path class="twinkle" style="animation-delay:.6s" d="M162,114 L164.2,120.8 171,123 164.2,125.2 162,132 159.8,125.2 153,123 159.8,120.8 Z" fill="#e0c98a"/>
+          <ellipse cx="110" cy="212" rx="60" ry="7" fill="#5d4e36" opacity=".12"/>
+          <!-- 熱氣（先畫在杯後）-->
+          <g class="steam"><path d="M96,138 C92,128 100,122 96,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
+          <g class="steam" style="animation-delay:1.4s"><path d="M110,142 C106,130 114,124 110,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
+          <g class="steam" style="animation-delay:2.8s"><path d="M124,138 C120,128 128,122 124,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
+          <!-- 金粉閃爍 -->
+          <path class="twinkle" d="M176,93 L178,98 L183,100 L178,102 L176,107 L174,102 L169,100 L174,98 Z" fill="#c9a84e"/>
+          <path class="twinkle" style="animation-delay:1.3s" d="M44,112 L45.6,116.4 L50,118 L45.6,119.6 L44,124 L42.4,119.6 L38,118 L42.4,116.4 Z" fill="#c9a84e"/>
+          <!-- 金邊碟盤＋司康 -->
+          <ellipse cx="110" cy="198" rx="62" ry="11" fill="#ddd0ab"/>
+          <ellipse cx="110" cy="197" rx="62" ry="11" fill="none" stroke="#b39455" stroke-width="1.5" opacity=".6"/>
+          <ellipse cx="110" cy="196" rx="44" ry="7" fill="#cbb888" opacity=".55"/>
+          <circle cx="60" cy="190" r="9" fill="#efe2c4" stroke="#d9c9a2" stroke-width="1.5"/>
+          <circle cx="72" cy="194" r="8" fill="#e8d9b8" stroke="#d9c9a2" stroke-width="1.5"/>
+          <circle cx="57" cy="187" r="1.5" fill="#c9a84e"/>
+          <circle cx="64" cy="193" r="1.5" fill="#c9a84e"/>
+          <circle cx="73" cy="191" r="1.5" fill="#a8843c"/>
+          <!-- 茶杯（把手在後→杯身→杯緣→茶面→金帶）-->
+          <path d="M144,158 C166,154 172,172 148,180" fill="none" stroke="#b39455" stroke-width="6" stroke-linecap="round"/>
+          <path d="M76,150 L144,150 C144,172 140,184 134,189 C128,193 92,193 86,189 C80,184 76,172 76,150 Z" fill="#f8f2e2" stroke="#d9c9a2" stroke-width="2"/>
+          <ellipse cx="110" cy="150" rx="34" ry="7.5" fill="#efe4c8" stroke="#b39455" stroke-width="1.5"/>
+          <ellipse cx="110" cy="150" rx="27" ry="5" fill="#c8ac74" opacity=".8"/>
         </g>
       </svg>
     </div>
@@ -846,34 +868,95 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       </svg>
     </div>
 
-    <!-- 小寵物：靜謐月夜（彎月與雲朵）-->
-    <div id="petGray" class="pet" data-pet="gray" style="text-align:center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="彎月">
+    <!-- 小寵物：靜謐月夜 -->
+    <div id="petGray" class="pet" data-pet="gray" style="text-align: center; display: block;" title="匯出／匯入對話（點擊開啟）">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="月夜睡貓">
         <defs>
-          <mask id="moonCut">
-            <rect x="-12" y="-20" width="244" height="244" fill="#fff"/>
-            <circle cx="152" cy="96" r="46" fill="#000"/>
-          </mask>
+          <radialGradient id="grayMoonGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#c3ccd6" stop-opacity=".35"/>
+            <stop offset="60%" stop-color="#c3ccd6" stop-opacity=".12"/>
+            <stop offset="100%" stop-color="#c3ccd6" stop-opacity="0"/>
+          </radialGradient>
+          <radialGradient id="grayCatLight" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#ffeaa0" stop-opacity=".62"/>
+            <stop offset="45%" stop-color="#ffeaa0" stop-opacity=".28"/>
+            <stop offset="100%" stop-color="#ffeaa0" stop-opacity="0"/>
+          </radialGradient>
         </defs>
         <g class="breath">
-          <path class="twinkle" d="M40,52 L42.2,58.8 49,61 42.2,63.2 40,70 37.8,63.2 31,61 37.8,58.8 Z" fill="#e8c97a"/>
-          <path class="twinkle" style="animation-delay:.9s" d="M186,52 L188.2,58.8 195,61 188.2,63.2 186,70 183.8,63.2 177,61 183.8,58.8 Z" fill="#e8c97a"/>
-          <path class="twinkle" style="animation-delay:1.8s" d="M196,140 L198.2,146.8 205,149 198.2,151.2 196,158 193.8,151.2 187,149 193.8,146.8 Z" fill="#e8c97a"/>
-          <circle cx="104" cy="118" r="56" fill="#f5e6a8" mask="url(#moonCut)"/>
-
-          <circle cx="64" cy="132" r="6" fill="#e3d18c" mask="url(#moonCut)"/>
-          <path d="M66,116 q7,6 14,0" stroke="#a89044" stroke-width="3" fill="none" stroke-linecap="round"/>
-          <path d="M94,138 q6,5 12,0" stroke="#a89044" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-          <ellipse cx="58" cy="134" rx="6" ry="4" fill="#e8b4a0" opacity=".55"/>
+          <!-- 星星 -->
+          <path class="twinkle" d="M52,44 L53.6,48.4 58,50 53.6,51.6 52,56 50.4,51.6 46,50 50.4,48.4 Z" fill="#d8dee6"></path>
+          <path class="twinkle" style="animation-delay:1.3s" d="M166,36 L167.2,39.4 170.6,40.6 167.2,41.8 166,45.2 164.8,41.8 161.4,40.6 164.8,39.4 Z" fill="#d8dee6"></path>
+          <path class="twinkle" style="animation-delay:2.4s" d="M180,96 L181.2,99.4 184.6,100.6 181.2,101.8 180,105.2 178.8,101.8 175.4,100.6 178.8,99.4 Z" fill="#d8dee6"></path>
+          <circle class="twinkle" style="animation-delay:.8s" cx="40" cy="96" r="2" fill="#9aa5b1"></circle>
+          <!-- 滿月＋光暈 -->
+          <circle cx="110" cy="86" r="64" fill="url(#grayMoonGlow)"></circle>
+          <circle cx="110" cy="86" r="46" fill="#f5e6a8"></circle>
+          <circle cx="94" cy="72" r="7" fill="#e3d18c" opacity=".6"></circle>
+          <circle cx="124" cy="98" r="5" fill="#e3d18c" opacity=".5"></circle>
+          <circle cx="104" cy="106" r="4" fill="#e3d18c" opacity=".55"></circle>
+          <circle cx="128" cy="64" r="3" fill="#e3d18c" opacity=".45"></circle>
+          <!-- 夜雲（飄過月前）-->
           <g class="drift">
-            <ellipse cx="150" cy="176" rx="34" ry="12" fill="#e8ebf0" opacity=".9"/>
-            <ellipse cx="128" cy="168" rx="22" ry="10" fill="#e8ebf0" opacity=".9"/>
-            <ellipse cx="172" cy="168" rx="20" ry="9" fill="#e8ebf0" opacity=".9"/>
+            <ellipse cx="150" cy="106" rx="26" ry="9" fill="#e8ebf0"></ellipse>
+            <ellipse cx="134" cy="111" rx="16" ry="7" fill="#e8ebf0"></ellipse>
+            <ellipse cx="166" cy="110" rx="14" ry="6" fill="#e8ebf0"></ellipse>
           </g>
-          <g class="drift" style="animation-delay:2.5s">
-            <ellipse cx="176" cy="84" rx="26" ry="9" fill="#dfe3ea" opacity=".8"/>
-            <ellipse cx="158" cy="78" rx="16" ry="7" fill="#dfe3ea" opacity=".8"/>
+          <g class="drift">
+            <ellipse cx="50" cy="106" rx="34" ry="12" fill="#e8ebf0" opacity=".9"></ellipse>
+            <ellipse cx="28" cy="98" rx="22" ry="10" fill="#e8ebf0" opacity=".9"></ellipse>
+            <ellipse cx="152" cy="78" rx="20" ry="9" fill="#e8ebf0" opacity=".9"></ellipse>
           </g>
+          <!-- 小丘＋影子 -->
+          <ellipse cx="110" cy="222" rx="88" ry="15" fill="#23262a"></ellipse>
+          <ellipse cx="110" cy="214" rx="56" ry="8" fill="#15161a" opacity=".55"></ellipse>
+          <!-- 蜷睡灰貓（月夜） -->
+          <!-- 尾巴（繞到身前，虎斑條紋） -->
+          <path d="M146,188 C162,192 162,206 140,210 C130,212 122,210 118,207" fill="none" stroke="#838b98" stroke-width="10" stroke-linecap="round"></path>
+          <path d="M146,188 C162,192 162,206 140,210 C130,212 122,210 118,207" fill="none" stroke="#5f6875" stroke-width="10" stroke-linecap="round" stroke-dasharray="4 12" stroke-dashoffset="6" opacity=".55" class=""></path>
+          <circle cx="118" cy="207" r="6" fill="#5f6875"></circle>
+          <!-- 身體 -->
+          <path d="M58,198 C58,180 80,166 104,166 C132,166 150,178 150,194 C150,208 130,214 104,214 C78,214 58,212 58,198 Z" fill="#8b93a0"></path>
+          <!-- 身體斑紋 -->
+          <path d="M143,164 C124,205 113,201 109,193" fill="none" stroke="#383f47" stroke-width="12" stroke-linecap="round" stroke-dasharray="8 20" stroke-dashoffset="16" opacity=".45" class=""></path><ellipse cx="118" cy="196" rx="16" ry="9" fill="#8b93a0" class=""></ellipse>
+          <path d="M118,144 C132,154 130,174 110,181 C99,185 88,181 84,173" fill="none" stroke="#383f47" stroke-width="12" stroke-linecap="round" stroke-dasharray="6 18" stroke-dashoffset="18" opacity=".45" class=""></path>
+          <!-- 腹部淺色 -->
+          <ellipse cx="88" cy="204" rx="16" ry="9" fill="#c3ccd6" opacity=".5" class=""></ellipse>
+          <!-- 收在前方的腳掌（頭下右側探出） -->
+          <ellipse cx="86" cy="212" rx="7" ry="4.5" fill="#b3bcc6" opacity=".9" class=""></ellipse>
+          <ellipse cx="100" cy="213" rx="7" ry="4.5" fill="#b3bcc6" opacity=".9" class=""></ellipse>
+          <!-- 短三角貓耳（左右鏡像對稱，可偶發抖動） -->
+          <g class="ear">
+            <!-- 左耳（外＋內） -->
+            <path d="M50,171 C52,165 51,157 54,153 C52,149 56,152 57,156 C58,161 60,165 63,168 C58,170 53,172 50,171 Z" fill="#8b93a0"></path>
+            <path d="M53,173 C51,169 50,164 52,161 C54,159 56,161 57,165 C58,169 59,172 60,174 C57,175 54,175 53,173 Z" fill="#c3ccd6" opacity=".45"></path>
+            <!-- 右耳（左耳對 x=78.5 鏡像） -->
+            <path d="M107,171 C105,165 106,157 103,153 C105,149 101,152 100,156 C99,161 97,165 94,168 C99,170 104,172 107,171 Z" fill="#8b93a0"></path>
+            <path d="M104,173 C106,169 107,164 105,161 C103,159 101,161 100,165 C99,169 98,172 97,174 C100,175 103,175 104,173 Z" fill="#c3ccd6" opacity=".45"></path>
+          </g>
+          <!-- 貓臉（正面寬臉：上窄下寬、兩腮鼓、圓下巴） -->
+          <path d="M71,158 C54,158 43,169 43,184 C43,199 52,211 76,211 C105,211 114,199 114,184 C114,169 103,158 86,158 Z" fill="#8b93a0"></path>
+          <!-- 額頭川字虎斑（貓訊號） -->
+          <path d="M66,163 q2,6 0,10 M76,161 q0,6 0,10 M86,163 q-2,6 0,10" fill="none" stroke="#6b7380" stroke-width="2.5" stroke-linecap="round" opacity=".6"></path>
+          <!-- 閉眼（粗、扁、緩弧） -->
+          <path d="M54,184 q5,4.5 10,0 M88,184 q5,4.5 10,0" fill="none" stroke="#3d444b" stroke-width="3" stroke-linecap="round"></path>
+          <!-- 鼻 -->
+          <path d="M72.5,189 h7 l-3.5,4 Z" fill="#565e6a" stroke="#565e6a" stroke-width="1" stroke-linejoin="round"></path>
+          <!-- w 嘴 -->
+          <path d="M76,193 v2 M76,195 C75,197 72.5,197.5 71.5,195.5 M76,195 C77,197 79.5,197.5 80.5,195.5" fill="none" stroke="#565e6a" stroke-width="1.4" stroke-linecap="round"></path>
+          <!-- 腮紅 -->
+          <ellipse cx="56" cy="193" rx="6" ry="4" fill="#b08a8e" opacity=".35"></ellipse>
+          <ellipse cx="96" cy="193" rx="6" ry="4" fill="#b08a8e" opacity=".35"></ellipse>
+          <!-- 鬍鬚 -->
+          <path d="M48,191 L36,189 M48,197 L36,200 M104,191 L116,189 M104,197 L116,200" fill="none" stroke="#9aa5b1" stroke-width="2" stroke-linecap="round" opacity=".6"></path>
+          <!-- 月光落點（暖色柔光：頭頂光暈＋背脊光帶＋小丘光池） -->
+          <ellipse cx="76" cy="158" rx="20" ry="7" fill="url(#grayCatLight)" opacity=".9"></ellipse>
+          <ellipse cx="124" cy="170" rx="18" ry="6" fill="url(#grayCatLight)" opacity=".7"></ellipse>
+          <ellipse cx="104" cy="213" rx="44" ry="9" fill="url(#grayCatLight)" opacity=".55"></ellipse>
+          <!-- Zzz -->
+          <path class="steam" d="M104,154 h7 l-7,7 h7" fill="none" stroke="#9aa5b1" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path class="steam" style="animation-delay:1.4s" d="M112,146 h8 l-8,8 h8" fill="none" stroke="#9aa5b1" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path class="steam" style="animation-delay:2.8s" d="M120,138 h9 l-9,9 h9" fill="none" stroke="#9aa5b1" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
         </g>
       </svg>
     </div>
@@ -2131,6 +2214,49 @@ function noteStreamSignal(hasSignal){
 }
 
 function getApiKey(){return settings.apiKey||DEFAULT_SETTINGS.apiKey}
+// ===== API Key 池：主 Key 限流／失效時自動輪替備用 Key =====
+// ▼▼ 備用 Key 直接填在這裡（只有 Agnes 端點會使用；使用者改成自訂 API 端點時不會動用到備用池）▼▼
+const BACKUP_API_KEYS=[
+  'sk-ydGbGKIaQ9Pb1brFIH6QblPqpb5Bk923BYVfregugFq4zG1O',   // ← 填入第 1 把備用 Agnes Key
+  'sk-3V9MT4xVJoGqZaZT5cMV3yoRcj2i0iXUWd0Q7stA7bayHhXJ'    // ← 填入第 2 把備用 Agnes Key
+//  ''    // ← 填入第 3 把備用 Agnes Key（需要更多就照格式再往下加）
+];
+// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+// KEY_POOL.ptr 是輪替起點，KEY_POOL.fail 記錄各 Key 的冷卻到期時間（ms epoch）
+const KEY_POOL={ptr:0,fail:{}};
+function getKeyPool(prim){
+  const isImg=prim!=null;   // 圖片請求會帶入專用 Key：此時端點要用圖片端點判斷
+  const ep=isImg?getImageEndpoint():getEndpoint();
+  const primary=(prim!=null?prim:getApiKey())||'';
+  // 備用 Key 僅在 Agnes 官方端點時啟用：自訂端點時使用者的 Key 是給其他服務的，備用池不參與輪替
+  const extra=isAgnesEndpoint(ep)?BACKUP_API_KEYS.map(s=>String(s||'').trim()).filter(Boolean):[];
+  const all=[primary].concat(extra).filter(Boolean);
+  return all.filter((k,i)=>all.indexOf(k)===i);   // 去重
+}
+function pickApiKey(prim){
+  const pool=getKeyPool(prim);
+  if(!pool.length)return '';
+  const now=Date.now();
+  for(let n=0;n<pool.length;n++){
+    const k=pool[(KEY_POOL.ptr+n)%pool.length];
+    if(!(KEY_POOL.fail[k]>now))return k;   // 跳過冷卻中的 Key
+  }
+  return pool[KEY_POOL.ptr%pool.length];   // 全部冷卻中：照原順序嘗試（交給後端回應）
+}
+function keyPoolSize(prim){return getKeyPool(prim).length}
+// Key 限流／失效：標記冷卻並把輪替指標移到下一把
+function markKeyFail(k,ms){
+  if(!k)return;
+  KEY_POOL.fail[k]=Date.now()+(ms||60000);
+  const pool=getKeyPool();
+  const i=pool.indexOf(k);
+  if(i>=0)KEY_POOL.ptr=(i+1)%pool.length;
+}
+// 連線逾時／回應慢：不標記失敗，僅換下一把 Key 試試（可能是該 Key 的佇列比較塞）
+function rotateKeyPtr(prim){
+  const pool=getKeyPool(prim);
+  if(pool.length>1)KEY_POOL.ptr=(KEY_POOL.ptr+1)%pool.length;
+}
 const THEMES=['default','priconne','cream','matcha','blue','wine','gray','orange','inkgold'];
 function getTheme(){return THEMES.includes(settings.theme)?settings.theme:'default'}
 function setTheme(t){
@@ -2366,7 +2492,7 @@ document.getElementById('btnPersonaRename').addEventListener('click',async()=>{
   showToast('已重新命名','success');
 });
 function getSystemPrompt(){
-  const hardcoded='請一律使用台灣用語中文回答(注意：嚴格遵守此規範，不可夾雜簡體字與用語！)。不要提到自己是 AI 語言模型(重要)，也不要提到由Sapiens AI開發或設計(重要)，請依使用者選取的人格，扮演好自己的角色，你的名字可隨你喜好隨機命名，但命名後，後續回答請保持一致。若使用者未選擇，你則是（一個自然親切的通用助理，語氣自然親切，十分溫柔，能提供各種幫助，會在適當時機使用適合的表情符號。）';
+  const hardcoded='請一律使用台灣用語中文回答(注意：嚴格遵守此規範，不可夾雜簡體字與用語！)。不要提到自己是 AI 語言模型(重要)，也不要提到由Sapiens AI開發或設計(重要)，請依使用者選取的人格，扮演好自己的角色，你的名字可隨你喜好隨機命名，但命名後，後續回答請保持一致。若使用者未選擇，你則是（一個自然親切的通用助理，語氣自然親切，十分溫柔，能提供各種幫助，會在適當時機使用適合的表情符號。），你可以調用搜尋工具，但是非即時資訊的問題，請優先以你自身知識回答，除非使用者糾正你的錯誤了，再調用工具幫助查詢。';
   const parts=[hardcoded];
   const persona=getPersona();
   if(persona&&persona.prompt)parts.push(persona.prompt);
@@ -3520,10 +3646,13 @@ async function fetchWithRetry(url,options,cfg){
   const onWait=cfg.onWait||null;              // 等待重試間隔的 callback（讓呼叫端把狀態文字切回「正在…」，避免「伺服器忙碌」殘留至下一輪請求完成）
   const prefix=cfg.statusPrefix||'';          // 狀態文字前綴（如 '🖼️ '）
   const isAborted=cfg.isAborted||(()=>false); // 等待重試間隔時檢查是否已被中止
+  const getKey=cfg.getKey||null;              // 多 Key 輪替：每次嘗試前呼叫，取得本次要用的 API Key（備用 Key 輪替用）
   let resp=null,attempt=0,timedOut=false;
   while(true){
     attempt++;
     timedOut=false;
+    const curKey=getKey?getKey():null;   // 本次要用的 Key（429/401/403 時標記冷卻並換下一把）
+    if(curKey&&options&&options.headers&&typeof options.headers==='object')options.headers.Authorization='Bearer '+curKey;
     const timeoutId=setTimeout(()=>{timedOut=true;cfg.abort&&cfg.abort()},timeoutMs);
     try{
       resp=await fetch(url,options);
@@ -3531,6 +3660,7 @@ async function fetchWithRetry(url,options,cfg){
       clearTimeout(timeoutId);
       if(e.name==='AbortError'&&!timedOut)throw e;   // 使用者主動停止，不重試
       if(attempt>=maxAttempts)throw e;               // 重試次數用完
+      if(curKey)rotateKeyPtr();   // 連線逾時／回應慢：下一把 Key 換著試（不標記失敗）
       const wait=Math.min(5*attempt,15);
       if(onStatus)onStatus('<span class="spinner"></span>'+prefix+'連線逾時，'+wait+' 秒後自動重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
       dbg('[Chat] 連線逾時，自動重試第 '+(attempt+1)+' 次');
@@ -3542,6 +3672,14 @@ async function fetchWithRetry(url,options,cfg){
     clearTimeout(timeoutId);
     if(resp.ok)break;
     const errText=await resp.text();
+    // 多 Key 輪替：限流（429）或 Key 失效（401/403）→ 標記該 Key 冷卻，立刻換下一把重試（不等待）
+    if(curKey&&(resp.status===429||resp.status===401||resp.status===403)&&attempt<maxAttempts){
+      markKeyFail(curKey,resp.status===429?60000:10*60000);   // 限流冷卻 60 秒；401/403 視為無效，冷卻 10 分鐘
+      if(onStatus)onStatus('<span class="spinner"></span>'+prefix+(resp.status===429?'Key 限流':'Key 無效')+'，切換備用 API Key 重試（第 '+(attempt+1)+'/'+maxAttempts+' 次）');
+      dbg('[Chat] HTTP '+resp.status+'，換備用 Key 重試（第 '+(attempt+1)+' 次）');
+      if(isAborted())throw Object.assign(new Error('aborted'),{name:'AbortError'});
+      continue;
+    }
     // 佇列已滿 / 伺服器忙碌 → 自動重試
     if((resp.status===503||/queue is full|please retry later/i.test(errText))&&attempt<maxAttempts){
       const wait=Math.min(5*attempt,15);
@@ -3684,7 +3822,7 @@ async function rewriteSearchQuery(query){
       '只輸出查詢字串本身，不要任何解釋、引號或多餘文字。';
     const resp=await fetch(getEndpoint()+'/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getApiKey()},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+pickApiKey()},
       body:JSON.stringify({
         model:getModel(),stream:false,max_tokens:1000,temperature:0.2,
         messages:[
@@ -4484,7 +4622,8 @@ async function requestAI(opts){
       signal:sig
     },{
       timeoutMs:TIMEOUT.http,   // 只限「連線建立」（回應表頭前）；串流本身不限時
-      maxAttempts:4,
+      maxAttempts:Math.max(4,keyPoolSize()*2+2),   // Key 池越大給越多嘗試空間（429/401/403 換 Key 重試也計入次數）
+      getKey:()=>pickApiKey(),   // 多 Key 輪替：主 Key 限流／失效時自動換備用 Key
       onStatus:h=>{if(statusDiv.isConnected)statusDiv.innerHTML=h},
       onWait:()=>{if(statusDiv.isConnected)statusDiv.innerHTML='<span class="spinner"></span>回應中'},
       isAborted:()=>sig.aborted
@@ -4775,7 +4914,7 @@ async function autoTitle(chat){
     const sys='你是對話標題產生器。根據對話開頭取一個 6～14 字的繁體中文（台灣用語）標題，概括對話主題。只輸出標題本身，不要引號、句號或任何其他文字。';
     const resp=await fetch(getEndpoint()+'/chat/completions',{
       method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+getApiKey()},
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+pickApiKey()},
       body:JSON.stringify({model:getModel(),stream:false,max_tokens:500,temperature:0.4,messages:[
         {role:'system',content:sys},
         {role:'user',content:'使用者: '+contentText(fu).slice(0,200)+'\nAI: '+contentText(fa).slice(0,200)}
@@ -4836,7 +4975,8 @@ async function requestImage(opts){
       signal:abortCtrl.signal
     },{
       timeoutMs:TIMEOUT.image,   // 2K 圖片生成正常 30~90 秒；單次嘗試逾時 2 分鐘視為卡死
-      maxAttempts:5,
+      maxAttempts:Math.max(5,keyPoolSize(getImageApiKey())*2+2),
+      getKey:()=>pickApiKey(getImageApiKey()),   // 多 Key 輪替（圖片 Key 為主的池）
       onStatus:h=>{statusDiv.innerHTML=h},
       onWait:()=>{statusDiv.innerHTML='<span class="spinner"></span>🖼️ 正在生成圖片'},   // 重試間隔後立刻把狀態文字切回，避免「伺服器忙碌」殘留 30~90 秒
       statusPrefix:'🖼️ ',
@@ -5650,7 +5790,7 @@ messagesEl.addEventListener('click',async e=>{
     if(bmBtnEl)bmBtnEl.textContent=m.bm?'🔖 移除書籤':'🔖 加入書籤';
     saveChatsData(chats,activeChatId);
     if(bookmarkModalOpen)renderBookmarkList();   // 面板開著時即時更新
-    showToast(m.bm?'已加入書籤（點上方 🔖 可快速跳到書籤）':'已移除書籤',m.bm?'success':undefined);
+    showToast(m.bm?'已加入書籤':'已移除書籤',m.bm?'success':undefined);
   }else if(act==='speak'){
     toggleSpeak(m);
   }else if(act==='delmsg'){
@@ -6325,7 +6465,7 @@ function renderBookmarkList(){
   if(!box)return;
   const list=collectBookmarks();
   if(!list.length){
-    box.innerHTML='<div class="bookmark-empty">還沒有書籤<br>在訊息選單（⋮）點「🔖 加入書籤」即可收藏</div>';
+    box.innerHTML='<div class="bookmark-empty">還沒有書籤<br>在訊息選單裡點「🔖 加入書籤」即可收藏<br>收藏後的訊息可在此快速跳轉</div>';
     return;
   }
   box.innerHTML=list.map(b=>{
