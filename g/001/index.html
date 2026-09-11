@@ -32,7 +32,8 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .sidebar-header h2{font-size:18px;font-weight:600;color:var(--accent)}
 .btn-new{padding:8px 14px;background:var(--msg-user-bg);color:var(--text);border:none;border-radius:18px;cursor:pointer;font-size:13px;transition:opacity .2s}
 .btn-new:hover{opacity:.85}
-.chat-list{flex:1;min-height:0;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch}
+.chat-list{flex:1;min-height:0;overflow-y:auto;padding:8px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.msg pre,.msg .msg-body table,.msg table{touch-action:pan-x pan-y}
 .chat-item{padding:10px 12px;border-radius:8px;cursor:pointer;margin-bottom:4px;transition:background .2s;display:flex;align-items:center;gap:8px}
 .chat-item:hover{background:var(--surface2)}
 .chat-item.active{background:var(--surface2);border:1px solid var(--accent)}
@@ -68,7 +69,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .menu-btn:hover .arrow{animation:arrowEnter 217ms ease-out forwards}
 .menu-btn:not(:hover) .arrow{animation:arrowLeave 217ms ease-in reverse backwards}
 .model-badge{padding:4px 10px;background:var(--surface2);border-radius:4px;font-size:12px;color:var(--text2)}
-.messages{flex:1;min-height:0;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;-webkit-overflow-scrolling:touch}
+.messages{flex:1;min-height:0;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;position:relative;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .msg{max-width:84%;padding:10px 14px;border-radius:14px;line-height:1.6;font-size:14px;word-break:break-word;position:relative;box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.05)}
 .msg.user{color:var(--msg-user);
   background:linear-gradient(150deg,rgba(92,132,166,.92),rgba(70,105,140,.85));
@@ -6332,8 +6333,8 @@ document.addEventListener('click',e=>{
   if(!e.target.closest('.msg-menu-wrap'))closeAllMenus();
 });
 
-// 手機長按氣泡（480ms）直接開啟選單；滑動即取消
-let lpTimer=null;
+// 手機長按氣泡（480ms）直接開啟選單；超過 12px 的實質滑動才取消（手指微抖不算滑動，選單才叫得出來）
+let lpTimer=null,lpSX=0,lpSY=0;
 // 開啟訊息選單時檢查：若向下展開會超出對話區下緣（被輸入列裁切），改加上 .up 向上展開
 function positionDropdown(row){
   if(!row)return;
@@ -6389,17 +6390,31 @@ messagesEl.addEventListener('touchstart',e=>{
   row.classList.add('pressing');
   const t=e.touches[0];
   const lx=t?t.clientX:0, ly=t?t.clientY:0;   // 記住長按座標，開選單時貼近該處顯示
+  lpSX=lx;lpSY=ly;   // 記住長按起點：touchmove 只在實質滑動(>12px)時才取消計時器
+  clearTimeout(lpTimer);
   lpTimer=setTimeout(()=>{
-    // 確認為「長按」而非邊緣滑動：放棄同時進行的側邊欄拖曳手勢（edgeGesture=null），
-    // 讓氣泡選單與抽屜拖曳互斥，避免二者搶同一根手指而拉不出側邊欄
+    // 確認為「長按」而非側邊欄拖曳：若拖曳已跟手，先把抽屜復原定位再放棄手勢，
+    // 否則 transform 會卡在半開，之後就拉不出側邊欄
+    try{if(edgeGesture&&edgeGesture.engaged&&typeof edgeRecover==='function')edgeRecover()}catch(_){}
     edgeGesture=null;
     openRowMenu(row,lx,ly);
   },480);
 },{passive:true});
-['touchend','touchmove','touchcancel'].forEach(ev=>messagesEl.addEventListener(ev,()=>{
-  // 手指一有移動／抬起／取消就判定不是長按：清掉計時器，避免拖曳氣泡時選單跳出來打斷側邊欄抽屜
-  clearTimeout(lpTimer);
+function lpCancel(){
+  if(lpTimer){clearTimeout(lpTimer);lpTimer=null}
   document.querySelectorAll('.msg-row.pressing').forEach(r=>r.classList.remove('pressing'));
+}
+messagesEl.addEventListener('touchmove',e=>{
+  // 手指有實質滑動(>12px)才判定不是長按：清掉計時器，避免拖曳氣泡時選單跳出來打斷側邊欄抽屜。
+  // 手指微抖／瀏覽器捲動初期的微小位移不取消，選單才叫得出來。
+  if(lpTimer){
+    const t=e.touches[0];
+    if(t&&Math.hypot(t.clientX-lpSX,t.clientY-lpSY)>12)lpCancel();
+  }
+},{passive:true});
+['touchend','touchcancel'].forEach(ev=>messagesEl.addEventListener(ev,()=>{
+  // 手指抬起／手勢取消就判定長按結束：清掉計時器
+  lpCancel();
 },{passive:true}));
 // 觸控裝置上阻擋長按時的瀏覽器原生選單，讓自訂選單接管
 messagesEl.addEventListener('contextmenu',e=>{
@@ -6673,8 +6688,10 @@ document.getElementById('lbDelete').addEventListener('click',async()=>{
 });
 
 // ===== 手機側邊欄滑動手勢（max-width:768px）=====
-// 兩側面板關閉時：左緣右滑＝把對話歷史側邊欄「拉出來」（跟手拖曳）。
+// 側邊欄關閉時：畫面任何位置右滑＝把對話歷史側邊欄「拉出來」（跟手拖曳）。
 // 側邊欄開啟時：畫面任何位置左滑＝把它「推回去」（跟手拖曳）。
+// 與氣泡長按選單互斥：長按選單彈出時放棄拖曳（edgeRecover 復原定位）；拖曳一旦跟手就取消長按計時，
+// 兩者用 edgeGesture.engaged + lpCancel() 協調，任一邊先確認意圖另一邊就讓路。
 // （圖片庫不做滑動手勢：置中彈窗與跟手拖曳不搭，維持原版按鈕／背景點擊開關）
 const edgeSidebar=document.getElementById('sidebar');
 const edgeMq=window.matchMedia('(max-width:768px)');
@@ -6683,19 +6700,32 @@ function edgeGestureAllowed(){
   if(!edgeMq.matches)return false;
   if(document.getElementById('lightbox').classList.contains('open'))return false;   // 燈箱有自己的滑動切圖手勢
   for(const m of document.querySelectorAll('.modal-overlay.open'))return false;   // 任何彈窗開啟時不做手勢
+  // 氣泡訊息選單（長按叫出的 .touch 版）開著時不啟動拖曳：優先讓使用者點選單
+  if(document.querySelector('.msg-dropdown.touch.open'))return false;
   return true;
 }
 document.addEventListener('touchstart',e=>{
+  // 一根手指點下時：若長按選單開著，先收掉選單並吞掉這次觸控（避免選單與抽屜同時反應）
+  if(e.touches.length===1&&document.querySelector('.msg-dropdown.touch.open')){
+    closeAllMenus();
+    edgeGesture=null;
+    return;
+  }
   edgeGesture=null;
   if(e.touches.length!==1||!edgeGestureAllowed())return;
-  // 按鈕／輸入框／可橫向捲動的表格與程式碼區塊上不啟動手勢（避免干擾點擊與橫向捲動）
-  if(e.target.closest&&e.target.closest('button,a,input,textarea,select,.msg table,pre'))return;
+  // 按鈕／連結／輸入框／訊息選單上不啟動手勢（避免干擾點擊）；
+  // 其餘位置（含所有對話氣泡、程式碼 <pre>、表格）一律可右滑拉出側邊欄，不再限制左緣 240px。
+  // 代碼區的橫向捲動改由 touchmove 裡「捲到底才接管」來保護，不在 touchstart 直接放棄。
+  if(e.target.closest&&e.target.closest('button,a,input,textarea,select,.msg-dropdown'))return;
   const t=e.touches[0];
+  // 代碼／表格橫向捲動容器：記下來，touchmove 時若它還能往手勢方向捲就讓它先捲
+  const scroller=(e.target&&e.target.closest)?e.target.closest('.msg pre,.msg table'):null;
   if(edgeSidebar.classList.contains('open')){
     // 側邊欄開啟：任何位置（面板上或面板外）左滑都能推回去（跟手）
-    edgeGesture={type:'sidebarClose',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp};
-  }else if(t.clientX<=240){
-    edgeGesture={type:'sidebarOpen',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp};
+    edgeGesture={type:'sidebarClose',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp,scroller};
+  }else{
+    // 側邊欄關閉：畫面任何位置右滑都能拉出來（跟手）
+    edgeGesture={type:'sidebarOpen',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp,scroller};
   }
 },{passive:true});
 // 側邊欄拖曳被系統取消（例如長按選單／文字選取接管觸控）時：復原抽屜到當前開/關定位，並清空手勢狀態，
@@ -6715,6 +6745,21 @@ document.addEventListener('touchcancel',()=>{
 document.addEventListener('touchmove',e=>{
   const g=edgeGesture;
   if(!g)return;
+  // 代碼 <pre>／表格還能往手指方向橫捲時：直接放棄拖曳、完全不 preventDefault，
+  // 讓瀏覽器原生橫向捲動接管（否則 document 層 preventDefault 會把程式碼捲動吃掉）
+  if(g.scroller&&g.scroller.isConnected&&e.touches.length===1){
+    const el=g.scroller;
+    const maxX=el.scrollWidth-el.clientWidth;
+    if(maxX>4){
+      const t0=e.touches[0];
+      const ddx=t0.clientX-g.sx, ddy=t0.clientY-g.sy;
+      if(Math.abs(ddx)>Math.abs(ddy)){
+        const canRight=el.scrollLeft>1;            // 還能往右滑（看左邊被藏起的程式碼）
+        const canLeft=el.scrollLeft<maxX-1;        // 還能往左滑（看右邊被藏起的程式碼）
+        if((ddx>0&&canRight)||(ddx<0&&canLeft)){edgeGesture=null;return}
+      }
+    }
+  }
   const t=e.touches[0];
   const dx=t.clientX-g.sx,dy=t.clientY-g.sy;
   // 最近速度的加權平滑（給 touchend 判斷輕掃用，比全程平均更能反映放手瞬間的意圖）
@@ -6726,10 +6771,13 @@ document.addEventListener('touchmove',e=>{
   g.lx=t.clientX;g.lt=e.timeStamp;
   const horiz=Math.abs(dx)>Math.abs(dy)*1.2;
   if(!g.engaged){
+    // 先排除「垂直捲動」意圖：垂直位移已超過 12px 且橫向不佔優 → 這根手指是捲對話，直接放棄拖曳
+    if(Math.abs(dy)>12&&!horiz){edgeGesture=null;return}
     if(g.type==='sidebarOpen'&&dx>10&&horiz)g.engaged=true;
     else if(g.type==='sidebarClose'&&dx<-10&&horiz)g.engaged=true;
     if(!g.engaged)return;
     edgeSidebar.style.transition='none';   // 拖曳期間關閉動畫，讓面板跟手
+    try{if(typeof lpCancel==='function')lpCancel()}catch(_){}   // 跟手確認是拖曳：取消氣泡長按計時，避免選單半路跳出來搶手指
   }
   e.preventDefault();   // 已確認是橫向拖曳手勢：防止頁面跟著捲動
   const W=edgeSidebar.offsetWidth||260;
