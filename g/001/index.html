@@ -2489,11 +2489,12 @@ function migrateLegacySettings(){
 }
 migrateLegacySettings();
 
-// 快速回覆＝關閉思考：各家 OpenAI 相容端點的關思考參數寫法不一，這裡一次帶上常見寫法。
-// 後端只會讀它認識的、不認識的會忽略，所以可以安全地全帶（相容 Agnes／vLLM／Ollama／OpenRouter 等）。
-// reasoning 實在關不掉的模型：至少靠下面的系統提示要求它省略思考、直接輸出答案。
+// 快速回覆＝關閉思考：只在「顯示思考過程」關閉時才真的關思考。
+// 使用者想看思考（顯示開著）時，關思考參數＋省略思考的系統提示都會把思考架空，
+// 導致「開顯示卻看不到思考」——所以顯示開著時快速回覆自動讓路（只剩 bias 時代的加速效果就沒有了，
+// 但至少行為可預測：想快就關顯示，想看思考就開顯示）。
 function quickReplyParams(){
-  if(!getQuickReply())return {};
+  if(!getQuickReply()||getShowThinking())return {};
   return {
     // OpenRouter 系：reasoning.enabled=false（官方文件寫法）
     reasoning:{enabled:false},
@@ -5065,7 +5066,9 @@ async function requestAI(opts){
       else msgs.unshift({role:'system',content:note});
       // 快速回覆的第二道保險（模型關不掉思考時用）：系統提示直接要求省略思考、輸出答案。
       // 這是純文字指示，任何模型都吃得到；含搜尋／工具續問的請求需要推理讀長 context，不加這句。
-      if(getQuickReply()&&!opts._noQuick)msgs[0].content+='\n（快速回覆模式：請省略思考過程，直接輸出最終答案。）';
+      // 尊重「顯示思考過程」開關：使用者想看思考時不加這句，否則快速回覆會把顯示開關架空（思考永遠生不出來）。
+      // 注意：這句只影響「新發送」的請求；是否顯示舊訊息的思考只看開關＋訊息有沒有存 thinking。
+      if(getQuickReply()&&!opts._noQuick&&!getShowThinking())msgs[0].content+='\n（快速回覆模式：請省略思考過程，直接輸出最終答案。）';
     }else if(opts._cwa&&!opts._toolMsgs){
       // 三之4：氣象署資料已注入——台灣天氣直接用；資料不足（台灣以外等）才呼叫 web_search
       const cwaNote='（提示：現在時間是 '+todayNote+'。上方已附中央氣象署（官方網址 www.cwa.gov.tw）的台灣天氣預報（今明 36 小時＋一週）。使用者問台灣天氣時，請直接依該資料回答並附上來源連結，日期與時段以資料中的 startTime 為準。若資料不足——例如使用者問的是台灣以外地區的天氣、需要特定鄉鎮的細節、即時觀測或過去天氣——再呼叫 web_search 工具補查；資料足夠時不要呼叫工具。沒有呼叫工具時切勿編造資料。）';
@@ -6233,6 +6236,8 @@ messagesEl.addEventListener('load',e=>{
 
 // 訊息選單（⋮）與操作（複製 / 編輯 / 重新生成 / 刪除單則 / 繼續生成）＋ C1 點圖放大
 messagesEl.addEventListener('click',async e=>{
+  // 思考摺疊（<details> 原生開合）：擋在前面、不做任何處理，讓瀏覽器自己開合即可
+  if(e.target.closest&&e.target.closest('details.thinking summary'))return;
   // C1：點擊訊息內圖片 → 開啟燈箱
   const lbTarget=e.target.closest('.msg-img');
   if(lbTarget){
@@ -6750,11 +6755,16 @@ function edgeGestureAllowed(){
   return true;
 }
 document.addEventListener('touchstart',e=>{
-  // 一根手指點下時：若長按選單開著，先收掉選單並吞掉這次觸控（避免選單與抽屜同時反應）
-  if(e.touches.length===1&&document.querySelector('.msg-dropdown.touch.open')){
-    closeAllMenus();
-    edgeGesture=null;
-    return;
+  // 長按選單（.touch 版）開著時：
+  // - 點在選單內 → 什麼都不做，讓 tap 正常走到 click（前面版本會先 closeAllMenus 把選單收掉，導致所有選項都點不動）
+  // - 點在選單外一根手指 → 收掉選單並吞掉這次觸控（避免選單與抽屜同時反應）
+  if(document.querySelector('.msg-dropdown.touch.open')){
+    if(e.target.closest&&e.target.closest('.msg-dropdown.touch.open'))return;
+    if(e.touches.length===1){
+      closeAllMenus();
+      edgeGesture=null;
+      return;
+    }
   }
   edgeGesture=null;
   if(e.touches.length!==1||!edgeGestureAllowed())return;
@@ -6790,6 +6800,8 @@ document.addEventListener('touchcancel',()=>{
 document.addEventListener('touchmove',e=>{
   const g=edgeGesture;
   if(!g)return;
+  // 長按選單（.touch 版）開著時：選單內的觸控不屬於抽屜手勢，直接放掉讓選單自己處理
+  if(e.target.closest&&e.target.closest('.msg-dropdown.touch.open')){edgeGesture=null;return}
   // 代碼 <pre>／表格還能往手指方向橫捲時：直接放棄拖曳、完全不 preventDefault，
   // 讓瀏覽器原生橫向捲動接管（否則 document 層 preventDefault 會把程式碼捲動吃掉）
   if(g.scroller&&g.scroller.isConnected&&e.touches.length===1){
