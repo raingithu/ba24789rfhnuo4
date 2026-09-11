@@ -176,8 +176,8 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .msg ul,.msg ol{margin:.35em 0;padding-left:1.5em}
 .msg li{margin:.15em 0}
 .msg blockquote{margin:.4em 0;padding:.2em .8em;border-left:3px solid var(--border);opacity:.85}
-.msg table{border-collapse:collapse;margin:.5em 0;font-size:.95em;display:block;overflow-x:auto}
-.msg th,.msg td{border:1px solid var(--border);padding:4px 10px}
+.msg table{border-collapse:collapse;margin:.5em 0;font-size:.95em;display:block;width:100%;max-width:100%;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch}
+.msg th,.msg td{border:1px solid var(--border);padding:4px 10px;white-space:nowrap}
 .msg th{background:rgba(255,255,255,.06)}
 .msg hr{border:none;border-top:1px solid var(--border);margin:.6em 0}
 .msg a{color:var(--accent)}
@@ -186,9 +186,9 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .msg svg{max-width:100%;height:auto;max-height:360px}
 .msg p>svg:only-child{display:block;margin:.2em 0}
 .msg svg:empty{display:none}
-.msg pre{position:relative;background:rgba(0,0,0,.16);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;margin:.5em 0}
+.msg pre{position:relative;background:rgba(0,0,0,.16);border:1px solid var(--border);border-radius:8px;padding:12px;overflow-x:auto;overflow-y:hidden;max-width:100%;-webkit-overflow-scrolling:touch;margin:.5em 0}
 /* KaTeX：預設 .katex-display 不換行會撐破氣泡；強制容器內水平滾動 */
-.msg .katex-display{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:.2em 0}
+.msg .katex-display{display:block;overflow-x:auto;overflow-y:hidden;max-width:100%;padding:.2em 0;-webkit-overflow-scrolling:touch}
 .msg .katex{white-space:normal}
 .msg .katex-display>.katex{display:inline-block;white-space:nowrap}
 .msg pre code{font-family:Consolas,Menlo,'Courier New',monospace;font-size:13px;line-height:1.5;background:none;padding:0}
