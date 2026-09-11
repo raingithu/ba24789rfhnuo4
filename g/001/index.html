@@ -6389,9 +6389,15 @@ messagesEl.addEventListener('touchstart',e=>{
   row.classList.add('pressing');
   const t=e.touches[0];
   const lx=t?t.clientX:0, ly=t?t.clientY:0;   // 記住長按座標，開選單時貼近該處顯示
-  lpTimer=setTimeout(()=>openRowMenu(row,lx,ly),480);
+  lpTimer=setTimeout(()=>{
+    // 確認為「長按」而非邊緣滑動：放棄同時進行的側邊欄拖曳手勢（edgeGesture=null），
+    // 讓氣泡選單與抽屜拖曳互斥，避免二者搶同一根手指而拉不出側邊欄
+    edgeGesture=null;
+    openRowMenu(row,lx,ly);
+  },480);
 },{passive:true});
 ['touchend','touchmove','touchcancel'].forEach(ev=>messagesEl.addEventListener(ev,()=>{
+  // 手指一有移動／抬起／取消就判定不是長按：清掉計時器，避免拖曳氣泡時選單跳出來打斷側邊欄抽屜
   clearTimeout(lpTimer);
   document.querySelectorAll('.msg-row.pressing').forEach(r=>r.classList.remove('pressing'));
 },{passive:true}));
@@ -6690,6 +6696,20 @@ document.addEventListener('touchstart',e=>{
     edgeGesture={type:'sidebarClose',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp};
   }else if(t.clientX<=240){
     edgeGesture={type:'sidebarOpen',sx:t.clientX,sy:t.clientY,engaged:false,progress:0,t0:e.timeStamp};
+  }
+},{passive:true});
+// 側邊欄拖曳被系統取消（例如長按選單／文字選取接管觸控）時：復原抽屜到當前開/關定位，並清空手勢狀態，
+// 避免 transform 卡在半開（這正是「有 AI 氣泡時偶爾拉不出側邊欄」的殘留原因之一）
+function edgeRecover(){
+  const wasOpen=edgeSidebar.classList.contains('open');
+  edgeSidebar.style.transition='';
+  edgeSidebar.style.transform='';   // 交還 CSS：開啟→0、關閉→-100%
+  edgeSidebar.classList.toggle('open',wasOpen);
+}
+document.addEventListener('touchcancel',()=>{
+  if(edgeGesture){
+    edgeRecover();
+    edgeGesture=null;
   }
 },{passive:true});
 document.addEventListener('touchmove',e=>{
