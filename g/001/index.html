@@ -606,8 +606,9 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 /* 對話內搜尋列（Ctrl+F） */
 .header-btn{background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:4px 8px;border-radius:8px;line-height:1}
 .header-btn:hover{background:var(--surface2);color:var(--accent)}
-.header-btn.update{display:none;border:1px solid var(--accent);color:var(--accent);font-size:13px;padding:5px 10px;white-space:nowrap;animation:updatePulse 1.6s ease-in-out infinite}
-.header-btn.update.show{display:inline-block}
+.header-btn.update{display:none;border:1px solid var(--accent);color:var(--text);font-size:13px;padding:5px 10px;white-space:nowrap;animation:updatePulse 1.6s ease-in-out infinite}
+.header-btn.update:hover{background:var(--surface2);color:var(--accent)}
+.header-btn.update.show{display:inline-block;}
 @keyframes updatePulse{0%,100%{box-shadow:0 0 0 0 rgba(155,191,219,0)}50%{box-shadow:0 0 0 4px rgba(155,191,219,.18)}}
 .find-bar{display:none;align-items:center;gap:6px;padding:8px 14px;border-bottom:1px solid var(--border);background:var(--surface)}
 .find-bar.open{display:flex}
@@ -728,7 +729,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
           <g class="tl">
             <path d="M153,182 C172,198 196,190 202,173 C208,155 196,138 183,141 C175,143 173,151 180,156" fill="none" stroke="#493c42" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"></path>
             <path d="M153,182 C172,198 196,190 202,173 C208,155 196,138 183,141 C175,143 173,151 180,156" fill="none" stroke="#b7b2bb" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"></path>
-            <path d="M174,187 L169,194 M192,180 L200,186 M197,160 L207,158" fill="none" stroke="#76707f" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M174,187 L169,194 M192,180 L200,186 M197,160 L207,158" fill="none" stroke="#76707f" stroke-width="10" stroke-linecap="round"></path>
             <path d="M181,142 C175,145 174,152 180,156" fill="none" stroke="#79727f" stroke-width="15" stroke-linecap="round"></path>
           </g>
         <!-- 身體（呼吸） -->
@@ -739,7 +740,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
             <ellipse cx="148" cy="168" rx="22" ry="36" fill="#b7b2bb"></ellipse>
             <ellipse cx="110" cy="181" rx="36" ry="30" fill="#fffaf6"></ellipse>
             <ellipse cx="110" cy="199" rx="22" ry="7" fill="#f0e6e2"></ellipse>
-            <g fill="none" stroke="#76707f" stroke-width="5" stroke-linecap="round">
+            <g fill="none" stroke="#76707f" stroke-width="9" stroke-linecap="round">
               <path d="M65 154 C59 156 54 160 52 166"></path>
               <path d="M155 154 C161 156 166 160 168 166"></path>
               <path d="M61 174 C55 176 51 180 49 186"></path>
@@ -1497,8 +1498,14 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
         <line x1="18" y1="18" x2="23" y2="23"/>
       </svg>
       </button>
-      <button class="header-btn update" id="btnAppUpdate" type="button" title="有新版本，點此可更新版本" aria-label="更新到新版本" hidden>⟳ 更新</button>
-      <button class="gallery-btn" id="btnGallery" type="button" title="圖片 Gallery" aria-label="圖片 Gallery">☰</button>
+      <button class="header-btn update" id="btnAppUpdate" type="button" title="有新版本，點此可更新版本" aria-label="更新到新版本" hidden>
+      <svg viewBox="0 -960 960 960" width="22" height="22" fill="currentColor" style="transform: translateY(1.5px)"><path d="M480-160q-134 0-227-93t-93-227q0-134 93-227t227-93q69 0 132 28.5T720-690v-110h80v280H520v-80h168q-32-56-87.5-88T480-720q-100 0-170 70t-70 170q0 100 70 170t170 70q77 0 139-44t87-116h84q-28 106-114 173t-196 67Z"/></svg>
+      </button>
+      <button class="gallery-btn" id="btnGallery" type="button" title="圖片 Gallery" aria-label="圖片 Gallery">
+      <svg viewBox="0 -960 960 960" width="22.5" height="22.5" fill="currentColor" aria-hidden="true" style="transform: translateY(1.5px)">
+        <path d="M280-280h160v-160H280v160Zm240 0h160v-160H520v160ZM280-520h160v-160H280v160Zm240 0h160v-160H520v160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm0-560v560-560Z"/>
+      </svg>
+      </button>
     </div>
     <div class="find-bar" id="findBar">
       <input type="text" id="findInput" placeholder="在這個對話中搜尋…" autocomplete="off" spellcheck="false">
@@ -1616,7 +1623,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div class="field-row">
       <div class="field">
         <label>最大輸出 Tokens</label>
-        <input type="number" id="settingMaxTokens" min="256" max="32768" step="256" value="2048">
+        <input type="number" id="settingMaxTokens" min="256" max="65536" step="256" value="4096">
       </div>
       <div class="field">
         <label>傳送上下文則數</label>
@@ -1650,7 +1657,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
         </label>
       </div>
       <div class="field">
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text)">
+        <label title="嘗試關閉模型思考以加快回覆；模型不支援時自動降級，仍會要求模型省略思考" style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--text)">
           <input type="checkbox" id="settingQuickReply" checked style="width:auto">快速回覆模式
         </label>
       </div>
@@ -2418,7 +2425,7 @@ const DEFAULT_SETTINGS={
   persona:'cat',
   theme:'default',
   systemPrompt:'',
-  maxTokens:2048,
+  maxTokens:4096,
   ctxLimit:'40',
   autoScroll:false,
   quickReply:true,
@@ -2482,9 +2489,35 @@ function migrateLegacySettings(){
 }
 migrateLegacySettings();
 
-// 快速回覆模式：對 </think> 標記（後端詞庫 token 248069）加偏權以縮短推理
-// 實測 7 為不漏出 </think> 到正文的安全上限（8 開始洩漏）
-const QUICK_REPLY={token:'248069',bias:7};
+// 快速回覆＝關閉思考：各家 OpenAI 相容端點的關思考參數寫法不一，這裡一次帶上常見寫法。
+// 後端只會讀它認識的、不認識的會忽略，所以可以安全地全帶（相容 Agnes／vLLM／Ollama／OpenRouter 等）。
+// reasoning 實在關不掉的模型：至少靠下面的系統提示要求它省略思考、直接輸出答案。
+function quickReplyParams(){
+  if(!getQuickReply())return {};
+  return {
+    // OpenRouter 系：reasoning.enabled=false（官方文件寫法）
+    reasoning:{enabled:false},
+    // 通用系：關思考（vLLM chat template 常讀 chat_template_kwargs；Ollama 系讀 think）
+    chat_template_kwargs:{enable_thinking:false},
+    thinking:{type:'disabled'},
+    enable_thinking:false,
+    think:false,
+    extra_body:{
+      enable_thinking:false,            // Qwen3 系（vLLM／Ollama 常見）
+      reasoning:{enabled:false},        // OpenRouter 經 extra_body 透傳
+      chat_template_kwargs:{enable_thinking:false},
+      thinking:{type:'disabled'},
+      think:false
+    }
+  };
+}
+// 後端若嚴格校驗參數、把上面某個關思考欄位打回 400：識別出來並降級重試（拿掉全部快速回覆參數）。
+// opts._noQuick：本輪已降級，不再帶關思考參數（避免重試迴圈）。
+function isQuickReplyUnsupportedError(msg){
+  const m=String(msg||'');
+  if(!/HTTP\s+4\d\d\b/.test(m))return false;   // 非 4xx（逾時、網路錯誤、5xx）→ 與參數無關
+  return /reasoning|thinking|chat_template|extra_body|\bthink\b|unknown (field|argument|parameter)|unexpected|not (supported|recognized|allowed)/i.test(m);
+}
 // ===== 網路搜尋設定（Tavily + Jina Reader + 氣象署 OpenData）：要修改的參數都在這裡 =====
 // tavilyKey：貼上你的 Tavily API Key（tvly- 開頭，https://tavily.com 註冊取得）
 //           未設定（不是 tvly- 開頭）時，偵測到搜尋關鍵字會提示警告並改用純模型回答
@@ -2742,7 +2775,7 @@ function getTemperature(){
 }
 function getMaxTokens(){
   const n=parseInt(settings.maxTokens,10);
-  return Number.isFinite(n)?Math.min(32768,Math.max(256,n)):2048;
+  return Number.isFinite(n)?Math.min(65536,Math.max(256,n)):4096;
 }
 function getCtxLimit(){
   const v=settings.ctxLimit;
@@ -5030,6 +5063,9 @@ async function requestAI(opts){
         :'（注意：現在時間是 '+todayNote+'。本次對話沒有進行網路搜尋，你沒有任何即時資料來源。切勿編造即時資訊（天氣、匯率、股價、新聞、比分等）或模仿搜尋結果的格式輸出假資料；若使用者詢問此類資訊，請明確說明你無法取得即時資料，並建議使用者輸入「查一下」等關鍵字要求你搜尋網路（日期與農曆換算除外——上方的今天資訊已含國曆與農曆，可直接推算回答）。另外：你不具備任何工具或函式，絕對不要輸出 tool_calls／函式呼叫，一律只用純文字回答。）';
       if(sys)msgs[0].content+='\n'+note;
       else msgs.unshift({role:'system',content:note});
+      // 快速回覆的第二道保險（模型關不掉思考時用）：系統提示直接要求省略思考、輸出答案。
+      // 這是純文字指示，任何模型都吃得到；含搜尋／工具續問的請求需要推理讀長 context，不加這句。
+      if(getQuickReply()&&!opts._noQuick)msgs[0].content+='\n（快速回覆模式：請省略思考過程，直接輸出最終答案。）';
     }else if(opts._cwa&&!opts._toolMsgs){
       // 三之4：氣象署資料已注入——台灣天氣直接用；資料不足（台灣以外等）才呼叫 web_search
       const cwaNote='（提示：現在時間是 '+todayNote+'。上方已附中央氣象署（官方網址 www.cwa.gov.tw）的台灣天氣預報（今明 36 小時＋一週）。使用者問台灣天氣時，請直接依該資料回答並附上來源連結，日期與時段以資料中的 startTime 為準。若資料不足——例如使用者問的是台灣以外地區的天氣、需要特定鄉鎮的細節、即時觀測或過去天氣——再呼叫 web_search 工具補查；資料足夠時不要呼叫工具。沒有呼叫工具時切勿編造資料。）';
@@ -5061,9 +5097,10 @@ async function requestAI(opts){
         model:getModel(),messages:msgs,stream:true,
         max_tokens:(opts.searchContext||opts._toolMsgs)?Math.max(getMaxTokens(),16384):getMaxTokens(),temperature:getTemperature()   // 含搜尋結果／網頁內容的請求：context 長且思考型模型的推理會吃 max_tokens，保底 16384 確保正文有輸出空間（避免「讀完網頁後回覆中斷」）
       },useTools?{tools:[WEB_SEARCH_TOOL]}:{},
-        // 一之5：快速回覆 bias 只作用於一般回覆；含搜尋結果／網頁內容的請求不套用——
-        // 這類請求本來就要產出完整長文，對 </think> 加偏權只會干擾輸出（且這類請求的推理更長）
-        (getQuickReply()&&!opts.searchContext&&!opts._toolMsgs)?{logit_bias:{[QUICK_REPLY.token]:QUICK_REPLY.bias}}:{})),
+        // 快速回覆：嘗試關閉思考以加快回覆（各家參數一次帶上，後端只讀認識的）。
+        // 含搜尋結果／網頁內容的請求不套用——這類請求本來就要產出完整長文，且需要推理讀懂長 context。
+        // 降級重試（_noQuick）也不帶——後端已證明不吃這套參數。
+        (!opts.searchContext&&!opts._toolMsgs&&!opts._noQuick)?quickReplyParams():{})),
       signal:sig
     },{
       timeoutMs:TIMEOUT.http,   // 只限「連線建立」（回應表頭前）；串流本身不限時
@@ -5289,6 +5326,14 @@ async function requestAI(opts){
       if(statusDiv.isConnected)statusDiv.remove();
       if(aiDiv)aiDiv.remove();
       return await requestAI(Object.assign({},opts,{_toolsRetry:true,_sig:sig,_prevThinking:thinking||''}));
+    }
+    // 後端不吃關思考參數（嚴格校驗回 400）：拿掉全部快速回覆參數，原樣重試一次
+    //（系統提示裡的「省略思考」要求不受影響，仍可加速；之後本輪不再重試，避免迴圈）
+    if(!opts._noQuick&&getQuickReply()&&e.name!=='AbortError'&&isQuickReplyUnsupportedError(e.message)){
+      console.warn('[Chat] 後端不支援關思考參數，降級為一般請求重試：',e.message);
+      if(statusDiv.isConnected)statusDiv.remove();
+      if(aiDiv)aiDiv.remove();
+      return await requestAI(Object.assign({},opts,{_noQuick:true,_sig:sig,_prevThinking:thinking||''}));
     }
     if(e.name==='AbortError'){
       // 使用者主動停止：保留已產生的部分內容
@@ -5530,7 +5575,7 @@ const SETTING_FIELDS=[
   {id:'settingImageRatio',key:'imageRatio',type:'text'},
   {id:'settingEndpoint',key:'endpoint',type:'text',trim:true},
   {id:'settingTemp',key:'temperature',type:'float',def:0.6},
-  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:2048},
+  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:4096},
   {id:'settingCtx',key:'ctxLimit',type:'text'},
   {id:'settingAutoScroll',key:'autoScroll',type:'bool'},
   {id:'settingQuickReply',key:'quickReply',type:'bool'},
