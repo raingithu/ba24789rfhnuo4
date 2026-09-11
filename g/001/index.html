@@ -262,7 +262,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
   color:var(--text);
   display:block;
   border: 1px solid #ffffff30;
-  box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(128, 120, 128, .3);
+  box-shadow: inset 0 -10px 24px 12px rgba(255, 255, 255, .12), inset 0 -16px 8px rgba(250, 250, 250, .3);
 }
 .scroll-bottom:hover{color:var(--accent);border-color:var(--accent)}
 
@@ -344,12 +344,12 @@ body[data-theme="default"]{
   .modal {box-shadow: 0 0 0 1px #d9d5f066, inset 0 0 12px #ffffff30;}
   .btn-settings {padding: 20px;box-shadow: inset 0 -1px 20px 8px rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(25, 20, 25, .88);}
   #msgInput {box-shadow: inset 0 0 8px 4px rgba(225, 220, 225, .18);}
-  .scroll-bottom.show{box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);}
+  .scroll-bottom.show {box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);}
 }
 
 /* ===== 主題：粉嫩公主（可愛風）===== */
 body[data-theme="priconne"]{
-  --bg:#fde5ef;--surface:#fff7fb;--surface2:#ffd4e6;--accent:#f56ba4;
+  --bg:#fde5ef;--surface:#ffeaf5;--surface2:#ffd4e6;--accent:#f56ba4;
   --text:#f893bf;--text2:#c47ba0;--border:#ffbcd8;--input-bg:#e9d6ffb0;
   --msg-user:#fff;--msg-ai:#8a5fb8;--scrollbar:#ffb0d0;
   --msg-user-bg:rgba(245,107,164,.85);--msg-ai-bg:rgba(231,214,250,.9);
@@ -357,8 +357,10 @@ body[data-theme="priconne"]{
   --cat-eye:#5b3b78;--cat-blush:#ffbfe6;--cat-nose:#e05c9c;--cat-detail:#d97aa8;
   background-image:radial-gradient(rgba(245,107,164,.22) 1.5px,transparent 1.5px);
   background-size:22px 22px;
-  .btn-save{color:#fff}
-  .field input, .field select {color:#e06399}
+  .btn-save {color:#fff}
+  .scroll-bottom.show {box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(255, 250, 245, .24);}
+  #settingSystem {background:#ffeaf5b0}
+  #galleryModal .modal-actions{background:#ffeaf5b0}
 }
 body[data-theme="priconne"] .msg{border-radius:18px;box-shadow:0 4px 14px rgba(255,143,188,.28),inset 0 1px 0 rgba(255,255,255,.6)}
 body[data-theme="priconne"] .msg.user{color:#fff;background:linear-gradient(150deg,#ff9ec6,#f77fb2);border:1px solid rgba(255,255,255,.7)}
@@ -377,7 +379,7 @@ body[data-theme="priconne"] #msgInput,body[data-theme="priconne"] #personaNameIn
 body[data-theme="priconne"] #msgInput:focus,body[data-theme="priconne"] #personaNameInput:focus,body[data-theme="priconne"] #bookmarkRenameInput:focus{border-color:#ff7fb2}
 body[data-theme="priconne"] .modal{border-radius:18px;border:1px solid #ffbcd8;box-shadow:0 10px 40px rgba(224,92,156,.35),inset 0 0 0 2px rgba(255,214,230,.45)}
 body[data-theme="priconne"] .modal h3,body[data-theme="priconne"] .sidebar-header h2{color:#e05c9c}
-body[data-theme="priconne"] .field input,body[data-theme="priconne"] .field select{border-radius:10px;border:1px solid #ffbcd8}
+body[data-theme="priconne"] .field input,body[data-theme="priconne"] .field select{background:#ffeaf5b0;color:#e06399;border-radius:10px;border:1px solid #ffbcd8}
 body[data-theme="priconne"] .field input:focus,body[data-theme="priconne"] .field select:focus{border-color:#ff7fb2}
 body[data-theme="priconne"] .btn-reset,body[data-theme="priconne"] .btn-cancel{border-radius:10px}
 body[data-theme="priconne"] .btn-save{border-radius:10px}
@@ -672,72 +674,167 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div class="chat-list" id="chatList"></div>
     <!-- 小寵物（預設主題：灰貓）-->
     <div id="catDefault" class="pet" data-pet="default" style="text-align:center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="貓咪">
-        <style>.breath{animation:b-breath 3.6s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}@keyframes b-breath{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-2.4px) scale(1.01)}}.ey{animation:b-blink 5.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 50%}@keyframes b-blink{0%,88%,100%{transform:scaleY(1)}90%{transform:scaleY(.18)}91.5%{transform:scaleY(.08)}93%{transform:scaleY(1)}}.ear{animation:b-ear 5s infinite;transform-box:fill-box;transform-origin:50% 100%}@keyframes b-ear{0%,40%,52%,100%{transform:rotate(0)}45%{transform:rotate(-3deg)}48%{transform:rotate(2deg)}}.tl{animation:b-tail 6.5s ease-in-out infinite;transform-box:fill-box;transform-origin:62% 88%}@keyframes b-tail{0%,100%{transform:rotate(0)}15%{transform:rotate(-5deg)}30%{transform:rotate(-12deg)}43%{transform:rotate(-9deg)}57%{transform:rotate(-2deg)}70%{transform:rotate(9deg)}83%{transform:rotate(12deg)}93%{transform:rotate(5deg)}}.head{transform-box:fill-box;transform-origin:50% 100%;transition:transform 1.2s cubic-bezier(.22,.61,.36,1)}@keyframes b-head{0%,58%,100%{transform:rotate(0)}64%{transform:rotate(-7deg)}70%{transform:rotate(-7deg)}76%{transform:rotate(0)}}@media (prefers-reduced-motion:reduce){.breath,.ey,.ear,.tl{animation:none!important}.head{transition:none!important}}</style>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -36 244 244" width="136" height="136" role="img" aria-label="灰貓">
+        <style>
+          .breath { animation: b-breath 5.4s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 100%; }
+          @keyframes b-breath { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+          .ey { animation: e-blink 9s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 50%; }
+          @keyframes e-blink { 0%, 19%, 21%, 37%, 39%, 100% { transform: scaleY(1); } 20%, 38% { transform: scaleY(.08); } }
+          .eyeBean { animation: e-bean 9s ease-in-out infinite; }
+          .eyeSmile { animation: e-smile 9s ease-in-out infinite; opacity: 0; }
+          @keyframes e-bean { 0%, 48% { opacity: 1; } 56%, 90% { opacity: 0; } 98%, 100% { opacity: 1; } }
+          @keyframes e-smile { 0%, 48% { opacity: 0; } 56%, 90% { opacity: 1; } 98%, 100% { opacity: 0; } }
+          .ear { animation: b-ear 9s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 90%; }
+          @keyframes b-ear { 0%, 88%, 100% { transform: rotate(0); } 90% { transform: rotate(-4deg); } 92% { transform: rotate(2deg); } 94% { transform: rotate(0); } }
+          .tl { animation: b-tail 8.25s ease-in-out infinite; transform-box: fill-box; transform-origin: 20% 85%; }
+          @keyframes b-tail { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-8deg); } 50% { transform: rotate(6deg); } 75% { transform: rotate(-4deg); } }
+          .head { animation: b-head 7s ease-in-out infinite; transform-box: fill-box; transform-origin: 50% 88%; }
+          @keyframes b-head { 0%, 55%, 100% { transform: rotate(0); } 60%, 75% { transform: rotate(-3deg); } 85% { transform: rotate(0); } }
+          @media (prefers-reduced-motion: reduce) { .breath, .ey, .ear, .tl, .head, .eyeBean, .eyeSmile { animation: none !important; } }
+        </style>
+        <defs>
+          <linearGradient id="gGray" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d0cbd1"></stop>
+            <stop offset=".6" stop-color="#b7b2bb"></stop>
+            <stop offset="1" stop-color="#a5a0aa"></stop>
+          </linearGradient>
+          <radialGradient id="faceSoft" cx=".5" cy=".42" r=".62">
+            <stop offset="0" stop-color="#d3cfd6"></stop>
+            <stop offset=".62" stop-color="#c6c1cb"></stop>
+            <stop offset="1" stop-color="#c6c1cb" stop-opacity="0"></stop>
+          </radialGradient>
+          <linearGradient id="hlFadeL" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#f4f0f5" stop-opacity="0"></stop>
+            <stop offset=".3" stop-color="#f4f0f5" stop-opacity=".9"></stop>
+            <stop offset=".7" stop-color="#f4f0f5" stop-opacity=".9"></stop>
+            <stop offset="1" stop-color="#f4f0f5" stop-opacity="0"></stop>
+          </linearGradient>
+          <linearGradient id="hlFadeR" x1="1" y1="0" x2="0" y2="0">
+            <stop offset="0" stop-color="#f4f0f5" stop-opacity="0"></stop>
+            <stop offset=".3" stop-color="#f4f0f5" stop-opacity=".9"></stop>
+            <stop offset=".7" stop-color="#f4f0f5" stop-opacity=".9"></stop>
+            <stop offset="1" stop-color="#f4f0f5" stop-opacity="0"></stop>
+          </linearGradient>
+          <clipPath id="headClip">
+            <path d="M110 14 C152 14 186 44 189 84 L196 98 L189 104 L193 112 L182.4 114.4 C176.5 123 167 129.5 154 132 C132 136 88 136 66 132 C53 129.5 43.5 123 37.6 114.4 L27 112 L31 104 L24 98 L31 84 C34 44 68 14 110 14 Z"></path>
+          </clipPath>
+          <clipPath id="bodyClip">
+            <path d="M66 149 C60 166 52 185 46 202 L174 202 C168 185 160 166 154 149 Z"></path>
+          </clipPath>
+        </defs>
+        <ellipse cx="110" cy="203" rx="58" ry="5" fill="#766777" opacity=".16"></ellipse>
+        <!-- 尾巴 -->
+          <g class="tl">
+            <path d="M153,182 C172,198 196,190 202,173 C208,155 196,138 183,141 C175,143 173,151 180,156" fill="none" stroke="#493c42" stroke-width="23" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M153,182 C172,198 196,190 202,173 C208,155 196,138 183,141 C175,143 173,151 180,156" fill="none" stroke="#b7b2bb" stroke-width="15" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M174,187 L169,194 M192,180 L200,186 M197,160 L207,158" fill="none" stroke="#76707f" stroke-width="5" stroke-linecap="round"></path>
+            <path d="M181,142 C175,145 174,152 180,156" fill="none" stroke="#79727f" stroke-width="15" stroke-linecap="round"></path>
+          </g>
+        <!-- 身體（呼吸） -->
         <g class="breath">
-          <g class="tl"><path d="M150,184 C170,188 190,182 192,162 C193,152 188,144 182,148" fill="none" stroke="#7A8590" stroke-width="21" stroke-linecap="round"/></g>
-          <path d="M110,94 C72,94 56,128 56,162 C56,194 80,208 110,208 C140,208 164,194 164,162 C164,128 148,94 110,94 Z" fill="#7A8590"/>
-            <g class="side-fur">
-              <path d="M58,135 Q66,130 76,132 L67,136 Q62,138 58,138 Z" fill="#E7E9EA" opacity=".68"/>
-              <path d="M56.5,150 Q64,145 74,147 L65,151 Q60,153 56.5,153 Z" fill="#E7E9EA" opacity=".68"/>
-              <path d="M56,165 Q63,161 72,163 L64,167 Q59,169 56,169 Z" fill="#E7E9EA" opacity=".68"/>
-              <path d="M162,135 Q154,130 144,132 L153,136 Q158,138 162,138 Z" fill="#E7E9EA" opacity=".68"/>
-              <path d="M163.5,150 Q156,145 146,147 L155,151 Q160,153 163.5,153 Z" fill="#E7E9EA" opacity=".68"/>
-              <path d="M164,165 Q157,161 148,163 L156,167 Q161,169 164,169 Z" fill="#E7E9EA" opacity=".68"/>
+          <path d="M66 149 C60 166 52 185 46 202 L174 202 C168 185 160 166 154 149 Z" fill="url(#gGray)" stroke="#493b45" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"></path>
+          <g clip-path="url(#bodyClip)">
+            <ellipse cx="72" cy="168" rx="22" ry="36" fill="#b7b2bb"></ellipse>
+            <ellipse cx="148" cy="168" rx="22" ry="36" fill="#b7b2bb"></ellipse>
+            <ellipse cx="110" cy="181" rx="36" ry="30" fill="#fffaf6"></ellipse>
+            <ellipse cx="110" cy="199" rx="22" ry="7" fill="#f0e6e2"></ellipse>
+            <g fill="none" stroke="#76707f" stroke-width="5" stroke-linecap="round">
+              <path d="M65 154 C59 156 54 160 52 166"></path>
+              <path d="M155 154 C161 156 166 160 168 166"></path>
+              <path d="M61 174 C55 176 51 180 49 186"></path>
+              <path d="M159 174 C165 176 169 180 171 186"></path>
+              <path d="M62 192 C57 194 54 197 53 201"></path>
+              <path d="M158 192 C163 194 166 197 167 201"></path>
             </g>
-          <path d="M110,117 C90,117 82,144 83,171 C84,195 97,203 110,203 C123,203 136,195 137,171 C138,144 130,117 110,117 Z" fill="#86909B" opacity="0.7"/>
-          <g class="paws">
-            <path d="M92,168 C91,179 91.5,191 92.5,200 C93,206 96.5,209 101.5,209 C106.5,209 109.5,206 109.5,200 L109.5,173 Z" fill="#4C5661"/>
-            <path d="M128,168 C129,179 128.5,191 127.5,200 C127,206 123.5,209 118.5,209 C113.5,209 110.5,206 110.5,200 L110.5,173 Z" fill="#4C5661"/>
-            <path d="M94,169 C93,180 93.5,191 94.5,200 C95,204.5 97,207 101,207 C105,207 107.5,204.5 107.5,200 L107.5,171 Z" fill="#7A8590"/>
-            <path d="M126,169 C127,180 126.5,191 125.5,200 C125,204.5 123,207 119,207 C115,207 112.5,204.5 112.5,200 L112.5,171 Z" fill="#7A8590"/>
-              <path d="M97,197 Q97,200 97.5,202 M101,196.5 Q101,200 101,203 M105,197 Q105,199.5 104.5,201.5" fill="none" stroke="#59646F" stroke-width="1" stroke-linecap="round" opacity=".65"/>
-              <path d="M123,197 Q123,200 122.5,202 M119,196.5 Q119,200 119,203 M115,197 Q115,199.5 115.5,201.5" fill="none" stroke="#59646F" stroke-width="1" stroke-linecap="round" opacity=".65"/>
-            <path d="M94,174 Q101,178 108,174" fill="none" stroke="#59646F" stroke-width="1.2" opacity=".75"/>
-            <path d="M126,174 Q119,178 112,174" fill="none" stroke="#59646F" stroke-width="1.2" opacity=".75"/>
-            <path d="M95,177 Q101,181 107,177 M95,180 Q101,184 107,180" fill="none" stroke="#68737E" stroke-width="0.9" opacity=".5"/>
-            <path d="M125,177 Q119,181 113,177 M125,180 Q119,184 113,180" fill="none" stroke="#68737E" stroke-width="0.9" opacity=".5"/>
+            <g fill="#76707f">
+              <path d="M69,152 C67,160 65,168 63,175 C62,178 66,180 68,177 C70,170 72,161 73,152 Z"></path>
+              <path d="M71,153 C70,156 70,160 71,163 C71,165 75,165 75,163 C76,160 76,156 75,153 Z"></path>
+              <path d="M151,152 C153,160 155,168 157,175 C158,178 154,180 152,177 C150,170 148,161 147,152 Z"></path>
+              <path d="M149,153 C150,156 150,160 149,163 C149,165 145,165 145,163 C144,160 144,156 145,153 Z"></path>
+            </g>
           </g>
-          <g class="head">
-            <g class="ear">
-              <path d="M55,56 C42,28 48,18 58,22 C68,26 82,46 92,60 Z" fill="#7A8590"/>
-              <path d="M60,52 C50,34 54,27 61,30 C70,35 81,47 86,55 Z" fill="#C49A9C"/>
-              <path d="M165,56 C178,28 172,18 162,22 C152,26 138,46 128,60 Z" fill="#7A8590"/>
-              <path d="M160,52 C170,34 166,27 159,30 C150,35 139,47 134,55 Z" fill="#C49A9C"/>
-            </g>
-            <path d="M62,86 C52,92 53,108 67,111 C77,113 82,102 79,94 Z" fill="#7A8590"/>
-            <path d="M158,86 C168,92 167,108 153,111 C143,113 138,102 141,94 Z" fill="#7A8590"/>
-            <path d="M110,26 C147,26 167,48 167,74 C167,102 147,118 110,118 C73,118 53,102 53,74 C53,48 73,26 110,26 Z" fill="#7A8590"/>
-            <ellipse cx="99" cy="120" rx="9" ry="6.5" fill="#7A8590"/>
-            <ellipse cx="121" cy="120" rx="9" ry="6.5" fill="#7A8590"/>
-              <g class="ey">
-              <path d="M81,63 Q77,59 75,55" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-              <path d="M85,61 Q82,57 81,53" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-              <path d="M139,63 Q143,59 145,55" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-              <path d="M135,61 Q138,57 139,53" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-              <ellipse cx="88" cy="72" rx="11.3" ry="12.5" fill="#8A2C6E"/>
-              <ellipse cx="88" cy="73" rx="10.5" ry="11.5" fill="#252A2F"/>
-              <ellipse cx="88" cy="73" rx="9.2" ry="10.2" fill="#111418"/>
-              <ellipse cx="85" cy="69" rx="2.5" ry="3" fill="#FFFFFF"/>
-              <ellipse cx="90.5" cy="77" rx="1.3" ry="1.7" fill="#3D444B" opacity=".65"/>
-              <path d="M74.5,65.1 Q88,68 101.5,65.1 L101.5,56.5 L74.5,56.5 Z" fill="#7A8590"/>
-              <ellipse cx="132" cy="72" rx="11.3" ry="12.5" fill="#8A2C6E"/>
-              <ellipse cx="132" cy="73" rx="10.5" ry="11.5" fill="#252A2F"/>
-              <ellipse cx="132" cy="73" rx="9.2" ry="10.2" fill="#111418"/>
-              <ellipse cx="129" cy="69" rx="2.5" ry="3" fill="#FFFFFF"/>
-              <ellipse cx="134.5" cy="77" rx="1.3" ry="1.7" fill="#3D444B" opacity=".65"/>
-              <path d="M118.5,65.1 Q132,68 145.5,65.1 L145.5,56.5 L118.5,56.5 Z" fill="#7A8590"/>
+          <!-- 腳掌 -->
+          <path d="M68 172 C63 181 62 193 68 200 C74 206 86 206 92 200 C97 193 95 179 92 166" fill="none" stroke="#493b45" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></path>
+          <path d="M152 172 C157 181 158 193 152 200 C146 206 134 206 128 200 C123 193 125 179 128 166" fill="none" stroke="#493b45" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"></path>
+          <!-- 腳趾紋 -->
+          <g stroke="#493b45" stroke-width="2.2" stroke-linecap="round" opacity=".55">
+            <path d="M76 192 L76 201"></path>
+            <path d="M84 192 L84 200"></path>
+            <path d="M144 192 L144 201"></path>
+            <path d="M136 192 L136 200"></path>
+          </g>
+          <!-- 項圈 -->
+          <path d="M65 135 L155 135 Q160 135 159 140 L154 147 C135 153 85 153 66 147 L61 140 Q60 135 65 135 Z" fill="#e95769" stroke="#493b45" stroke-width="4.5" stroke-linejoin="round"></path>
+          <path d="M69 140 L151 140" stroke="#ffb5be" stroke-width="1.5" stroke-dasharray="4 4" stroke-linecap="round" opacity=".6" fill="none"></path>
+          <!-- 頭部 -->
+          <g transform="translate(0 8)">
+            <g class="head" data-tilt-ready="1" style="transform: rotate(0deg);">
+              <!-- 左耳 -->
+              <g class="ear">
+                <path d="M37 62 C30 37 32 8 46 -4 C58 -9 75 4 89 24 L71 45 Z" fill="#b7b2bb" stroke="#493b45" stroke-width="4.5" stroke-linejoin="round"></path>
+                <path d="M42 52 C38 36 39 15 49 1 C56 4 66 15 73 30 C67 39 56 47 42 52 Z" fill="#efa8b7" stroke="#493b45" stroke-width="3.2" stroke-linejoin="round"></path>
               </g>
-            <path d="M105.5,90 h9 l-4.5,5 Z" fill="#252A2F"/>
-            <path d="M110,95 v3 M110,98 C110,101 104,102 100,99" stroke="#56606D" stroke-width="1.9" fill="none" stroke-linecap="round"/>
-            <path d="M110,95 v3 M110,98 C110,101 116,102 120,99" stroke="#56606D" stroke-width="1.9" fill="none" stroke-linecap="round"/>
-            <path d="M95,91 Q78,90 62,96 Q57,98 53,101" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-            <path d="M92,96 Q78,96 63,103 Q58,106 53,110" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-            <path d="M94,101 Q80,103 66,111 Q59,115 54,119" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-            <path d="M125,91 Q142,90 158,96 Q163,98 167,101" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-            <path d="M128,96 Q142,96 157,103 Q162,106 167,110" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>
-            <path d="M126,101 Q140,103 154,111 Q161,115 166,119" fill="none" stroke="#E1E0DD" stroke-width="1.3" stroke-linecap="round" opacity=".9"/>          </g>
+              <!-- 右耳 -->
+              <g class="ear">
+                <path d="M183 62 C190 37 188 8 174 -4 C162 -9 145 4 131 24 L149 45 Z" fill="#b7b2bb" stroke="#493b45" stroke-width="4.5" stroke-linejoin="round"></path>
+                <path d="M178 52 C182 36 181 15 171 1 C164 4 154 15 147 30 C153 39 164 47 178 52 Z" fill="#efa8b7" stroke="#493b45" stroke-width="3.2" stroke-linejoin="round"></path>
+              </g>
+              <!-- 臉 -->
+              <path d="M110 14 C152 14 186 44 189 84 L196 98 L189 104 L193 112 L182.4 114.4 C176.5 123 167 129.5 154 132 C132 136 88 136 66 132 C53 129.5 43.5 123 37.6 114.4 L27 112 L31 104 L24 98 L31 84 C34 44 68 14 110 14 Z" fill="url(#gGray)" stroke="#493b45" stroke-width="4.5" stroke-linejoin="round"></path>
+              <!-- 臉內側 -->
+              <g clip-path="url(#headClip)">
+                <ellipse cx="110" cy="60" rx="60" ry="44" fill="url(#faceSoft)" class=""></ellipse>
+                <path d="M103 10 C104 22 104 32 106 40 C107 44 113 44 114 40 C116 32 116 22 117 10 Z" fill="#76707f"></path>
+                <path d="M80.5 12 C81.5 22 83.5 32 86.5 39 C87.5 42.5 93.5 41.5 94 38 C95 30 94 20 93.5 12 Z" fill="#76707f"></path>
+                <path d="M139.5 12 C138.5 22 136.5 32 133.5 39 C132.5 42.5 126.5 41.5 126 38 C125 30 126 20 126.5 12 Z" fill="#76707f"></path>
+                <g transform="translate(0 -7)">
+                  <path d="M31 84 C37 82 47 84 53 89 C55 93 52 97 47 98 C40 100 32 98 27 95 Z" fill="#5d595f"></path>
+                  <path d="M189 84 C183 82 173 84 167 89 C165 93 168 97 173 98 C180 100 188 98 193 95 Z" fill="#5d595f"></path>
+                  <path d="M35,66 C41,64 49,66 54,70 C56,73 54,76 50,77 C44,79 37,78 32,75 Z" fill="#5d595f"></path>
+                  <path d="M185,66 C179,64 171,66 166,70 C164,73 166,76 170,77 C176,79 183,78 188,75 Z" fill="#5d595f"></path>
+                </g>
+                <path d="M110 52 C98 52 90 62 85 73 C79 86 68 96 52 102 C38 107 30 117 34 129 C38 143 62 154 110 155 C158 154 182 143 186 129 C190 117 182 107 168 102 C152 96 141 86 135 73 C130 62 122 52 110 52 Z" fill="#fffaf6"></path>
+                <ellipse cx="110" cy="147" rx="32" ry="7" fill="#f3e8e4"></ellipse>
+              </g>
+              <!-- 腮紅 + 眼睛 + 鼻 + 嘴 -->
+              <g transform="translate(0 -3)">
+                <ellipse cx="68" cy="106" rx="12" ry="7" fill="#f2a6b5" opacity=".75"></ellipse>
+                <ellipse cx="152" cy="106" rx="12" ry="7" fill="#f2a6b5" opacity=".75"></ellipse>
+                <g class="eyeBean"><g class="ey">
+                  <circle cx="78" cy="89" r="11" fill="#33231c"></circle>
+                  <circle cx="82" cy="85" r="4" fill="#fff"></circle>
+                  <circle cx="142" cy="89" r="11" fill="#33231c"></circle>
+                  <circle cx="138" cy="85" r="4" fill="#fff"></circle>
+                </g></g>
+                <g class="eyeSmile" opacity="0" stroke-linecap="round" fill="none">
+                  <path d="M67 90 Q78 77 89 90" stroke="#33231c" stroke-width="5"></path>
+                  <path d="M131 90 Q142 77 153 90" stroke="#33231c" stroke-width="5"></path>
+                </g>
+                <path d="M104.75 90 C104.75 88.7 106 88 110 88 C114 88 115.25 88.7 115.25 90 L113.4 95.2 C112.3 96.5 107.7 96.5 106.6 95.2 Z" fill="#e88f9f" stroke="#755262" stroke-width="1.8" stroke-linejoin="round"></path>
+                <path d="M110 98 L110 101.5 M110 101.5 C110 104.2 108.6 106.8 105 106.8 C102.2 106.8 100 105.5 98.5 103.2 M110 101.5 C110 104.2 111.4 106.8 115 106.8 C117.8 106.8 120 105.5 121.5 103.2" fill="none" stroke="#624754" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+              </g>
+              <!-- 鬍鬚 -->
+              <g stroke="#8e7c8e" stroke-linecap="round" fill="none" opacity=".8">
+                <path d="M13 107 C30 100 48 99 52 100" stroke-width="2"></path>
+                <path d="M21 122 C32 113 48 111 50 110" stroke-width="2"></path>
+                <path d="M207 107 C190 100 172 99 168 100" stroke-width="2"></path>
+                <path d="M199 122 C188 113 172 111 170 110" stroke-width="2"></path>
+              </g>
+              <!-- 頭頂高光 -->
+              <path d="M56,44 Q62,26 84,24 Q68,32 56,44 Z" fill="url(#hlFadeL)"></path>
+              <path d="M164,44 Q158,26 136,24 Q152,32 164,44 Z" fill="url(#hlFadeR)"></path>
+            </g>
           </g>
+          <!-- 鈴鐺 -->
+          <g>
+            <circle cx="110" cy="151" r="3.5" fill="#efbc55" stroke="#493b45" stroke-width="2"></circle>
+            <circle cx="110" cy="161" r="10.5" fill="#ffd16d" stroke="#493b45" stroke-width="3"></circle>
+            <path d="M101,160 Q110,157 119,160" fill="none" stroke="#cc9035" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="110" cy="164" r="2.2" fill="#624754"></circle>
+            <path d="M110,165 v5" fill="none" stroke="#624754" stroke-width="2" stroke-linecap="round"></path>
+            <ellipse cx="106" cy="156" rx="2.5" ry="3" fill="#fff6d8" opacity=".95"></ellipse>
+          </g>
+        </g>
       </svg>
     </div>
 
@@ -745,64 +842,71 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div id="catPriconne" class="pet" data-pet="priconne" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="長毛貓公主">
         <g class="breath">
-          <!-- 羽狀長尾從身後探出 -->
+          <ellipse cx="110" cy="216" rx="59" ry="6" fill="var(--cat-detail, #c58ca7)" opacity=".16"></ellipse>
+          <!-- 羽狀蓬鬆長尾 -->
           <g class="sway">
-            <path d="M166,202 C192,204 206,184 200,162 C196,148 184,146 180,156" fill="none" stroke="var(--cat-fur2)" stroke-width="13" stroke-linecap="round"/>
-            <path d="M166,202 C192,204 206,184 200,162 C196,148 184,146 180,156" fill="none" stroke="var(--cat-belly)" stroke-width="6" stroke-linecap="round" opacity=".8"/>
-            <circle cx="180" cy="155" r="7" fill="var(--cat-fur2)"/>
+            <path d="M147,199 C169,203 184,191 181,176 C178,167 171,163 174,154 L180,157 Q178,143 188,137 L190,145 L196,141 C207,153 210,171 205,186 L210,184 C206,202 194,214 178,215 L180,219 C165,221 151,215 144,208 Z" fill="var(--cat-fur2, #e8bed5)"></path>
+            <path d="M156,207 C183,214 202,186 191,158 C194,180 183,196 167,199 Z" fill="var(--cat-belly, #fff3f8)" opacity=".8"></path>
           </g>
-          <!-- 小耳朵（基部藏入頭頂弧線）-->
-          <g class="ear">
-            <path d="M80,68 C72,46 80,36 94,45 C102,51 106,58 107,67 C98,60 88,61 80,68 Z" fill="var(--cat-fur)"/>
-            <path d="M85,61 C81,50 86,46 93,51 C97,55 99,59 100,63 C95,58 89,57 85,61 Z" fill="var(--cat-inner)"/>
-            <path d="M83,49 q4,6 9,11" stroke="var(--cat-belly)" stroke-width="2" stroke-linecap="round" fill="none" opacity=".9"/>
-            <path d="M140,68 C148,46 140,36 126,45 C118,51 114,58 113,67 C122,60 132,61 140,68 Z" fill="var(--cat-fur)"/>
-            <path d="M135,61 C139,50 134,46 127,51 C123,55 121,59 120,63 C125,58 131,57 135,61 Z" fill="var(--cat-inner)"/>
-            <path d="M137,49 q-4,6 -9,11" stroke="var(--cat-belly)" stroke-width="2" stroke-linecap="round" fill="none" opacity=".9"/>
-          </g>
-          <!-- 頭→毛領→漏斗→裙擺 一條連續弧線（交接處切線平滑）-->
-          <path d="M110,56 C140,57 158,74 161,96 C163,114 179,123 182,141 C184,155 175,164 163,166 C154,167.5 147,165 142,166.5 C155,181 168,195 173,206 C176,214 175,222 169,225 Q158,233 147,225 Q136,217 124,225 Q110,234 96,225 Q84,217 73,225 Q62,233 51,225 C45,222 44,214 47,206 C52,195 65,181 78,166.5 C73,165 66,167.5 57,166 C45,164 36,155 38,141 C41,123 57,114 59,96 C62,74 80,57 110,56 Z" fill="var(--cat-belly)"/>
-          <!-- 毛流紋理：順著弧線向下流 -->
-          <path d="M100,64 q4,7 8,11 M120,64 q-4,7 -8,11" stroke="#ffd0e2" stroke-width="2" stroke-linecap="round" fill="none"/>
-          <path d="M70,140 q-6,14 -3,26 M150,140 q6,14 3,26" stroke="#ffd0e2" stroke-width="2" stroke-linecap="round" fill="none" opacity=".9"/>
-          <path d="M52,146 q-4,8 -2,14 M168,146 q4,8 2,14" stroke="#ffd0e2" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>
-          <path d="M80,192 q-6,12 -12,22 M140,192 q6,12 12,22 M110,196 v24" stroke="#ffd0e2" stroke-width="2" stroke-linecap="round" fill="none" opacity=".8"/>
-          <!-- 公主皇冠 -->
-          <path d="M90,58 L80,24 L100,42 L110,18 L120,42 L140,24 L130,58 Z" fill="#ffd76e" stroke="#e8b04b" stroke-width="2" stroke-linejoin="round"/>
-          <circle cx="110" cy="38" r="5" fill="#f56ba4"/>
-          <circle cx="110" cy="38" r="4" fill="#f5bbf4"/>
-          <!-- 前腳（重點色小靴）-->
+          <!-- 坐姿身體與兩側長毛 -->
+          <path d="M85,128 C76,143 77,158 68,174 L62,172 L64,184 L57,191 L62,193 Q54,207 67,213 L64,217 Q80,221 92,215 Q110,219 128,215 Q140,221 156,217 L153,213 Q166,207 158,193 L163,191 L156,184 L158,172 L152,174 C143,158 144,143 135,128 Z" fill="var(--cat-fur, #f5dce9)"></path>
+          <path d="M76,179 Q66,192 72,203 M144,179 Q154,192 148,203" fill="none" stroke="var(--cat-detail, #c58ca7)" stroke-width="2" stroke-linecap="round" opacity=".4"></path>
+          <ellipse cx="77" cy="209" rx="16" ry="8" fill="var(--cat-fur2, #e8bed5)"></ellipse>
+          <ellipse cx="143" cy="209" rx="16" ry="8" fill="var(--cat-fur2, #e8bed5)"></ellipse>
+          <!-- 前腿與重點色小爪 -->
           <g class="paws">
-            <path d="M88,186 C87,195.4 88,207.4 92.5,216.4 C93,222.4 96.5,225.4 101.5,225.4 C106.5,225.4 109.5,222.4 109.5,216.4 L109.5,189.4 Z" fill="var(--cat-fur3)"/>
-            <path d="M132,186 C133,195.4 132,207.4 127.5,216.4 C127,222.4 123.5,225.4 118.5,225.4 C113.5,225.4 110.5,222.4 110.5,216.4 L110.5,189.4 Z" fill="var(--cat-fur3)"/>
-            <path d="M90,187 C89,196.4 90,207.4 94.5,216.4 C95,220.9 97,223.4 101,223.4 C105,223.4 107.5,220.9 107.5,216.4 L107.5,187.4 Z" fill="var(--cat-fur2)"/>
-            <path d="M130,187 C131,196.4 130,207.4 125.5,216.4 C125,220.9 123,223.4 119,223.4 C115,223.4 112.5,220.9 112.5,216.4 L112.5,187.4 Z" fill="var(--cat-fur2)"/>            <ellipse cx="94" cy="222" rx="14" ry="10" fill="var(--cat-fur3)"/>
-            <ellipse cx="126" cy="222" rx="14" ry="10" fill="var(--cat-fur3)"/>
-            <path d="M88,223 v5 M94,223 v6 M100,223 v5 M120,223 v5 M126,223 v6 M132,223 v5" stroke="var(--cat-inner)" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".9"/>
+            <path d="M88,163 C85,177 88,193 85,204 C79,211 83,218 94,218 C104,218 108,214 106,205 L104,174 M132,163 C135,177 132,193 135,204 C141,211 137,218 126,218 C116,218 112,214 114,205 L116,174" fill="var(--cat-fur2, #e8bed5)" stroke="var(--cat-fur3, #d8aac3)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M85,204 L91,207 L96,204 L101,207 L105,205 Q112,218 95,219 Q79,219 82,210 Z M135,204 L129,207 L124,204 L119,207 L115,205 Q108,218 125,219 Q141,219 138,210 Z" fill="var(--cat-fur3, #d8aac3)"></path>
+            <path d="M90,212 v4 M97,212 v4 M123,212 v4 M130,212 v4" stroke="var(--cat-inner, #d994b5)" stroke-width="1.4" stroke-linecap="round" fill="none"></path>
           </g>
-          <!-- 胸前蓬鬆長毛輪廓 -->
-          <path d="M84,142 C78,151 75,160 77,169 C79,177 85,181 91,183 C87,190 89,197 95,201 C100,205 105,206 110,207 C115,206 120,205 125,201 C131,197 133,190 129,183 C135,181 141,177 143,169 C145,160 142,151 136,142 C129,149 121,156 110,160 C99,156 91,149 84,142 Z" fill="#ffd0e2" opacity=".7"/>
-          <path d="M96,152 l6,14 M110,150 v16 M124,152 l-6,14" stroke="#ffd0e2" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-          <!-- 腮紅 -->
-          <ellipse cx="70" cy="114" rx="9" ry="6" fill="var(--cat-blush)" opacity=".85"/>
-          <ellipse cx="150" cy="114" rx="9" ry="6" fill="var(--cat-blush)" opacity=".85"/>
-          <!-- 金吉拉眼線大眼 -->
-          <g class="ey">
-            <ellipse cx="90" cy="102" rx="12" ry="14" fill="none" stroke="#c2507e" stroke-width="1.8"/>
-            <ellipse cx="90" cy="102" rx="10.5" ry="12.5" fill="var(--cat-eye)"/>
-            <circle cx="94" cy="96" r="4" fill="#fff"/>
-            <circle cx="86" cy="107" r="2" fill="#fff" opacity=".8"/>
-            <ellipse cx="130" cy="102" rx="12" ry="14" fill="none" stroke="#c2507e" stroke-width="1.8"/>
-            <ellipse cx="130" cy="102" rx="10.5" ry="12.5" fill="var(--cat-eye)"/>
-            <circle cx="134" cy="96" r="4" fill="#fff"/>
-            <circle cx="126" cy="107" r="2" fill="#fff" opacity=".8"/>
+          <!-- 層次分明的胸前毛領 -->
+          <path d="M77,130 Q110,139 143,130 L148,144 L141,143 L145,155 L135,152 L137,165 L127,161 L125,175 L117,170 L110,184 L103,170 L95,175 L93,161 L83,165 L85,152 L75,155 L79,143 L72,144 Z" fill="var(--cat-belly, #fff3f8)"></path>
+          <path d="M92,148 L99,157 M110,151 v13 M128,148 L121,157" stroke="var(--cat-fur2, #e8bed5)" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".7"></path>
+          <!-- 珍珠項飾與小寶石 -->
+          <path d="M87,140 Q110,154 133,140" fill="none" stroke="#e8bd69" stroke-width="2" stroke-linecap="round"></path>
+          <path d="M90,143 Q110,154 130,143" fill="none" stroke="#fffaf2" stroke-width="4" stroke-dasharray=".1 6" stroke-linecap="round"></path>
+          <path d="M110,148 L115,154 L110,161 L105,154 Z" fill="#e99bc3" stroke="#e8bd69" stroke-width="1.2" stroke-linejoin="round"></path>
+          <g class="head" data-tilt-ready="1" style="transform: rotate(0deg);">
+            <!-- 尖耳與耳尖絨毛 -->
+            <g class="ear">
+            <path d="M58,84 C51,68 51,43 55,28 L61,34 L62,27 Q82,39 91,63 L82,84 Z" fill="var(--cat-fur, #f5dce9)"></path>
+            <path d="M64,70 Q58,51 61,39 Q75,48 81,63 Z" fill="var(--cat-inner, #d994b5)"></path>
+            <path d="M62,66 L69,61 L68,72 L77,68" fill="none" stroke="var(--cat-belly, #fff3f8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M162,84 C169,68 169,43 165,28 L159,34 L158,27 Q138,39 129,63 L138,84 Z" fill="var(--cat-fur, #f5dce9)"></path>
+            <path d="M156,70 Q162,51 159,39 Q145,48 139,63 Z" fill="var(--cat-inner, #d994b5)"></path>
+            <path d="M158,66 L151,61 L152,72 L143,68" fill="none" stroke="var(--cat-belly, #fff3f8)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+            <!-- 寬腮、收下巴與柔軟頰毛 -->
+            <path d="M110,55 C85,55 67,62 60,80 Q55,89 56,98 L47,103 L53,109 L43,114 L54,119 L49,126 L63,128 L62,134 L75,133 C86,142 99,146 110,146 C121,146 134,142 145,133 L158,134 L157,128 L171,126 L166,119 L177,114 L167,109 L173,103 L164,98 Q165,89 160,80 C153,62 135,55 110,55 Z" fill="var(--cat-fur, #f5dce9)"></path>
+            <path d="M110,72 C100,87 103,104 94,116 Q82,124 70,121 Q85,141 110,143 Q135,141 150,121 Q138,124 126,116 C117,104 120,87 110,72 Z" fill="var(--cat-belly, #fff3f8)"></path>
+            <path d="M62,116 L69,120 M59,124 L70,126 M158,116 L151,120 M161,124 L150,126" fill="none" stroke="var(--cat-fur2, #e8bed5)" stroke-width="1.8" stroke-linecap="round"></path>
+            <!-- 小巧金冠 -->
+            <path d="M90,60 L84,33 L99,44 L110,23 L121,44 L136,33 L130,60 Q110,65 90,60 Z" fill="#ffdc83" stroke="#dfac50" stroke-width="1.8" stroke-linejoin="round"></path>
+            <path d="M93,55 Q110,59 127,55" fill="none" stroke="#fff0b9" stroke-width="3" stroke-linecap="round"></path>
+            <circle cx="84" cy="32" r="3" fill="#ffe9a5"></circle>
+            <circle cx="110" cy="22" r="3.5" fill="#ffe9a5"></circle>
+            <circle cx="136" cy="32" r="3" fill="#ffe9a5"></circle>
+            <path d="M110,37 L115,44 L110,51 L105,44 Z" fill="#e98cba"></path>
+            <path d="M110,39 L110,45 L107,44 Z" fill="#ffdced"></path>
+            <!-- 帶柔和眼線的大眼 -->
+            <g class="ey">
+            <ellipse cx="85" cy="102" rx="11" ry="13" fill="var(--cat-eye, #72536e)" stroke="var(--cat-detail, #c58ca7)" stroke-width="1.5"></ellipse>
+            <path d="M74,98 Q72,98 70,94" fill="none" stroke="var(--cat-eye, #72536e)" stroke-width="1.8" stroke-linecap="round"></path>
+            <ellipse cx="89" cy="97" rx="3.8" ry="4.3" fill="#fff"></ellipse>
+            <circle cx="81" cy="108" r="2" fill="#fff" opacity=".85"></circle>
+            <ellipse cx="135" cy="102" rx="11" ry="13" fill="var(--cat-eye, #72536e)" stroke="var(--cat-detail, #c58ca7)" stroke-width="1.5"></ellipse>
+            <path d="M146,98 Q148,98 150,94" fill="none" stroke="var(--cat-eye, #72536e)" stroke-width="1.8" stroke-linecap="round"></path>
+            <ellipse cx="139" cy="97" rx="3.8" ry="4.3" fill="#fff"></ellipse>
+            <circle cx="131" cy="108" r="2" fill="#fff" opacity=".85"></circle>
+            </g>
+            <ellipse cx="68" cy="115" rx="9" ry="5" fill="var(--cat-blush, #f3afc8)" opacity=".7"></ellipse>
+            <ellipse cx="152" cy="115" rx="9" ry="5" fill="var(--cat-blush, #f3afc8)" opacity=".7"></ellipse>
+            <ellipse cx="101" cy="122" rx="10" ry="7" fill="var(--cat-belly, #fff3f8)"></ellipse>
+            <ellipse cx="119" cy="122" rx="10" ry="7" fill="var(--cat-belly, #fff3f8)"></ellipse>
+            <path d="M105,116 Q110,113 115,116 Q115,118 110,122 Q105,118 105,116 Z" fill="var(--cat-nose, #bf7a99)"></path>
+            <path d="M110,122 v3 M102,125 Q106,131 110,125 Q114,131 118,125" fill="none" stroke="var(--cat-nose, #bf7a99)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M66,112 L36,107 M65,120 L33,121 M69,127 L40,135 M154,112 L184,107 M155,120 L187,121 M151,127 L180,135" stroke="var(--cat-detail, #c58ca7)" stroke-width="1.3" stroke-linecap="round" fill="none" opacity=".7"></path>
           </g>
-          <!-- 小粉鼻與 Ω 嘴 -->
-          <path d="M106,118 h8 l-4,4.5 Z" fill="var(--cat-nose)"/>
-          <path d="M102,126 Q106,131 110,126 Q114,131 118,126" fill="none" stroke="var(--cat-nose)" stroke-width="2" stroke-linecap="round"/>
-          <!-- 細長鬍鬚 -->
-          <path d="M64,100 L40,96 M64,108 L38,108 M64,116 L42,122" stroke="var(--cat-detail)" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".85"/>
-          <path d="M156,100 L180,96 M156,108 L182,108 M156,116 L178,122" stroke="var(--cat-detail)" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".85"/>
         </g>
       </svg>
     </div>
@@ -810,29 +914,76 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <!-- 小寵物：典雅米白（奶油茶點）-->
     <div id="petCream" class="pet" data-pet="cream" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="奶油茶點">
+        <defs>
+          <linearGradient id="creamTeaCup" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#fffaf0"></stop>
+            <stop offset="1" stop-color="#f0dfc0"></stop>
+          </linearGradient>
+          <linearGradient id="creamTeaCake" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#f9dda1"></stop>
+            <stop offset="1" stop-color="#dfac69"></stop>
+          </linearGradient>
+        </defs>
         <g class="breath">
-          <ellipse cx="110" cy="212" rx="60" ry="7" fill="#5d4e36" opacity=".12"/>
-          <!-- 熱氣（先畫在杯後）-->
-          <g class="steam"><path d="M96,138 C92,128 100,122 96,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
-          <g class="steam" style="animation-delay:1.4s"><path d="M110,142 C106,130 114,124 110,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
-          <g class="steam" style="animation-delay:2.8s"><path d="M124,138 C120,128 128,122 124,112" fill="none" stroke="#b8a878" stroke-width="3" stroke-linecap="round" opacity=".6"/></g>
-          <!-- 金粉閃爍 -->
-          <path class="twinkle" d="M176,93 L178,98 L183,100 L178,102 L176,107 L174,102 L169,100 L174,98 Z" fill="#c9a84e"/>
-          <path class="twinkle" style="animation-delay:1.3s" d="M44,112 L45.6,116.4 L50,118 L45.6,119.6 L44,124 L42.4,119.6 L38,118 L42.4,116.4 Z" fill="#c9a84e"/>
-          <!-- 金邊碟盤＋司康 -->
-          <ellipse cx="110" cy="198" rx="62" ry="11" fill="#ddd0ab"/>
-          <ellipse cx="110" cy="197" rx="62" ry="11" fill="none" stroke="#b39455" stroke-width="1.5" opacity=".6"/>
-          <ellipse cx="110" cy="196" rx="44" ry="7" fill="#cbb888" opacity=".55"/>
-          <circle cx="60" cy="190" r="9" fill="#efe2c4" stroke="#d9c9a2" stroke-width="1.5"/>
-          <circle cx="72" cy="194" r="8" fill="#e8d9b8" stroke="#d9c9a2" stroke-width="1.5"/>
-          <circle cx="57" cy="187" r="1.5" fill="#c9a84e"/>
-          <circle cx="64" cy="193" r="1.5" fill="#c9a84e"/>
-          <circle cx="73" cy="191" r="1.5" fill="#a8843c"/>
-          <!-- 茶杯（把手在後→杯身→杯緣→茶面→金帶）-->
-          <path d="M144,158 C166,154 172,172 148,180" fill="none" stroke="#b39455" stroke-width="6" stroke-linecap="round"/>
-          <path d="M76,150 L144,150 C144,172 140,184 134,189 C128,193 92,193 86,189 C80,184 76,172 76,150 Z" fill="#f8f2e2" stroke="#d9c9a2" stroke-width="2"/>
-          <ellipse cx="110" cy="150" rx="34" ry="7.5" fill="#efe4c8" stroke="#b39455" stroke-width="1.5"/>
-          <ellipse cx="110" cy="150" rx="27" ry="5" fill="#c8ac74" opacity=".8"/>
+          <ellipse cx="112" cy="211" rx="75" ry="6" fill="#a58765" opacity=".16"></ellipse>
+          <!-- 柔軟熱氣與小金光 -->
+          <g class="steam"><path d="M104,111 C92,100 110,92 101,80" fill="none" stroke="#cbb894" stroke-width="3" stroke-linecap="round" opacity=".55"></path></g>
+          <g class="steam" style="animation-delay:1.4s"><path d="M123,106 C112,94 130,85 121,71" fill="none" stroke="#cbb894" stroke-width="3.5" stroke-linecap="round" opacity=".5"></path></g>
+          <g class="steam" style="animation-delay:2.8s"><path d="M141,113 C131,104 147,96 141,87" fill="none" stroke="#cbb894" stroke-width="2.8" stroke-linecap="round" opacity=".5"></path></g>
+          <path class="twinkle" d="M174,86 Q175,94 182,95 Q175,96 174,104 Q173,96 166,95 Q173,94 174,86 Z" fill="#dfbc69"></path>
+          <path class="twinkle" style="animation-delay:1.3s" d="M47,98 Q48,104 54,105 Q48,106 47,112 Q46,106 40,105 Q46,104 47,98 Z" fill="#dfbc69"></path>
+          <circle cx="157" cy="72" r="2.5" fill="#ead59c"></circle>
+          <circle cx="65" cy="87" r="2" fill="#ead59c"></circle>
+          <!-- 金邊瓷盤與內圈 -->
+          <ellipse cx="111" cy="198" rx="79" ry="13" fill="#e4cfaa" stroke="#b79565" stroke-width="2"></ellipse>
+          <ellipse cx="111" cy="194" rx="79" ry="13" fill="#fff6e6" stroke="#c5a373" stroke-width="2"></ellipse>
+          <ellipse cx="111" cy="194" rx="65" ry="8.5" fill="#f1e2c8" stroke="#dfc38e" stroke-width="1.5"></ellipse>
+          <path d="M46,197 Q61,204 83,204 M143,204 Q162,203 176,198" fill="none" stroke="#fffdf5" stroke-width="2.5" stroke-linecap="round"></path>
+          <!-- 茶杯把手：金色外緣與奶油瓷面 -->
+          <path d="M162,138 C187,125 202,140 193,156 C187,167 174,172 163,168" fill="none" stroke="#b79565" stroke-width="11" stroke-linecap="round"></path>
+          <path d="M162,138 C187,125 202,140 193,156 C187,167 174,172 163,168" fill="none" stroke="#fff0d5" stroke-width="6" stroke-linecap="round"></path>
+          <!-- 圓潤杯身與小杯足 -->
+          <ellipse cx="124" cy="192" rx="29" ry="5" fill="#c7a777" opacity=".25"></ellipse>
+          <path d="M106,184 L103,190 Q124,198 145,190 L142,184 Z" fill="#f2dfbd" stroke="#b79565" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M80,129 C80,155 86,176 100,184 Q124,196 148,184 C162,176 168,155 168,129 Z" fill="url(#creamTeaCup)" stroke="#b79565" stroke-width="2.5" stroke-linejoin="round"></path>
+          <path d="M88,140 Q89,153 93,160" fill="none" stroke="#fffdf8" stroke-width="4" stroke-linecap="round"></path>
+          <path d="M96,178 Q124,191 152,178" fill="none" stroke="#d5b67e" stroke-width="2" stroke-linecap="round"></path>
+          <!-- 橢圓杯口與奶茶漣漪 -->
+          <ellipse cx="124" cy="129" rx="44" ry="10" fill="#fff9eb" stroke="#b79565" stroke-width="2"></ellipse>
+          <ellipse cx="124" cy="130" rx="36" ry="6.8" fill="#b98755"></ellipse>
+          <ellipse cx="124" cy="131" rx="32" ry="4.8" fill="#cfaa76"></ellipse>
+          <path d="M103,130 C108,126 138,126 145,130 C148,133 122,135 115,132 C111,130 125,129 132,131" fill="none" stroke="#f7dfb5" stroke-width="1.8" stroke-linecap="round"></path>
+          <path d="M88,132 Q124,145 160,132" fill="none" stroke="#e7c987" stroke-width="2" stroke-linecap="round"></path>
+          <!-- 小茶杯的可愛表情 -->
+          <g class="ey __web-inspector-hide-shortcut__">
+            <ellipse cx="109" cy="155" rx="4.5" ry="5.5" fill="#645044"></ellipse>
+            <circle cx="110.5" cy="153" r="1.6" fill="#fff" class="__web-inspector-hide-shortcut__"></circle>
+            <ellipse cx="139" cy="155" rx="4.5" ry="5.5" fill="#645044" class="__web-inspector-hide-shortcut__"></ellipse>
+            <circle cx="140.5" cy="153" r="1.6" fill="#fff"></circle>
+          </g>
+          <ellipse cx="98" cy="163" rx="6.5" ry="4" fill="#edb0aa" opacity=".7" class="__web-inspector-hide-shortcut__"></ellipse>
+          <ellipse cx="150" cy="163" rx="6.5" ry="4" fill="#edb0aa" opacity=".7" class="__web-inspector-hide-shortcut__"></ellipse>
+          <path d="M119,164 Q124,170 129,164" fill="none" stroke="#8b6853" stroke-width="1.8" stroke-linecap="round" class="__web-inspector-hide-shortcut__"></path>
+          <!-- 草莓奶油司康：酥皮、果醬與夾心 -->
+          <ellipse cx="62" cy="190" rx="25" ry="5" fill="#b79565" opacity=".2"></ellipse>
+          <path d="M40,168 Q62,160 84,168 L84,181 Q82,190 62,191 Q42,190 40,181 Z" fill="url(#creamTeaCake)" stroke="#bf925f" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M41,173 Q47,170 53,174 Q61,169 68,174 Q76,170 83,173 L83,179 Q76,183 69,179 Q62,184 54,179 Q46,183 41,179 Z" fill="#fff8e9"></path>
+          <path d="M43,172 Q52,175 60,172 Q69,175 81,172" fill="none" stroke="#cc7a84" stroke-width="3" stroke-linecap="round"></path>
+          <path d="M39,166 C38,157 48,151 61,151 C74,150 85,156 86,165 Q84,172 75,171 L70,174 L61,171 L53,174 L47,170 Q40,172 39,166 Z" fill="#f4d394" stroke="#bf925f" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M47,162 L51,160 M58,157 L62,158 M73,161 L77,163 M48,184 L51,185 M74,184 L77,182" fill="none" stroke="#d1a064" stroke-width="1.8" stroke-linecap="round"></path>
+          <!-- 蓬鬆奶油與小草莓 -->
+          <path d="M48,157 C44,153 48,148 54,147 C51,142 56,138 62,139 Q70,138 72,144 C80,145 82,151 76,154 Q78,160 68,161 Q57,163 48,157 Z" fill="#fffaf0" stroke="#e2ccb0" stroke-width="1.6" stroke-linejoin="round"></path>
+          <path d="M54,149 Q62,153 72,148 M54,156 Q62,159 70,155" fill="none" stroke="#f0dfc7" stroke-width="1.6" stroke-linecap="round"></path>
+          <path d="M57,137 C52,127 58,120 64,124 C71,120 77,127 72,136 Q65,147 62,144 Z" fill="#ea91a0" stroke="#c97080" stroke-width="1.6" stroke-linejoin="round"></path>
+          <path d="M64,126 L58,120 L64,121 L68,116 L69,122 L75,122 L69,127 Z" fill="#9eb98c" stroke="#819d70" stroke-width="1" stroke-linejoin="round"></path>
+          <path d="M59,130 l1,2 M67,131 l-1,2 M63,137 l1,2 M71,128 l-1,2" fill="none" stroke="#ffe8c8" stroke-width="1.4" stroke-linecap="round"></path>
+          <!-- 盤前的小花奶油餅乾 -->
+          <path d="M89,189 C85,184 89,179 95,181 C98,175 104,177 106,182 C113,181 116,187 112,191 C115,197 110,201 105,199 C101,204 95,202 94,198 C87,200 84,194 89,189 Z" fill="#f5dca5" stroke="#c6a16d" stroke-width="1.8" stroke-linejoin="round"></path>
+          <circle cx="100" cy="190" r="5" fill="#e6b7a0"></circle>
+          <circle cx="100" cy="190" r="2.5" fill="#f3c8b7"></circle>
+          <path d="M94,184 l1,2 M107,186 l-2,1 M105,196 l-1,-2 M92,193 l2,-1" fill="none" stroke="#d6b47d" stroke-width="1.4" stroke-linecap="round"></path>
+          <circle cx="120" cy="199" r="1.8" fill="#d6b47d"></circle>
+          <circle cx="127" cy="197" r="1.2" fill="#d6b47d"></circle>
         </g>
       </svg>
     </div>
@@ -840,21 +991,89 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <!-- 小寵物：和風清新（盆栽）-->
     <div id="petMatcha" class="pet" data-pet="matcha" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="盆栽">
+        <defs>
+          <linearGradient id="mchLeaf" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#a5d18d"></stop>
+            <stop offset="1" stop-color="#7daf63"></stop>
+          </linearGradient>
+          <linearGradient id="mchLeafD" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#8fbf72"></stop>
+            <stop offset="1" stop-color="#6a9a52"></stop>
+          </linearGradient>
+          <linearGradient id="mchPot" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#d97a63"></stop>
+            <stop offset="1" stop-color="#b55f4c"></stop>
+          </linearGradient>
+        </defs>
+        <style>
+          .mch-fall{animation:mch-fall 4.2s ease-in infinite;transform-box:fill-box;transform-origin:center}
+          @keyframes mch-fall{0%{transform:translate(0,0) rotate(0deg);opacity:0}12%{opacity:.95}70%{opacity:.9}100%{transform:translate(-12px,78px) rotate(-55deg);opacity:0}}
+          .mch-fall2{animation:mch-fall2 5.1s ease-in infinite;transform-box:fill-box;transform-origin:center}
+          @keyframes mch-fall2{0%{transform:translate(0,0) rotate(0deg);opacity:0}12%{opacity:.95}70%{opacity:.9}100%{transform:translate(12px,78px) rotate(50deg);opacity:0}}
+          @media (prefers-reduced-motion:reduce){.mch-fall,.mch-fall2{animation:none !important}}
+        </style>
         <g class="breath">
-          <ellipse cx="110" cy="216" rx="52" ry="8" fill="#8aa275" opacity=".45"/>
+          <ellipse cx="110" cy="216" rx="52" ry="8" fill="#8aa275" opacity=".45"></ellipse>
+          <ellipse cx="110" cy="214" rx="34" ry="5" fill="#5d6b52" opacity=".3"></ellipse>
+          <path class="twinkle" d="M164,52 Q165,58 171,59 Q165,60 164,66 Q163,60 157,59 Q163,58 164,52 Z" fill="#dcebc8"></path>
+          <path class="twinkle" style="animation-delay:1.3s" d="M52,66 Q53,71 58,72 Q53,73 52,78 Q51,73 46,72 Q51,71 52,66 Z" fill="#dcebc8"></path>
+          <!-- 葉叢（後→前） -->
           <g class="sway">
-            <circle cx="110" cy="78" r="44" fill="#8fbf72"/>
-            <circle cx="70" cy="104" r="30" fill="#7daf63"/>
-            <circle cx="150" cy="104" r="30" fill="#9cc981"/>
-            <circle cx="110" cy="52" r="28" fill="#a5d18d"/>
-            <circle cx="88" cy="66" r="5" fill="#c2e0a8" opacity=".8"/>
-            <circle cx="132" cy="92" r="4" fill="#c2e0a8" opacity=".8"/>
+            <!-- 左後葉叢 -->
+            <g>
+              <path d="M40,108 C36,92 48,78 63,81 C71,70 89,73 93,87 C102,93 99,108 90,113 C93,125 80,136 66,131 C52,137 36,124 40,108 Z" fill="url(#mchLeafD)" stroke="#5d7f4c" stroke-width="0" stroke-linejoin="round"></path>
+              <ellipse cx="57" cy="95" rx="12" ry="8" transform="rotate(-25 57 95)" fill="#a5d18d" opacity=".5"></ellipse>
+            </g>
+            <!-- 右後葉叢 -->
+            <g>
+              <path d="M180,108 C184,92 172,78 157,81 C149,70 131,73 127,87 C118,93 121,108 130,113 C127,125 140,136 154,131 C168,137 184,124 180,108 Z" fill="url(#mchLeaf)" stroke="#5d7f4c" stroke-width="0" stroke-linejoin="round"></path>
+              <ellipse cx="163" cy="95" rx="12" ry="8" transform="rotate(25 163 95)" fill="#c2e0a8" opacity=".55"></ellipse>
+            </g>
+            <!-- 中葉叢 -->
+            <path d="M72,88 C59,68 72,48 88,50 C94,34 102,28 110,28 C118,28 126,34 132,50 C148,48 161,68 150,88 C160,102 148,112 139,116 C131,126 119,129 110,126 C101,129 89,126 81,116 C70,112 60,102 70,88 Z" fill="url(#mchLeafD)" stroke="#5d7f4c" stroke-width="0" stroke-linejoin="round"></path>
+            <path d="M82,55 C76,42 82,30 94,30 C97,20 103,16 110,16 C117,16 123,20 126,30 C138,30 144,42 138,55 C141,63 135,68 128,68 C123,75 116,77 110,76 C104,77 97,75 92,68 C85,68 79,63 82,55 Z" fill="url(#mchLeaf)" stroke="#5d7f4c" stroke-width="0" stroke-linejoin="round"></path>
+            <ellipse cx="102" cy="40" rx="10" ry="6" transform="rotate(-24 102 40)" fill="#c2e0a8" opacity=".55"></ellipse>
+            <circle cx="96" cy="61" r="5" fill="#c2e0a8" opacity=".9"></circle>
+            <circle cx="123" cy="51" r="2" fill="#e8f4d8" opacity=".85"></circle>
           </g>
-          <path d="M103,116 C106,140 103,158 98,176 L122,176 C117,158 115,138 117,116 Z" fill="#8a6a4a"/>
-          <path d="M105,148 C96,144 90,138 88,130" fill="none" stroke="#8a6a4a" stroke-width="6" stroke-linecap="round"/>
-          <path d="M116,144 C124,140 130,134 132,126" fill="none" stroke="#8a6a4a" stroke-width="6" stroke-linecap="round"/>
-          <path d="M74,176 L146,176 L138,212 L82,212 Z" fill="#c96f5a"/>
-          <rect x="68" y="168" width="84" height="14" rx="5" fill="#b55f4c"/>
+          <!-- 樹幹 -->
+          <path d="M103,116 C106,140 103,158 98,176 L122,176 C117,158 115,138 117,116 Z" fill="#8a6a4a" stroke="#6b4f36" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M108,122 C109,140 108,158 105,172" fill="none" stroke="#a5825c" stroke-width="2" stroke-linecap="round" opacity=".8"></path>
+          <path d="M105,148 C96,144 90,138 88,130" fill="none" stroke="#8a6a4a" stroke-width="6" stroke-linecap="round"></path>
+          <path d="M116,144 C124,140 130,134 132,126" fill="none" stroke="#8a6a4a" stroke-width="6" stroke-linecap="round"></path>
+          <ellipse cx="88" cy="130" rx="7" ry="5" transform="rotate(-30 88 130)" fill="#7daf63" stroke="#5d7f4c" stroke-width="0"></ellipse>
+          <ellipse cx="132" cy="126" rx="7" ry="5" transform="rotate(30 132 126)" fill="#9cc981" stroke="#5d7f4c" stroke-width="0"></ellipse>
+          <!-- 土壤 -->
+          <ellipse cx="110" cy="176" rx="34" ry="7" fill="#6b4a33"></ellipse>
+          <ellipse cx="98" cy="175" rx="4" ry="2" fill="#543826"></ellipse>
+          <ellipse cx="114" cy="177" rx="5" ry="2.2" fill="#543826"></ellipse>
+          <ellipse cx="126" cy="175" rx="3" ry="1.8" fill="#543826"></ellipse>
+          <!-- 盆身 -->
+          <path d="M74,176 L146,176 L138,212 L82,212 Z" fill="url(#mchPot)" stroke="#8f4a3a" stroke-width="2" stroke-linejoin="round"></path>
+          <path d="M80,178 L86,208" fill="none" stroke="#f0a88f" stroke-width="3" stroke-linecap="round" opacity=".6"></path>
+          <path d="M74,176 L146,176 L144,182 L76,182 Z" fill="#8f4a3a" opacity=".35"></path>
+          <rect x="68" y="168" width="84" height="14" rx="5" fill="url(#mchPot)" stroke="#8f4a3a" stroke-width="2"></rect>
+          <path d="M74,171 L146,171" fill="none" stroke="#f0a88f" stroke-width="2" stroke-linecap="round" opacity=".7"></path>
+          <!-- 盆身表情 -->
+          <g class="ey">
+            <ellipse cx="97" cy="195" rx="4.5" ry="5.5" fill="#4a382e"></ellipse>
+            <circle cx="98.5" cy="193" r="1.6" fill="#fff"></circle>
+            <ellipse cx="123" cy="195" rx="4.5" ry="5.5" fill="#4a382e"></ellipse>
+            <circle cx="124.5" cy="193" r="1.6" fill="#fff"></circle>
+          </g>
+          <ellipse cx="88" cy="201" rx="5.5" ry="3.2" fill="#f2a6a0" opacity=".7"></ellipse>
+          <ellipse cx="132" cy="201" rx="5.5" ry="3.2" fill="#f2a6a0" opacity=".7"></ellipse>
+          <path d="M106,200 Q110,204 114,200" fill="none" stroke="#6b4a33" stroke-width="1.8" stroke-linecap="round"></path>
+          <!-- 落葉（三片，從葉叢掉到地面消失） -->
+          <g class="mch-fall" style="animation-duration:4.2s">
+            <ellipse cx="66" cy="132" rx="6" ry="4" fill="#9cc981" stroke="#5d7f4c" stroke-width="0"></ellipse>
+          </g>
+          <g class="mch-fall2" style="animation-delay:1.4s;animation-duration:5.1s">
+            <ellipse cx="154" cy="128" rx="6" ry="4" fill="#7daf63" stroke="#5d7f4c" stroke-width="0"></ellipse>
+          </g>
+          <g class="mch-fall" style="animation-delay:2.7s;animation-duration:4.6s">
+            <ellipse cx="96" cy="138" rx="5" ry="3.5" fill="#a5d18d" stroke="#5d7f4c" stroke-width="0"></ellipse>
+          </g>
         </g>
       </svg>
     </div>
@@ -863,16 +1082,23 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div id="petBlue" class="pet" data-pet="blue" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="小鯨魚">
         <g class="breath">
-          <g class="bubble"><circle cx="88" cy="84" r="5" fill="none" stroke="#8fc4e4" stroke-width="2"/></g>
-          <g class="bubble" style="animation-delay:1.1s"><circle cx="102" cy="78" r="4" fill="none" stroke="#8fc4e4" stroke-width="2"/></g>
-          <g class="bubble" style="animation-delay:2.2s"><circle cx="94" cy="72" r="3" fill="none" stroke="#8fc4e4" stroke-width="2"/></g>
-          <g class="flap"><path d="M164,138 L194,116 L186,144 L198,166 L166,156 Z" fill="#6fb3dc"/></g>
-          <path d="M52,148 C52,112 82,94 114,94 C150,94 172,116 172,144 C172,170 144,184 110,184 C76,184 52,172 52,148 Z" fill="#6fb3dc"/>
-          <path d="M62,164 C86,180 138,180 162,162 C150,178 130,184 110,184 C90,184 72,178 62,164 Z" fill="#d8ecf9"/>
-          <path d="M92,158 C98,166 112,166 118,158 C114,170 96,170 92,158 Z" fill="#5aa0c8"/>
-          <circle cx="78" cy="128" r="5" fill="#2a4a5e"/>
-          <circle cx="79.5" cy="126.5" r="1.6" fill="#fff"/>
-          <ellipse cx="66" cy="140" rx="6" ry="4" fill="#f7b8c8" opacity=".8"/>
+          <ellipse cx="112" cy="193" rx="62" ry="6" fill="#8fc4e4" opacity=".18"></ellipse>
+          <g class="bubble"><circle cx="87" cy="76" r="5.5" fill="#eaf7ff" fill-opacity=".6" stroke="#8fc4e4" stroke-width="1.8"></circle><circle cx="85.5" cy="74.5" r="1.5" fill="#fff"></circle></g>
+          <g class="bubble" style="animation-delay:1.1s"><circle cx="104" cy="62" r="4" fill="#eaf7ff" fill-opacity=".6" stroke="#8fc4e4" stroke-width="1.6"></circle></g>
+          <g class="bubble" style="animation-delay:2.2s"><circle cx="88" cy="48" r="3" fill="#eaf7ff" fill-opacity=".6" stroke="#8fc4e4" stroke-width="1.5"></circle></g>
+          <g class="flap">
+            <path d="M158,146 C176,142 183,130 183,119 C169,120 158,110 156,96 C169,94 182,101 189,110 C195,97 206,91 218,93 C218,107 208,120 195,123 C195,145 179,163 158,168 Z" fill="#78bde3"></path>
+          </g>
+          <path d="M43,141 C43,113 64,92 94,90 C126,87 147,100 160,121 C168,135 175,144 185,144 C181,162 162,175 139,181 C115,188 84,186 65,176 C49,168 42,156 43,141 Z" fill="#78bde3"></path>
+          <path d="M47,151 C60,166 82,174 110,173 C139,173 162,162 175,153 C164,174 140,184 111,185 C80,185 54,174 47,151 Z" fill="#dff2fc"></path>
+          <path d="M63,112 C72,101 89,97 103,99" fill="none" stroke="#bce4f7" stroke-width="6" stroke-linecap="round" opacity=".75"></path>
+          <ellipse cx="111" cy="100" rx="3" ry="2" fill="#bce4f7" opacity=".75"></ellipse>
+          <path d="M90,91 Q95,88 100,91" fill="none" stroke="#5298c1" stroke-width="2.2" stroke-linecap="round"></path>
+          <path d="M117,151 C124,151 134,156 145,164 C149,168 147,177 140,179 C128,181 116,168 113,158 C112,154 113,152 117,151 Z" fill="#6fb3dc" class=""></path>
+          <ellipse cx="75" cy="134" rx="7" ry="8" fill="#294b63"></ellipse>
+          <circle cx="77" cy="131" r="2.5" fill="#fff"></circle>
+          <circle cx="72.5" cy="137" r="1.2" fill="#fff" opacity=".8"></circle>
+          <ellipse cx="62" cy="146" rx="8" ry="5" fill="#f7b8c8" opacity=".8"></ellipse>
         </g>
       </svg>
     </div>
@@ -880,31 +1106,153 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <!-- 小寵物：微醺酒紅（葡萄美酒）-->
     <div id="petWine" class="pet" data-pet="wine" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="葡萄">
+        <defs>
+          <!-- 葡萄：2D 為主，只保留很輕微的色彩變化 -->
+          <linearGradient id="berryLight" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#9b4d64"></stop>
+            <stop offset="1" stop-color="#894057"></stop>
+          </linearGradient>
+          <linearGradient id="berryMid" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#8c4059"></stop>
+            <stop offset="1" stop-color="#79364e"></stop>
+          </linearGradient>
+          <linearGradient id="berryDark" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#7c374f"></stop>
+            <stop offset="1" stop-color="#692e44"></stop>
+          </linearGradient>
+          <!-- 葉子：降低對比與飽和度 -->
+          <linearGradient id="leafMain" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#bcc9a3"></stop>
+            <stop offset="1" stop-color="#9caf83"></stop>
+          </linearGradient>
+          <linearGradient id="leafSoft" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ced8b3"></stop>
+            <stop offset="1" stop-color="#abba90"></stop>
+          </linearGradient>
+          <!-- 酒液 -->
+          <linearGradient id="grapeDrink" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#c887aa"></stop>
+            <stop offset="1" stop-color="#a46692"></stop>
+          </linearGradient>
+          <!-- 玻璃 -->
+          <linearGradient id="grapeGlass" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fff8fc" stop-opacity=".85"></stop>
+            <stop offset=".5" stop-color="#f9e5f0" stop-opacity=".3"></stop>
+            <stop offset="1" stop-color="#e8cee6" stop-opacity=".6"></stop>
+          </linearGradient>
+          <!-- 杯口延續用（userSpace 對齊杯身漸層方向，不隨各自 bbox 跑掉） -->
+          <linearGradient id="grapeGlassTop" gradientUnits="userSpaceOnUse" x1="105" y1="89" x2="175" y2="162">
+            <stop offset="0" stop-color="#fff8fc" stop-opacity=".85"></stop>
+            <stop offset=".5" stop-color="#f9e5f0" stop-opacity=".3"></stop>
+            <stop offset="1" stop-color="#e8cee6" stop-opacity=".6"></stop>
+          </linearGradient>
+        </defs>
+
         <g class="breath">
-          <path class="twinkle" d="M40,70 L42.2,76.8 49,79 42.2,81.2 40,88 37.8,81.2 31,79 37.8,76.8 Z" fill="#d47a8f"/>
-          <path class="twinkle" style="animation-delay:1.2s" d="M196,90 L198.2,96.8 205,99 198.2,101.2 196,108 193.8,101.2 187,99 193.8,96.8 Z" fill="#d47a8f"/>
-          <path class="sway" d="M86,60 C76,46 60,40 46,44 C56,32 74,32 86,46 C98,32 116,32 126,44 C112,40 96,46 86,60 Z" fill="#6b8a4e"/>
-          <path d="M86,62 L86,80" stroke="#7a5c34" stroke-width="4" stroke-linecap="round"/>
-          <circle cx="64" cy="102" r="13" fill="#8a3a52"/>
-          <circle cx="86" cy="98" r="14" fill="#7e2f4a"/>
-          <circle cx="108" cy="102" r="13" fill="#8a3a52"/>
-          <circle cx="75" cy="124" r="13" fill="#7e2f4a"/>
-          <circle cx="97" cy="124" r="13" fill="#8a3a52"/>
-          <circle cx="86" cy="146" r="12" fill="#6e2c42"/>
-          <circle cx="59" cy="97" r="4" fill="#fff" opacity=".22"/>
-          <circle cx="81" cy="92" r="4" fill="#fff" opacity=".22"/>
-          <circle cx="70" cy="119" r="3" fill="#fff" opacity=".18"/>
-          <path d="M128,84 C128,118 138,138 152,142 L164,142 C178,138 188,118 188,84 Z" fill="#fff" opacity=".18"/>
-          <path d="M131,104 C134,126 143,136 152,139 L164,139 C173,136 182,126 185,104 Z" fill="#7e2440"/>
-          <ellipse cx="158" cy="104" rx="27" ry="5" fill="#b04a68"/>
-          <ellipse cx="158" cy="104" rx="20" ry="3" fill="#fff" opacity=".25"/>
-          <path d="M128,84 C128,118 138,138 152,142 L164,142 C178,138 188,118 188,84 Z" fill="none" stroke="#e8b8c8" stroke-width="2.5"/>
-          <path d="M155,142 L153,178 L163,178 L161,142 Z" fill="#fff" opacity=".18"/>
-          <path d="M155,142 L153,178 L163,178 L161,142 Z" fill="none" stroke="#e8b8c8" stroke-width="2"/>
-          <ellipse cx="158" cy="182" rx="26" ry="7" fill="#fff" opacity=".18"/>
-          <ellipse cx="158" cy="182" rx="26" ry="7" fill="none" stroke="#e8b8c8" stroke-width="2.5"/>
-          <path d="M136,92 C136,102 140,112 145,118" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".45"/>
-          <ellipse cx="158" cy="198" rx="42" ry="6" fill="#4a2c38" opacity=".6"/>
+          <!-- 左側裝飾 -->
+          <path class="twinkle" d="M40,70 L42.2,76.8 49,79 42.2,81.2 40,88 37.8,81.2 31,79 37.8,76.8 Z" fill="#d47a8f"></path>
+          <!-- ==================== -->
+          <!-- 葡萄枝葉 -->
+          <!-- ==================== -->
+          <!-- 主果梗 -->
+          <path d="M96,86 C95,73 103,60 108,50 Q111,44 109,39" fill="none" stroke="#8d7656" stroke-width="4.5" stroke-linecap="round"></path>
+          <!-- 卷鬚 -->
+          <path d="M92,65 C108,55 122,58 121,68 C120,76 109,77 109,70 C109,67 113,66 116,68" fill="none" stroke="#98aa7d" stroke-width="2" stroke-linecap="round"></path>
+          <!-- 葉脈 -->
+          <g class="sway">
+            <!-- 左葉 -->
+            <path d="M101,69 C91,49 74,43 59,47 L63,56 L53,59 L64,66 L60,74 L75,75 L78,83 Q92,81 101,69 Z" fill="url(#leafMain)" stroke="#879772" stroke-width="1.4" stroke-linejoin="round"></path>
+            <!-- 左葉主脈 -->
+            <path d="M66,54 Q83,60 99,69" fill="none" stroke="#e2e8cf" stroke-width="1.5" stroke-linecap="round" opacity=".85"></path>
+            <!-- 左葉側脈 -->
+            <path d="M78,60 L74,71 M87,64 L88,55 M75,61 L64,61" fill="none" stroke="#dce4c8" stroke-width="1.2" stroke-linecap="round" opacity=".72"></path>
+            <!-- 右葉 -->
+            <path d="M105,60 Q118,38 141,43 Q137,62 116,67 Z" fill="url(#leafSoft)" stroke="#91a17b" stroke-width="1.3" stroke-linejoin="round"></path>
+            <!-- 右葉主脈 -->
+            <path d="M110,61 Q121,54 134,47" fill="none" stroke="#edf0dc" stroke-width="1.4" stroke-linecap="round" opacity=".9"></path>
+            <path d="M121,54 L129,55" fill="none" stroke="#e5ead3" stroke-width="1.1" stroke-linecap="round" opacity=".75"></path>
+          </g>
+          <!-- ==================== -->
+          <!-- 地面柔影 -->
+          <!-- ==================== -->
+          <ellipse cx="100" cy="206" rx="42" ry="5" fill="#92718f" opacity=".10"></ellipse>
+          <ellipse cx="140" cy="206" rx="34" ry="5" fill="#92718f" opacity=".10"></ellipse>
+          <!-- ==================== -->
+          <!-- 裝飾星光 -->
+          <!-- ==================== -->
+          <path class="twinkle" d="M32,82 Q33,89 40,90 Q33,91 32,98 Q31,91 24,90 Q31,89 32,82 Z" fill="#d9aac8"></path>
+          <path class="twinkle" style="animation-delay:1.2s" d="M196,65 Q197,73 204,74 Q197,75 196,83 Q195,75 188,74 Q195,73 196,65 Z" fill="#d9aac8"></path>
+          <circle cx="44" cy="65" r="2" fill="#e5c797"></circle>
+          <circle cx="207" cy="115" r="2.5" fill="#e5c797"></circle>
+          <!-- ==================== -->
+          <!-- 酒杯 -->
+          <!-- ==================== -->
+          <g transform="translate(-24,0)">
+          <!-- 杯底 -->
+          <ellipse cx="164" cy="196" rx="27" ry="6.5" fill="url(#grapeGlass)" stroke="#bc9caf" stroke-width="2"></ellipse>
+          <!-- 杯腳 -->
+          <path d="M160,153 L159,185 Q159,190 152,192 Q164,197 176,192 Q169,190 169,185 L168,153 Z" fill="url(#grapeGlass)" stroke="#bc9caf" stroke-width="1.8" stroke-linejoin="round"></path>
+          <!-- 杯身 -->
+          <!-- 杯身（頂部沿前緣弧收邊，填充不再直線封口） -->
+          <path d="M129,89 A35 8 0 0 1 199,89 C200,108 197,133 184,148 Q164,167 144,148 C131,133 128,108 129,89 Z" fill="url(#grapeGlass)" stroke="#bc9caf" stroke-width="2.2" stroke-linejoin="round"></path>
+          <!-- 酒液 -->
+          <path d="M134,113 C137,135 145,152 164,154 C183,152 191,135 194,113 Z" fill="url(#grapeDrink)"></path>
+          <ellipse cx="164" cy="113" rx="30" ry="6.5" fill="#d7a0bf"></ellipse>
+          <path d="M143,113 Q158,108 178,112 M155,116 Q167,118 183,114" fill="none" stroke="#f3cddd" stroke-width="1.8" stroke-linecap="round" opacity=".8"></path>
+          <!-- 杯口 -->
+          <!-- 杯口：漸層延續填滿，與杯身自然融合 -->
+          <ellipse cx="164" cy="89" rx="35" ry="8" fill="url(#grapeGlassTop)"></ellipse>
+          <path d="M129,89 A35 8 0 0 0 199,89" fill="none" stroke="#bc9caf" stroke-width="1.8" opacity=".55" stroke-linecap="round"></path>
+          <path d="M129,89 A35 8 0 0 1 199,89" fill="none" stroke="#bc9caf" stroke-width="3" opacity=".9" stroke-linecap="round"></path>
+          <!-- 杯口高光 -->
+          <path d="M139,88 Q158,82 181,87" fill="none" stroke="#fffdfd" stroke-width="2.5" stroke-linecap="round"></path>
+          <!-- 左側玻璃高光 -->
+          <path d="M136,99 Q135,119 144,133" fill="none" stroke="#fffdfd" stroke-width="3" stroke-linecap="round" opacity=".8"></path>
+          <!-- 右側玻璃高光 -->
+          <path d="M190,123 Q188,135 181,142" fill="none" stroke="#f8dfec" stroke-width="2" stroke-linecap="round" opacity=".7"></path>
+          <!-- 酒液小亮點 -->
+          <circle cx="155" cy="125" r="2" fill="#efd0e2" opacity=".7"></circle>
+          <circle cx="174" cy="139" r="1.5" fill="#efd0e2" opacity=".6"></circle>
+          <!-- 酒中氣泡（液內上升，近表面消失） -->
+          <g class="bubble"><circle cx="150" cy="146" r="2.2" fill="#f8e0ee" opacity=".75"></circle></g>
+          <g class="bubble" style="animation-delay:.9s"><circle cx="164" cy="148" r="1.6" fill="#fff" opacity=".6"></circle></g>
+          <g class="bubble" style="animation-delay:1.7s"><circle cx="176" cy="145" r="2.6" fill="#f8e0ee" opacity=".7"></circle></g>
+          <g class="bubble" style="animation-delay:2.5s"><circle cx="158" cy="142" r="1.3" fill="#fff" opacity=".65"></circle></g>
+          <g class="bubble" style="animation-delay:3.1s"><circle cx="170" cy="141" r="1.8" fill="#f3cddd" opacity=".75"></circle></g>
+          <!-- 酒杯落影 -->
+          <ellipse cx="158" cy="198" rx="42" ry="6" fill="#4a2c38" opacity=".16"></ellipse>
+          </g>
+          <g transform="translate(10,0)">
+          <!-- 果梗連接＋葡萄串（前層，疊在杯壁上） -->
+          <path d="M85,80 C85,87 84,91 83,96 M84,87 L67,96 M85,87 L105,97" fill="none" stroke="#806849" stroke-width="2.3" stroke-linecap="round"></path>
+          <!-- ==================== -->
+          <!-- 葡萄 -->
+          <!-- 後面的先畫，前面的後畫 -->
+          <!-- 讓前景葡萄自然遮掉後景描邊 -->
+          <!-- ==================== -->
+          <!-- 第一層 / 後景 -->
+          <circle cx="64" cy="102" r="13" fill="url(#berryLight)" stroke="#71384d" stroke-width="1.15" stroke-opacity=".45"></circle>
+          <circle cx="108" cy="102" r="13" fill="url(#berryLight)" stroke="#71384d" stroke-width="1.15" stroke-opacity=".45"></circle>
+          <!-- 中央上方葡萄 -->
+          <!-- 後畫，所以會蓋住左右葡萄的內側描邊 -->
+          <circle cx="86" cy="98" r="14" fill="url(#berryMid)" stroke="#683248" stroke-width="1.15" stroke-opacity=".46"></circle>
+          <!-- 很輕的平面高光 -->
+          <circle cx="59" cy="97" r="3" fill="#fff" opacity=".12"></circle>
+          <ellipse cx="81" cy="93" rx="3.8" ry="2.3" transform="rotate(-25 81 93)" fill="#f3ced8" opacity=".23"></ellipse>
+          <!-- 第二層左 -->
+          <circle cx="75" cy="124" r="13" fill="url(#berryMid)" stroke="#683248" stroke-width="1.15" stroke-opacity=".46"></circle>
+          <ellipse cx="70" cy="119" rx="3.3" ry="2" transform="rotate(-25 70 119)" fill="#f2cbd6" opacity=".19"></ellipse>
+          <!-- 第二層右 -->
+          <!-- 稍後畫，形成自然交疊 -->
+          <circle cx="97" cy="124" r="13" fill="url(#berryLight)" stroke="#71384d" stroke-width="1.15" stroke-opacity=".44"></circle>
+          <ellipse cx="92" cy="119" rx="3.2" ry="1.9" transform="rotate(-25 92 119)" fill="#f3ced8" opacity=".17"></ellipse>
+          <!-- 最底葡萄 -->
+          <!-- 最後畫，避免上層描邊切入 -->
+          <circle cx="86" cy="146" r="12" fill="url(#berryDark)" stroke="#602d42" stroke-width="1.1" stroke-opacity=".46"></circle>
+          <ellipse cx="82" cy="142" rx="2.8" ry="1.7" transform="rotate(-25 82 142)" fill="#ecc4d0" opacity=".15"></ellipse>
+          </g>
+          <!-- 勾住杯緣的卷鬚（前層） -->
+          <path d="M110,60 C126,50 144,56 148,72 C150,82 143,88 139,83 C136,79 140,75 144,78" fill="none" stroke="#98aa7d" stroke-width="2" stroke-linecap="round"/>
         </g>
       </svg>
     </div>
@@ -1006,48 +1354,49 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div id="petOrange" class="pet" data-pet="orange" style="text-align:center">
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -26 244 250" width="160" height="180" role="img" aria-label="橘貓">
         <g class="breath">
-          <ellipse cx="110" cy="216" rx="56" ry="8" fill="#d8821e" opacity=".25"/>
+          <ellipse cx="110" cy="216" rx="56" ry="7" fill="#d8821e" opacity=".2"></ellipse>
           <g class="flap">
-            <path d="M164,190 C194,192 208,172 202,150 C198,136 184,134 180,146" fill="none" stroke="#f5a83c" stroke-width="18" stroke-linecap="round"/>
-            <path d="M164,190 C194,192 208,172 202,150 C198,136 184,134 180,146" fill="none" stroke="#d8821e" stroke-width="18" stroke-dasharray="5 13" stroke-dashoffset="10"/>
+            <g transform="translate(-10 4)">
+            <path d="M164,190 C194,192 208,172 202,150 C198,136 184,134 180,146" fill="none" stroke="#f5a83c" stroke-width="18" stroke-linecap="round"></path>
+            <path d="M164,190 C194,192 208,172 202,150 C198,136 184,134 180,146" fill="none" stroke="#d8821e" stroke-width="18" stroke-dasharray="5 13" stroke-dashoffset="10"></path>
+            </g>
           </g>
-          <path d="M110,138 C74,138 52,165 52,196 C52,221 78,231 110,231 C142,231 168,221 168,196 C168,165 146,138 110,138 Z" fill="#f5a83c"/>
-          <path d="M110,168 C90,168 77,182 77,200 C77,216 91,224 110,224 C129,224 143,216 143,200 C143,182 130,168 110,168 Z" fill="#fde3bd"/>
-          <ellipse cx="90" cy="223" rx="15" ry="11" fill="#f5a83c"/>
-          <ellipse cx="130" cy="223" rx="15" ry="11" fill="#f5a83c"/>
-          <path d="M110,140 C72,140 50,168 50,198 C50,224 76,234 110,234 C144,234 170,224 170,198 C170,168 148,140 110,140 Z" fill="#f5a83c"></path>
-          <path d="M68,156 C68,148 74,144 80,148 C84,142 92,142 96,148 C100,142 108,142 112,148 C116,142 124,142 128,148 C132,142 140,142 144,148 C148,142 154,148 154,156 C154,162 148,166 144,162 C140,166 132,166 128,162 C124,166 116,166 112,162 C108,166 100,166 96,162 C92,166 84,166 80,162 C76,166 68,162 68,156 Z" fill="#fde3bd"></path>
-          <path d="M110,172 C92,172 82,186 82,202 C82,218 94,230 110,230 C126,230 138,218 138,202 C138,186 128,172 110,172 Z" fill="#fde3bd"></path>
-          <ellipse cx="88" cy="228" rx="15" ry="10" fill="#f5a83c"></ellipse>
-          <ellipse cx="132" cy="228" rx="15" ry="10" fill="#f5a83c"></ellipse>
-          <path d="M84,229 v4 M92,229 v4 M128,229 v4 M136,229 v4" stroke="#d8821e" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"></path>
-          <path d="M59,170 q10,-5 18,-1 M54,186 q12,-4 20,1 M55,202 q10,-3 18,1" stroke="#d8821e" stroke-width="5" stroke-linecap="round" fill="none"></path>
-          <path d="M161,170 q-10,-5 -18,-1 M166,186 q-12,-4 -20,1 M165,202 q-10,-3 -18,1" stroke="#d8821e" stroke-width="5" stroke-linecap="round" fill="none"></path>
-          <g class="head">
+          <path d="M86,130 C78,146 79,159 70,175 C63,187 59,199 65,208 C72,219 91,216 110,216 C129,216 148,219 155,208 C161,199 157,187 150,175 C141,159 142,146 134,130 Z" fill="#f5a83c"></path>
+          <path d="M88,137 Q110,146 132,137 L129,154 L121,151 L110,163 L99,151 L91,154 Z" fill="#fde3bd"></path>
+          <path d="M110,159 C94,159 87,176 88,192 Q89,209 110,211 Q131,209 132,192 C133,176 126,159 110,159 Z" fill="#fde3bd"></path>
+          <path d="M73,177 Q80,174 85,177 M68,190 Q76,187 82,191 M147,177 Q140,174 135,177 M152,190 Q144,187 138,191" stroke="#d8821e" stroke-width="4.5" stroke-linecap="round" fill="none"></path>
+          <path d="M78,193 C69,193 65,202 70,209 Q77,215 88,210 M142,193 C151,193 155,202 150,209 Q143,215 132,210" fill="none" stroke="#df922b" stroke-width="2.5" stroke-linecap="round"></path>
+          <path d="M88,162 C85,176 88,192 86,203 C79,207 79,216 91,217 C103,218 107,214 105,206 L104,175 M132,162 C135,176 132,192 134,203 C141,207 141,216 129,217 C117,218 113,214 115,206 L116,175" fill="#f5a83c" stroke="#df922b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M87,207 Q95,203 103,208 Q106,216 94,217 Q83,217 83,212 Z M133,207 Q125,203 117,208 Q114,216 126,217 Q137,217 137,212 Z" fill="#fde3bd"></path>
+          <path d="M90,212 v5 M96,212 v5 M124,212 v5 M130,212 v5" stroke="#c98a4a" stroke-width="1.4" stroke-linecap="round" fill="none" opacity=".75"></path>
+          <g class="head" data-tilt-ready="1" style="transform: rotate(0deg);">
             <g class="ear">
-            <path d="M57,89 C43,45 52,20 76,36 C95,48 103,64 105,81 C88,70 71,78 57,89 Z" fill="#f5a83c"/>
-            <path d="M65,80 C57,50 62,36 76,46 C87,53 93,65 95,75 C84,68 73,73 65,80 Z" fill="#ffb37e"/>
-            <path d="M163,89 C177,45 168,20 144,36 C125,48 117,64 115,81 C132,70 149,78 163,89 Z" fill="#f5a83c"/>
-            <path d="M155,80 C163,50 158,36 144,46 C133,53 127,65 125,75 C136,68 147,73 155,80 Z" fill="#ffb37e"/>
+            <path d="M57,89 C43,45 52,20 76,36 C95,48 103,64 105,81 C88,70 71,78 57,89 Z" fill="#f5a83c"></path>
+            <path d="M60,73 Q54,49 56,36 Q71,45 80,62 Z" fill="#ffb09a"></path>
+            <path d="M163,89 C177,45 168,20 144,36 C125,48 117,64 115,81 C132,70 149,78 163,89 Z" fill="#f5a83c"></path>
+            <path d="M160,73 Q166,49 164,36 Q149,45 140,62 Z" fill="#ffb09a"></path>
             </g>
-            <path d="M110,40 C150,40 176,68 176,102 C176,136 148,156 110,156 C72,156 44,136 44,102 C44,68 70,40 110,40 Z" fill="#fde3bd"/>
-            <path d="M110,44 C148,44 172,68 172,100 C172,132 146,150 110,150 C74,150 48,132 48,100 C48,68 72,44 110,44 Z" fill="#f5a83c"/>
-            <path d="M96,68 L101,52 L110,65 L119,52 L124,68" fill="none" stroke="#d8821e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M92,63 L96,68 M124,68 L128,63" stroke="#d8821e" stroke-width="4" stroke-linecap="round" fill="none"/>
+            <path d="M110,54 C87,54 70,59 60,75 C54,84 52,94 53,101 L45,106 L53,111 L48,118 L60,120 C69,136 88,144 110,145 C132,144 151,136 160,120 L172,118 L167,111 L175,106 L167,101 C168,94 166,84 160,75 C150,59 133,54 110,54 Z" fill="#f5a83c"></path>
+            <g transform="translate(0 12)">
+            <path d="M96,68 L101,52 L110,65 L119,52 L124,68 M95,61 L96,68 M124,68 L125,61" fill="none" stroke="#d8821e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+            </g>
+            <path d="M57,87 L67,91 M54,98 L65,101 M163,87 L153,91 M166,98 L155,101" stroke="#d8821e" stroke-width="3.5" stroke-linecap="round" fill="none"></path>
             <g class="ey">
-            <ellipse cx="86" cy="102" rx="12.5" ry="13.5" fill="#4a2f14"/>
-            <circle cx="90" cy="96" r="4.5" fill="#fff"/>
-            <circle cx="82" cy="108" r="2" fill="#fff" opacity=".8"/>
-            <ellipse cx="134" cy="102" rx="12.5" ry="13.5" fill="#4a2f14"/>
-            <circle cx="138" cy="96" r="4.5" fill="#fff"/>
-            <circle cx="130" cy="108" r="2" fill="#fff" opacity=".8"/>
+            <path d="M75,100 C75,90 82,85 89,88 C96,91 98,101 94,108 C89,116 76,112 75,100 Z" fill="#4a2f14"></path>
+            <ellipse cx="88" cy="94" rx="4" ry="4.5" fill="#fff"></ellipse>
+            <circle cx="82" cy="105" r="2" fill="#fff" opacity=".85"></circle>
+            <path d="M145,100 C145,90 138,85 131,88 C124,91 122,101 126,108 C131,116 144,112 145,100 Z" fill="#4a2f14"></path>
+            <ellipse cx="136" cy="94" rx="4" ry="4.5" fill="#fff"></ellipse>
+            <circle cx="130" cy="105" r="2" fill="#fff" opacity=".85"></circle>
             </g>
-            <ellipse cx="64" cy="112" rx="10" ry="6" fill="#ff9e6e" opacity=".85"/>
-            <ellipse cx="156" cy="112" rx="10" ry="6" fill="#ff9e6e" opacity=".85"/>
-            <path d="M106,118 h8 l-4,5 Z" fill="#d8821e"/>
-            <path d="M102,127 Q106,132 110,127 Q114,132 118,127" fill="none" stroke="#b5651d" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M62,104 L36,100 M62,112 L34,112 M62,120 L38,126" stroke="#c98a4a" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".85"/>
-            <path d="M158,104 L184,100 M158,112 L186,112 M158,120 L182,126" stroke="#c98a4a" stroke-width="1.6" stroke-linecap="round" fill="none" opacity=".85"/>
+            <ellipse cx="69" cy="115" rx="9" ry="5" fill="#ff9e87" opacity=".7"></ellipse>
+            <ellipse cx="151" cy="115" rx="9" ry="5" fill="#ff9e87" opacity=".7"></ellipse>
+            <ellipse cx="100" cy="121" rx="12" ry="8" fill="#fff0db" class=""></ellipse>
+            <ellipse cx="120" cy="121" rx="12" ry="8" fill="#fff0db" class=""></ellipse>
+            <path d="M105,115 Q110,112 115,115 Q115,117 110,121 Q105,117 105,115 Z" fill="#c97c70"></path>
+            <path d="M110,121 L110,125 M101,124 Q105,131 110,125 Q115,131 119,124" fill="none" stroke="#965a32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+            <path d="M65,111 L37,106 M64,119 L34,120 M68,126 L41,133" stroke="#b77b43" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"></path>
+            <path d="M155,111 L183,106 M156,119 L186,120 M152,126 L179,133" stroke="#b77b43" stroke-width="1.5" stroke-linecap="round" fill="none" opacity=".8"></path>
           </g>
         </g>
       </svg>
@@ -1058,38 +1407,58 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="玉燈">
         <defs>
           <radialGradient id="inkgoldGlow" cx="50%" cy="42%" r="58%">
-            <stop offset="0%" stop-color="#e8f0d8" stop-opacity=".9"/>
-            <stop offset="42%" stop-color="#9ec3a8" stop-opacity=".45"/>
-            <stop offset="100%" stop-color="#1a2b23" stop-opacity="0"/>
+            <stop offset="0%" stop-color="#e8f0d8" stop-opacity=".9"></stop>
+            <stop offset="42%" stop-color="#9ec3a8" stop-opacity=".45"></stop>
+            <stop offset="100%" stop-color="#1a2b23" stop-opacity="0"></stop>
           </radialGradient>
           <linearGradient id="inkgoldGold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f3dfae"/>
-            <stop offset="55%" stop-color="#d8bb83"/>
-            <stop offset="100%" stop-color="#b9924f"/>
+            <stop offset="0%" stop-color="#f3dfae"></stop>
+            <stop offset="55%" stop-color="#d8bb83"></stop>
+            <stop offset="100%" stop-color="#b9924f"></stop>
           </linearGradient>
         </defs>
+        <style>
+          .ig-flame{animation:ig-flick 1.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+          @keyframes ig-flick{0%,100%{transform:scaleY(1) scaleX(1)}30%{transform:scaleY(1.08) scaleX(.96)}60%{transform:scaleY(.94) scaleX(1.04)}}
+          .ig-glow{animation:ig-glow 3s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+          @keyframes ig-glow{0%,100%{opacity:.7}50%{opacity:1}}
+          .ig-tassel{animation:sway 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0%}
+          @media (prefers-reduced-motion:reduce){.ig-flame,.ig-glow,.ig-tassel{animation:none !important}}
+        </style>
+        <g class="breath">
         <g class="sway" style="transform-origin:120px 24px">
-          <circle cx="120" cy="24" r="4" fill="none" stroke="url(#inkgoldGold)" stroke-width="2.5"/>
-          <path d="M120,28 L120,40" stroke="url(#inkgoldGold)" stroke-width="2.5" stroke-dasharray="4 4"/>
-          <circle cx="120" cy="112" r="86" fill="url(#inkgoldGlow)"/>
-          <path d="M96,44 C104,36 136,36 144,44 L150,56 L90,56 Z" fill="url(#inkgoldGold)"/>
-          <path d="M90,56 L150,56 L146,62 L94,62 Z" fill="#b9924f"/>
-          <path d="M86,62 L154,62 C162,96 162,128 154,162 L86,162 C78,128 78,96 86,62 Z" fill="#1f3a2c" stroke="url(#inkgoldGold)" stroke-width="3"/>
-          <path d="M86,62 L154,62 C162,96 162,128 154,162 L86,162 C78,128 78,96 86,62 Z" fill="none" stroke="#3f6b52" stroke-width="1" opacity=".7"/>
-          <path d="M100,72 L140,72 L146,96 L94,96 Z" fill="#8ab69b" opacity=".18"/>
-          <path d="M94,118 L146,118 L140,142 L100,142 Z" fill="#8ab69b" opacity=".12"/>
-          <ellipse cx="120" cy="120" rx="15" ry="20" fill="#f3dfae" opacity=".95"/>
-          <ellipse cx="120" cy="124" rx="9" ry="12" fill="#fff8e0"/>
-          <path class="twinkle" d="M120,98 L121.6,103.2 127,104.8 121.6,106.4 120,111.6 118.4,106.4 113,104.8 118.4,103.2 Z" fill="#f3dfae"/>
-          <path class="twinkle" style="animation-delay:1.4s" d="M92,84 L93.2,87.6 97,88.8 93.2,90 92,93.6 90.8,90 87,88.8 90.8,87.6 Z" fill="#f3dfae" opacity=".8"/>
-          <path d="M90,162 L150,162 L154,172 L86,172 Z" fill="url(#inkgoldGold)"/>
-          <path d="M86,172 L154,172 L150,180 L90,180 Z" fill="#b9924f"/>
-          <ellipse cx="120" cy="182" rx="42" ry="6" fill="#0b1512" opacity=".55"/>
-          <g class="drift">
-            <path d="M120,182 L120,196" stroke="url(#inkgoldGold)" stroke-width="2"/>
-            <path d="M114,196 L126,196 L123,208 L117,208 Z" fill="#d8bb83"/>
-            <path d="M120,208 L120,218" stroke="#b9924f" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="120" cy="24" r="4" fill="none" stroke="url(#inkgoldGold)" stroke-width="2.5"></circle>
+          <path d="M120,28 L120,40" stroke="url(#inkgoldGold)" stroke-width="2.5" stroke-dasharray="4 4"></path>
+          <circle cx="120" cy="112" r="86" fill="url(#inkgoldGlow)" class="ig-glow"></circle>
+          <path d="M96,44 C104,36 136,36 144,44 L150,56 L90,56 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M90,56 L150,56 L146,62 L94,62 Z" fill="#b9924f"></path>
+          <path d="M86,62 L154,62 C162,96 162,128 154,162 L86,162 C78,128 78,96 86,62 Z" fill="#24402f" stroke="url(#inkgoldGold)" stroke-width="3"></path>
+          <path d="M102,64 C98,96 98,128 102,160 M120,64 C118,96 118,128 120,160 M138,64 C142,96 142,128 138,160" fill="none" stroke="#3f6b52" stroke-width="1.2" opacity=".55"></path>
+          <path d="M94,64 C90,96 90,128 94,160" fill="none" stroke="#5d8a6e" stroke-width="1.4" opacity=".4"></path>
+          <path d="M100,72 L140,72 L146,96 L94,96 Z" fill="#8ab69b" opacity=".18"></path>
+          <path d="M94,118 L146,118 L140,142 L100,142 Z" fill="#8ab69b" opacity=".12"></path>
+          <path d="M94,74 C110,70 130,70 146,74" fill="none" stroke="#e8f0d8" stroke-width="2" stroke-linecap="round" opacity=".5"></path>
+          <g class="ig-flame">
+            <ellipse cx="120" cy="120" rx="15" ry="20" fill="#f3dfae" opacity=".95"></ellipse>
+            <ellipse cx="120" cy="124" rx="9" ry="12" fill="#fff8e0"></ellipse>
+            <ellipse cx="117" cy="118" rx="3" ry="5" fill="#fff" opacity=".8"></ellipse>
           </g>
+          <ellipse cx="120" cy="112" rx="22" ry="26" fill="none" stroke="#f3dfae" stroke-width="1.2" opacity=".35"></ellipse>
+          <path class="twinkle" d="M120,92 L121.6,97.2 127,98.8 121.6,100.4 120,105.6 118.4,100.4 113,98.8 118.4,97.2 Z" fill="#f3dfae"></path>
+          <path class="twinkle" style="animation-delay:1.4s" d="M92,84 L93.2,87.6 97,88.8 93.2,90 92,93.6 90.8,90 87,88.8 90.8,87.6 Z" fill="#f3dfae" opacity=".8"></path>
+          <path class="twinkle" style="animation-delay:2.1s" d="M148,132 L149,135.4 152.6,136.4 149,137.4 148,140.8 147,137.4 143.4,136.4 147,135.4 Z" fill="#f3dfae" opacity=".7"></path>
+          <path d="M90,162 L150,162 L154,172 L86,172 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"></path>
+          <path d="M86,172 L154,172 L150,180 L90,180 Z" fill="#b9924f"></path>
+          <ellipse cx="120" cy="182" rx="42" ry="6" fill="#0b1512" opacity=".55"></ellipse>
+          <g class="ig-tassel">
+            <path d="M120,182 L120,196" stroke="url(#inkgoldGold)" stroke-width="2"></path>
+            <circle cx="120" cy="193" r="3" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1"></circle>
+            <path d="M114,196 L126,196 L123,208 L117,208 Z" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1" stroke-linejoin="round"></path>
+            <path d="M117,198 L118.5,206 M121,198 L121,206 M124,198 L122.5,206" stroke="#8a6f3a" stroke-width=".9" stroke-linecap="round"></path>
+            <path d="M120,208 L120,218" stroke="#b9924f" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="120" cy="219" r="2.2" fill="#f3dfae"></circle>
+          </g>
+        </g>
         </g>
       </svg>
     </div>
