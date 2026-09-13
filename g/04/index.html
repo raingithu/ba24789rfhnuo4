@@ -161,7 +161,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 /* Toast：更新提示那顆可點擊；其餘維持不可點避免擋訊息操作 */
 .toast{padding:10px 18px;border-radius:10px;font-size:13px;color:var(--text);background:var(--surface2);border:1px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.4);animation:toastIn .25s ease;max-width:80vw;word-break:break-word}
 .toast.success{border-color:rgba(120,180,120,.6);color:var(--msg-ai)}
-.toast.warn{border-color:rgba(200,170,90,.6);color:#e0c98a}
+.toast.warn{border-color:rgba(200,170,90,.6);color:var(--text2)}
 .toast.action{pointer-events:auto;cursor:pointer;border-color:var(--accent);color:var(--text2);text-decoration:underline;text-underline-offset:3px}
 .toast.out{animation:toastOut .3s ease forwards}
 @keyframes toastIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
@@ -343,7 +343,7 @@ body[data-theme="default"]{
   .btn-save {color:#dceeff}
   .header {border-bottom: 5px solid var(--border);}
   .modal {box-shadow: 0 0 0 1px #d9d5f066, inset 0 0 12px #ffffff30;}
-  .btn-settings {padding: 20px;box-shadow: inset 0 -1px 20px 8px rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(25, 20, 25, .88);}
+  .btn-settings {padding:20px;box-shadow: inset 0 -1px 20px 8px rgba(255, 255, 255, .12), inset 0 -2px 4px rgba(25, 20, 25, .88);}
   #msgInput {box-shadow: inset 0 0 8px 4px rgba(225, 220, 225, .18);}
   .scroll-bottom.show {box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(25, 20, 25, .88);}
 }
@@ -361,13 +361,14 @@ body[data-theme="priconne"]{
   .btn-save {color:#fff}
   .scroll-bottom.show {box-shadow: inset 0 -10px 12px 30px rgba(255, 255, 255, .12), inset 0 -20px 4px rgba(255, 250, 245, .24);}
   #settingSystem {background:#ffeaf5b0}
-  #galleryModal .modal-actions{background:#ffeaf5b0}
 }
 body[data-theme="priconne"] .msg{border-radius:18px;box-shadow:0 4px 14px rgba(255,143,188,.28),inset 0 1px 0 rgba(255,255,255,.6)}
 body[data-theme="priconne"] .msg.user{color:#fff;background:linear-gradient(150deg,#ff9ec6,#f77fb2);border:1px solid rgba(255,255,255,.7)}
 body[data-theme="priconne"] .msg.assistant{color:#7c4a9e;background:linear-gradient(150deg,#eee0ff,#d9c4fa);border:1px solid rgba(180,140,230,.55)}
 body[data-theme="priconne"] .typing{color:var(--msg-ai);background:linear-gradient(150deg,#eee0ff,#d9c4fa);border:1px solid rgba(180,140,230,.55);border-radius:14px}
 body[data-theme="priconne"] .btn-attach{background:linear-gradient(160deg, rgb(248,118,154,.75), rgb(238,128,174,.6) 50%, rgb(238,118,150,.3));border:1px solid #f78fb8;color:#d14884;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 3px 8px rgba(245,107,164,.3);border-radius:14px}
+body[data-theme="priconne"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="priconne"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="priconne"] .btn-send{background:linear-gradient(160deg,#ff9ec6,#f06ba2);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.6),0 3px 8px rgba(245,107,164,.4);border-radius:14px}
 body[data-theme="priconne"] .btn-attach:hover,body[data-theme="priconne"] .btn-send:hover{border-color:#f56ba4;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 6px 14px rgba(245,107,164,.45)}
 body[data-theme="priconne"] .btn-attach:active,body[data-theme="priconne"] .btn-send:active{transform:translateY(0);box-shadow:inset 0 2px 8px rgba(214,84,143,.4)}
@@ -388,23 +389,41 @@ body[data-theme="priconne"] .confirm-modal{border-radius:18px;border:1px solid #
 body[data-theme="priconne"] .toast{border-radius:14px;border:1px solid #ffbcd8}
 body[data-theme="priconne"] .toast.success{border-color:rgba(120,190,140,.7)}
 body[data-theme="priconne"] .toast.warn{border-color:rgba(230,180,90,.7)}
+body[data-theme="priconne"] #galleryModal .modal-actions{background:#ffeaf5}
 
 /* ===== 主題：典雅米白 ===== */
 body[data-theme="cream"]{
-  --bg:#f0e8d5;--surface:#f8f2e2;--surface2:#e4d7b8;--accent:#a8843c;
+  .main {
+    margin: 6px;
+    border: 1px solid #a09080;
+    border-radius: 12px;
+    position: relative;
+    overflow-y: auto;
+  }
+  .chat-item.active {
+    border: 1px dashed var(--accent);
+  }
+  --bg:#d6cdb8;--surface:#f0e6d0;--surface2:#dfd0b0;--accent:#a8843c;
   --text:#5d4e36;--text2:#96835e;--border:#d9c9a2;--input-bg:#f4eddb;
   --msg-user:#fff7e8;--msg-ai:#6b5e3c;--scrollbar:#cbb894;
   --msg-user-bg:rgba(173,143,78,.85);--msg-ai-bg:rgba(220,212,180,.9);
   background-image:radial-gradient(rgba(168,132,60,.2) 1.5px,transparent 1.5px);
   background-size:22px 22px;
   .btn-save{color:#f5ead6}
+  .btn-settings {padding:20px}
+  .modal{padding: 12px;border:6px solid #cbb894}
 }
 body[data-theme="cream"] .msg.user{color:#fff7e8;background:linear-gradient(150deg,#e0cda0,#c8ac74);border:1px solid rgba(150,120,60,.4)}
 body[data-theme="cream"] .msg.assistant{color:#6b5e3c;background:linear-gradient(150deg,#ece7d2,#dcd4b4);border:1px solid rgba(160,140,90,.4)}
 body[data-theme="cream"] .btn-attach{background:linear-gradient(160deg, rgb(204,178,124,.75), rgb(206,180,128,.7) 50%, rgb(224,198,96,.1));border:1px solid #b39455;color:#7a6330;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(150,120,60,.25);border-radius:14px}
+body[data-theme="cream"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="cream"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="cream"] .btn-send{background:linear-gradient(160deg,#cdb278,#ad8f4e);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(150,120,60,.35);border-radius:14px}
 body[data-theme="cream"] .btn-attach:hover,body[data-theme="cream"] .btn-send:hover{border-color:#97783a;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(150,120,60,.4)}
 body[data-theme="cream"] .btn-new{color:#efe2cc;border-radius:20px;background:linear-gradient(160deg,#cdb278,#ad8f4e);box-shadow:0 3px 8px rgba(150,120,60,.35)}
+body[data-theme="cream"] .msg-dropdown{background:#c2b496;border:1px solid #ecd49a}
+body[data-theme="cream"] .msg-dropdown button{color:#755315}
+body[data-theme="cream"] .menu-time{color:#755315}
 
 /* ===== 主題：和風清新 ===== */
 body[data-theme="matcha"]{
@@ -419,6 +438,8 @@ body[data-theme="matcha"]{
 body[data-theme="matcha"] .msg.user{color:#f8fff2;background:linear-gradient(150deg,#c2d9a4,#96bd7a);border:1px solid rgba(90,130,60,.45)}
 body[data-theme="matcha"] .msg.assistant{color:#55663d;background:linear-gradient(150deg,#f0f2df,#dfe4c6);border:1px solid rgba(130,150,90,.4)}
 body[data-theme="matcha"] .btn-attach{background:linear-gradient(160deg, rgb(160,196,132,.75), rgb(156,200,128,.7) 50%, rgb(110,224,96,.1));border:1px solid #8fae6e;color:#4a6634;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(93,138,68,.25);border-radius:14px}
+body[data-theme="matcha"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="matcha"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="matcha"] .btn-send{background:linear-gradient(160deg,#9cc07e,#6f9a52);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(93,138,68,.35);border-radius:14px}
 body[data-theme="matcha"] .btn-attach:hover,body[data-theme="matcha"] .btn-send:hover{border-color:#5d8a44;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(93,138,68,.4)}
 body[data-theme="matcha"] .btn-new{color:#ccefcd;border-radius:20px;background:linear-gradient(160deg,#9cc07e,#6f9a52);box-shadow:0 3px 8px rgba(93,138,68,.35)}
@@ -436,13 +457,15 @@ body[data-theme="blue"]{
 body[data-theme="blue"] .msg.user{color:#e7f6ff;background:linear-gradient(150deg,#9ccbea,#6cabd6);border:1px solid rgba(255,255,255,.65)}
 body[data-theme="blue"] .msg.assistant{color:#2f5a78;background:linear-gradient(150deg,#e4f2fc,#cfe6f5);border:1px solid rgba(100,150,190,.45)}
 body[data-theme="blue"] .btn-attach{background:linear-gradient(160deg, rgb(124,182,224,.75), rgb(128,190,208,.7) 50%, rgb(96,204,224,.1));border:1px solid #7aa8c8;color:#34688c;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(62,142,194,.25);border-radius:14px}
+body[data-theme="blue"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="blue"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="blue"] .btn-send{background:linear-gradient(160deg,#7ab8de,#4e96c4);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(62,142,194,.35);border-radius:14px}
 body[data-theme="blue"] .btn-attach:hover,body[data-theme="blue"] .btn-send:hover{border-color:#3e8ec2;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(62,142,194,.4)}
 body[data-theme="blue"] .btn-new{color:#e1eff4;border-radius:20px;background:linear-gradient(160deg,#7ab8de,#4e96c4);box-shadow:0 3px 8px rgba(62,142,194,.35)}
 
 /* 淺色主題共通圓角 */
 body[data-theme="cream"] .msg,body[data-theme="matcha"] .msg,body[data-theme="blue"] .msg,body[data-theme="orange"] .msg{border-radius:18px;box-shadow:0 4px 12px rgba(0,0,0,.08),inset 0 1px 0 rgba(255,255,255,.55)}
-body[data-theme="cream"] .modal,body[data-theme="matcha"] .modal,body[data-theme="blue"] .modal,body[data-theme="orange"] .modal,
+body[data-theme="matcha"] .modal,body[data-theme="blue"] .modal,body[data-theme="orange"] .modal,
 body[data-theme="cream"] .confirm-modal,body[data-theme="matcha"] .confirm-modal,body[data-theme="blue"] .confirm-modal,body[data-theme="orange"] .confirm-modal{border-radius:18px;border:1px solid var(--border);box-shadow:0 10px 30px rgba(0,0,0,.12)}
 body[data-theme="cream"] #msgInput,body[data-theme="matcha"] #msgInput,body[data-theme="blue"] #msgInput,body[data-theme="orange"] #msgInput,
 body[data-theme="cream"] #personaNameInput,body[data-theme="matcha"] #personaNameInput,body[data-theme="blue"] #personaNameInput,body[data-theme="orange"] #personaNameInput,
@@ -466,6 +489,8 @@ body[data-theme="wine"]{
 body[data-theme="wine"] .msg.user{color:#ffe4ea;background:linear-gradient(150deg,#8a3a52,#6e2c42);border:2px solid rgba(212,122,143,.4)}
 body[data-theme="wine"] .msg.assistant{color:#d8aeb9;background:linear-gradient(150deg,#4a2c38,#38222b);border:2px solid rgba(160,100,118,.35)}
 body[data-theme="wine"] .btn-attach{border:1px solid rgba(212,122,143,.4);color:#d8aeb9}
+body[data-theme="wine"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="wine"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="wine"] .btn-send{background:linear-gradient(160deg,#a04a64,#7e364c);border:0;color:#ffe8ee}
 body[data-theme="wine"] .btn-attach:hover,body[data-theme="wine"] .btn-send:hover{color:#fff;border-color:rgba(212,122,143,.7)}
 
@@ -481,6 +506,8 @@ body[data-theme="gray"]{
 body[data-theme="gray"] .msg.user{color:#dde2e8;background:linear-gradient(150deg,#4e565f,#3d444c);border:3px solid rgba(168,176,186,.3)}
 body[data-theme="gray"] .msg.assistant{color:#b0b8c2;background:linear-gradient(150deg,#34383d,#2b2f34);border:3px solid rgba(120,128,138,.3)}
 body[data-theme="gray"] .btn-attach{border:1px solid rgba(168,176,186,.35);color:#b0b8c2}
+body[data-theme="gray"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="gray"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="gray"] .btn-send{background:linear-gradient(160deg,#4e565f,#3a4048);border:0;color:#e8ecf0}
 body[data-theme="gray"] .btn-attach:hover,body[data-theme="gray"] .btn-send:hover{color:#fff;border-color:rgba(168,176,186,.6)}
 
@@ -497,6 +524,8 @@ body[data-theme="orange"]{
 body[data-theme="orange"] .msg.user{color:#a76f38;background:linear-gradient(150deg,#fcc878,#f0a13e);border:1px solid rgba(255,255,255,.65)}
 body[data-theme="orange"] .msg.assistant{color:#7a5624;background:linear-gradient(150deg,#fbeed2,#f4ddb0);border:1px solid rgba(200,150,70,.45)}
 body[data-theme="orange"] .btn-attach{background:linear-gradient(160deg, rgb(245,176,84,.75), rgb(218,164,54,.7) 50%, rgb(214,160,80,.1));border:1px solid #cf9a3e;color:#8a5f14;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 3px 8px rgba(216,130,30,.25);border-radius:14px}
+body[data-theme="orange"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,204,180,.35), rgba(245,180,160,.35));}
+body[data-theme="orange"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,204,180,.35),rgba(245,180,160,.35));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="orange"] .btn-send{background:linear-gradient(160deg,#f2ac4a,#dd8a20);border:0;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 3px 8px rgba(216,130,30,.35);border-radius:14px}
 body[data-theme="orange"] .btn-attach:hover,body[data-theme="orange"] .btn-send:hover{border-color:#d8821e;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 6px 14px rgba(216,130,30,.4)}
 body[data-theme="orange"] .btn-new{color:#fdf3dd;border-radius:20px;background:linear-gradient(160deg,#f2ac4a,#dd8a20);box-shadow:0 3px 8px rgba(216,130,30,.35)}
@@ -533,6 +562,8 @@ body[data-theme="inkgold"] .typing{color:#b9924f;background:linear-gradient(150d
 body[data-theme="inkgold"] .btn-send{background:linear-gradient(160deg,#dcc8a0,#b9924f);border:0;color:#0b1512;box-shadow:inset 0 1px 0 rgba(255,255,255,.4)}
 body[data-theme="inkgold"] .btn-attach{background:linear-gradient(160deg, rgb(6,68,34,.75), rgb(64,102,76,.7) 50%, rgb(26,76,20,.3));border:1px solid #3f6b52}
 body[data-theme="inkgold"] .btn-attach:hover,body[data-theme="inkgold"] .btn-send:hover{border-color:#d19621;color:#0b1512}
+body[data-theme="inkgold"] .btn-imgmode.active{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));}
+body[data-theme="inkgold"] .btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 body[data-theme="inkgold"] .btn-new{border-radius:20px;color:#d19621;box-shadow:0 3px 8px rgba(216,187,131,.28)}
 body[data-theme="inkgold"] .btn-settings{border-radius:12px;border:1px solid #3a5a48}
 body[data-theme="inkgold"] .chat-item{border-radius:12px}
@@ -641,7 +672,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 .msg-row.assistant .msg-time,.msg-row.error .msg-time{left:8px;background:var(--msg-ai-bg);color:var(--msg-ai)}
 /* C12 語音輸入（僅支援的瀏覽器顯示） */
 .btn-mic:not(.enabled){display:none}
-.btn-mic.listening{background:linear-gradient(160deg,rgba(255,120,120,.85),rgba(220,80,80,.8));border-color:rgba(255,140,140,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
+.btn-mic.listening{background:linear-gradient(160deg,rgba(255,214,110,.85),rgba(245,160,80,.75));border-color:rgba(255,234,120,.9);color:#fff;animation:pulse 1.2s ease-in-out infinite}
 .btn-send.hidden,.btn-mic.hidden{display:none}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,110,110,.5)}50%{box-shadow:0 0 0 6px rgba(255,110,110,0)}}
 /* C2 側欄寵物＝匯出／匯入入口 */
@@ -913,79 +944,68 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       </svg>
     </div>
 
-    <!-- 小寵物：典雅米白（奶油茶點）-->
+    <!-- 小寵物：典雅米白（蘿蔔人）-->
     <div id="petCream" class="pet" data-pet="cream" style="text-align:center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="奶油茶點">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="160" role="img" aria-label="蘿蔔人">
         <defs>
-          <linearGradient id="creamTeaCup" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#fffaf0"></stop>
-            <stop offset="1" stop-color="#f0dfc0"></stop>
+          <linearGradient id="radBody" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff"></stop>
+            <stop offset="1" stop-color="#f2e9d6"></stop>
           </linearGradient>
-          <linearGradient id="creamTeaCake" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#f9dda1"></stop>
-            <stop offset="1" stop-color="#dfac69"></stop>
+          <linearGradient id="radLeaf" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#b9d97e"></stop>
+            <stop offset="1" stop-color="#86b45c"></stop>
           </linearGradient>
+          <linearGradient id="radLeafD" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#a8cf6e"></stop>
+            <stop offset="1" stop-color="#7aa852"></stop>
+          </linearGradient>
+          <radialGradient id="radBlush">
+            <stop offset="0" stop-color="#f6a69b" stop-opacity=".8"></stop>
+            <stop offset=".6" stop-color="#f6a69b" stop-opacity=".38"></stop>
+            <stop offset="1" stop-color="#f6a69b" stop-opacity="0"></stop>
+          </radialGradient>
+          <radialGradient id="radShadow">
+            <stop offset="0" stop-color="#d9cdae" stop-opacity=".8"></stop>
+            <stop offset=".6" stop-color="#d9cdae" stop-opacity=".38"></stop>
+            <stop offset="1" stop-color="#d9cdae" stop-opacity="0"></stop>
+          </radialGradient>
         </defs>
+        <style>
+          .rad-pray{animation:rad-pray 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0%}
+          @keyframes rad-pray{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+          .rad-sway-body{animation:rad-body-sway 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+          @keyframes rad-body-sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
+          .rad-sway-leaf{animation:rad-leaf-sway 5s ease-in-out -1.2s infinite;transform-box:fill-box;transform-origin:50% 100%}
+          @keyframes rad-leaf-sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
+          @media (prefers-reduced-motion:reduce){.rad-pray,.rad-sway-body,.rad-sway-leaf{animation:none !important}}
+        </style>
         <g class="breath">
-          <ellipse cx="112" cy="211" rx="75" ry="6" fill="#a58765" opacity=".16"></ellipse>
-          <!-- 柔軟熱氣與小金光 -->
-          <g class="steam"><path d="M104,111 C92,100 110,92 101,80" fill="none" stroke="#cbb894" stroke-width="3" stroke-linecap="round" opacity=".55"></path></g>
-          <g class="steam" style="animation-delay:1.4s"><path d="M123,106 C112,94 130,85 121,71" fill="none" stroke="#cbb894" stroke-width="3.5" stroke-linecap="round" opacity=".5"></path></g>
-          <g class="steam" style="animation-delay:2.8s"><path d="M141,113 C131,104 147,96 141,87" fill="none" stroke="#cbb894" stroke-width="2.8" stroke-linecap="round" opacity=".5"></path></g>
-          <path class="twinkle" d="M174,86 Q175,94 182,95 Q175,96 174,104 Q173,96 166,95 Q173,94 174,86 Z" fill="#dfbc69"></path>
-          <path class="twinkle" style="animation-delay:1.3s" d="M47,98 Q48,104 54,105 Q48,106 47,112 Q46,106 40,105 Q46,104 47,98 Z" fill="#dfbc69"></path>
-          <circle cx="157" cy="72" r="2.5" fill="#ead59c"></circle>
-          <circle cx="65" cy="87" r="2" fill="#ead59c"></circle>
-          <!-- 金邊瓷盤與內圈 -->
-          <ellipse cx="111" cy="198" rx="79" ry="13" fill="#e4cfaa" stroke="#b79565" stroke-width="2"></ellipse>
-          <ellipse cx="111" cy="194" rx="79" ry="13" fill="#fff6e6" stroke="#c5a373" stroke-width="2"></ellipse>
-          <ellipse cx="111" cy="194" rx="65" ry="8.5" fill="#f1e2c8" stroke="#dfc38e" stroke-width="1.5"></ellipse>
-          <path d="M46,197 Q61,204 83,204 M143,204 Q162,203 176,198" fill="none" stroke="#fffdf5" stroke-width="2.5" stroke-linecap="round"></path>
-          <!-- 茶杯把手：金色外緣與奶油瓷面 -->
-          <path d="M162,138 C187,125 202,140 193,156 C187,167 174,172 163,168" fill="none" stroke="#b79565" stroke-width="11" stroke-linecap="round"></path>
-          <path d="M162,138 C187,125 202,140 193,156 C187,167 174,172 163,168" fill="none" stroke="#fff0d5" stroke-width="6" stroke-linecap="round"></path>
-          <!-- 圓潤杯身與小杯足 -->
-          <ellipse cx="124" cy="192" rx="29" ry="5" fill="#c7a777" opacity=".25"></ellipse>
-          <path d="M106,184 L103,190 Q124,198 145,190 L142,184 Z" fill="#f2dfbd" stroke="#b79565" stroke-width="2" stroke-linejoin="round"></path>
-          <path d="M80,129 C80,155 86,176 100,184 Q124,196 148,184 C162,176 168,155 168,129 Z" fill="url(#creamTeaCup)" stroke="#b79565" stroke-width="2.5" stroke-linejoin="round"></path>
-          <path d="M88,140 Q89,153 93,160" fill="none" stroke="#fffdf8" stroke-width="4" stroke-linecap="round"></path>
-          <path d="M96,178 Q124,191 152,178" fill="none" stroke="#d5b67e" stroke-width="2" stroke-linecap="round"></path>
-          <!-- 橢圓杯口與奶茶漣漪 -->
-          <ellipse cx="124" cy="129" rx="44" ry="10" fill="#fff9eb" stroke="#b79565" stroke-width="2"></ellipse>
-          <ellipse cx="124" cy="130" rx="36" ry="6.8" fill="#b98755"></ellipse>
-          <ellipse cx="124" cy="131" rx="32" ry="4.8" fill="#cfaa76"></ellipse>
-          <path d="M103,130 C108,126 138,126 145,130 C148,133 122,135 115,132 C111,130 125,129 132,131" fill="none" stroke="#f7dfb5" stroke-width="1.8" stroke-linecap="round"></path>
-          <path d="M88,132 Q124,145 160,132" fill="none" stroke="#e7c987" stroke-width="2" stroke-linecap="round"></path>
-          <!-- 小茶杯的可愛表情 -->
-          <g class="ey __web-inspector-hide-shortcut__">
-            <ellipse cx="109" cy="155" rx="4.5" ry="5.5" fill="#645044"></ellipse>
-            <circle cx="110.5" cy="153" r="1.6" fill="#fff" class="__web-inspector-hide-shortcut__"></circle>
-            <ellipse cx="139" cy="155" rx="4.5" ry="5.5" fill="#645044" class="__web-inspector-hide-shortcut__"></ellipse>
-            <circle cx="140.5" cy="153" r="1.6" fill="#fff"></circle>
+          <path class="twinkle" d="M168,66 Q169,72 175,73 Q169,74 168,80 Q167,74 161,73 Q167,72 168,66 Z" fill="#e8c428"></path>
+          <path class="twinkle" style="animation-delay:1.3s" d="M48,78 Q49,83 54,84 Q49,85 48,90 Q47,85 42,84 Q47,83 48,78 Z" fill="#e8c428"></path>
+          <g class="rad-sway-body">
+          <g class="rad-sway-leaf">
+            <ellipse cx="85" cy="61" rx="13" ry="17" transform="rotate(-28 88 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="3.5"></ellipse>
+            <ellipse cx="135" cy="61" rx="13" ry="17" transform="rotate(28 132 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="3.5"></ellipse>
+            <ellipse cx="110" cy="56" rx="14" ry="20" fill="url(#radLeaf)" stroke="#2e3527" stroke-width="3.5"></ellipse>
+            <path d="M110,52 C112,59 112,66 110,72 C108,66 108,59 110,52 Z" fill="#6f9a4e" opacity=".85"></path>
+            <path d="M82,61 C85.5,64.5 89.5,69 93.5,73.5 C93,65.75 89,61.25 82.6,61.2 Z" fill="#6f9a4e" opacity=".85"></path>
+            <path d="M138,61 C134.5,64.5 130.5,69 126.5,73.5 C127,65.75 131,61.25 137.4,61.2 Z" fill="#6f9a4e" opacity=".85"></path>
           </g>
-          <ellipse cx="98" cy="163" rx="6.5" ry="4" fill="#edb0aa" opacity=".7" class="__web-inspector-hide-shortcut__"></ellipse>
-          <ellipse cx="150" cy="163" rx="6.5" ry="4" fill="#edb0aa" opacity=".7" class="__web-inspector-hide-shortcut__"></ellipse>
-          <path d="M119,164 Q124,170 129,164" fill="none" stroke="#8b6853" stroke-width="1.8" stroke-linecap="round" class="__web-inspector-hide-shortcut__"></path>
-          <!-- 草莓奶油司康：酥皮、果醬與夾心 -->
-          <ellipse cx="62" cy="190" rx="25" ry="5" fill="#b79565" opacity=".2"></ellipse>
-          <path d="M40,168 Q62,160 84,168 L84,181 Q82,190 62,191 Q42,190 40,181 Z" fill="url(#creamTeaCake)" stroke="#bf925f" stroke-width="2" stroke-linejoin="round"></path>
-          <path d="M41,173 Q47,170 53,174 Q61,169 68,174 Q76,170 83,173 L83,179 Q76,183 69,179 Q62,184 54,179 Q46,183 41,179 Z" fill="#fff8e9"></path>
-          <path d="M43,172 Q52,175 60,172 Q69,175 81,172" fill="none" stroke="#cc7a84" stroke-width="3" stroke-linecap="round"></path>
-          <path d="M39,166 C38,157 48,151 61,151 C74,150 85,156 86,165 Q84,172 75,171 L70,174 L61,171 L53,174 L47,170 Q40,172 39,166 Z" fill="#f4d394" stroke="#bf925f" stroke-width="2" stroke-linejoin="round"></path>
-          <path d="M47,162 L51,160 M58,157 L62,158 M73,161 L77,163 M48,184 L51,185 M74,184 L77,182" fill="none" stroke="#d1a064" stroke-width="1.8" stroke-linecap="round"></path>
-          <!-- 蓬鬆奶油與小草莓 -->
-          <path d="M48,157 C44,153 48,148 54,147 C51,142 56,138 62,139 Q70,138 72,144 C80,145 82,151 76,154 Q78,160 68,161 Q57,163 48,157 Z" fill="#fffaf0" stroke="#e2ccb0" stroke-width="1.6" stroke-linejoin="round"></path>
-          <path d="M54,149 Q62,153 72,148 M54,156 Q62,159 70,155" fill="none" stroke="#f0dfc7" stroke-width="1.6" stroke-linecap="round"></path>
-          <path d="M57,137 C52,127 58,120 64,124 C71,120 77,127 72,136 Q65,147 62,144 Z" fill="#ea91a0" stroke="#c97080" stroke-width="1.6" stroke-linejoin="round"></path>
-          <path d="M64,126 L58,120 L64,121 L68,116 L69,122 L75,122 L69,127 Z" fill="#9eb98c" stroke="#819d70" stroke-width="1" stroke-linejoin="round"></path>
-          <path d="M59,130 l1,2 M67,131 l-1,2 M63,137 l1,2 M71,128 l-1,2" fill="none" stroke="#ffe8c8" stroke-width="1.4" stroke-linecap="round"></path>
-          <!-- 盤前的小花奶油餅乾 -->
-          <path d="M89,189 C85,184 89,179 95,181 C98,175 104,177 106,182 C113,181 116,187 112,191 C115,197 110,201 105,199 C101,204 95,202 94,198 C87,200 84,194 89,189 Z" fill="#f5dca5" stroke="#c6a16d" stroke-width="1.8" stroke-linejoin="round"></path>
-          <circle cx="100" cy="190" r="5" fill="#e6b7a0"></circle>
-          <circle cx="100" cy="190" r="2.5" fill="#f3c8b7"></circle>
-          <path d="M94,184 l1,2 M107,186 l-2,1 M105,196 l-1,-2 M92,193 l2,-1" fill="none" stroke="#d6b47d" stroke-width="1.4" stroke-linecap="round"></path>
-          <circle cx="120" cy="199" r="1.8" fill="#d6b47d"></circle>
-          <circle cx="127" cy="197" r="1.2" fill="#d6b47d"></circle>
+          <path d="M60,204 C44,160 46,120 64,96 C82,66 138,66 156,96 C174,120 176,160 160,204 C144,211 128,206 110,209 C92,212 74,209 60,204 Z" fill="url(#radBody)" stroke="#2e4338" stroke-width="3.5" stroke-linejoin="round"></path>
+          <g transform="translate(0,-10)">
+          <path d="M85,126 Q92,133 100,124" fill="none" stroke="#2e4338" stroke-width="3.2" stroke-linecap="round"></path>
+          <path d="M121,124 Q128,133 136,126" fill="none" stroke="#2e4338" stroke-width="3.2" stroke-linecap="round"></path>
+          <ellipse cx="72" cy="138" rx="13" ry="9" fill="url(#radBlush)"></ellipse>
+          <ellipse cx="148" cy="138" rx="13" ry="9" fill="url(#radBlush)"></ellipse>
+          <path d="M69,136 l-1,5 M74,136 l-1,5 M145,136 l1,5 M150,136 l1,5" fill="none" stroke="#e8836b" stroke-width="1.6" stroke-linecap="round" opacity=".9"></path>
+          </g>
+          <g class="rad-pray">
+            <ellipse cx="110" cy="160" rx="20" ry="14" fill="url(#radShadow)"></ellipse>
+            <path d="M82,149 C90,138 101,132 110,137 C111,149 106,160 97,168" fill="none" stroke="#2e4338" stroke-width="3.2" stroke-linecap="round"></path>
+            <path d="M138,149 C130,138 119,132 110,137 C109,149 114,160 123,168" fill="none" stroke="#2e4338" stroke-width="3.2" stroke-linecap="round"></path>
+          </g>
+          </g>
         </g>
       </svg>
     </div>
@@ -1341,7 +1361,6 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
           <!-- 鬍鬚 -->
           <path d="M48,191 L36,189 M48,197 L36,200 M104,191 L116,189 M104,197 L116,200" fill="none" stroke="#9aa5b1" stroke-width="2" stroke-linecap="round" opacity=".6"></path>
           <!-- 月光落點（暖色柔光：頭頂光暈＋背脊光帶＋小丘光池） -->
-          <ellipse cx="76" cy="158" rx="20" ry="7" fill="url(#grayCatLight)" opacity=".9"></ellipse>
           <ellipse cx="124" cy="170" rx="18" ry="6" fill="url(#grayCatLight)" opacity=".7"></ellipse>
           <ellipse cx="104" cy="213" rx="44" ry="9" fill="url(#grayCatLight)" opacity=".55"></ellipse>
           <!-- Zzz -->
@@ -1409,14 +1428,14 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="玉燈">
         <defs>
           <radialGradient id="inkgoldGlow" cx="50%" cy="42%" r="58%">
-            <stop offset="0%" stop-color="#e8f0d8" stop-opacity=".9"></stop>
-            <stop offset="42%" stop-color="#9ec3a8" stop-opacity=".45"></stop>
-            <stop offset="100%" stop-color="#1a2b23" stop-opacity="0"></stop>
+            <stop offset="0%" stop-color="#e8f0d8" stop-opacity=".9"/>
+            <stop offset="42%" stop-color="#9ec3a8" stop-opacity=".45"/>
+            <stop offset="100%" stop-color="#1a2b23" stop-opacity="0"/>
           </radialGradient>
           <linearGradient id="inkgoldGold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#f3dfae"></stop>
-            <stop offset="55%" stop-color="#d8bb83"></stop>
-            <stop offset="100%" stop-color="#b9924f"></stop>
+            <stop offset="0%" stop-color="#f3dfae"/>
+            <stop offset="55%" stop-color="#d8bb83"/>
+            <stop offset="100%" stop-color="#b9924f"/>
           </linearGradient>
         </defs>
         <style>
@@ -1429,36 +1448,38 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
         </style>
         <g class="breath">
         <g class="sway" style="transform-origin:120px 24px">
-          <circle cx="120" cy="24" r="4" fill="none" stroke="url(#inkgoldGold)" stroke-width="2.5"></circle>
-          <path d="M120,28 L120,40" stroke="url(#inkgoldGold)" stroke-width="2.5" stroke-dasharray="4 4"></path>
-          <circle cx="120" cy="112" r="86" fill="url(#inkgoldGlow)" class="ig-glow"></circle>
-          <path d="M96,44 C104,36 136,36 144,44 L150,56 L90,56 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"></path>
-          <path d="M90,56 L150,56 L146,62 L94,62 Z" fill="#b9924f"></path>
-          <path d="M86,62 L154,62 C162,96 162,128 154,162 L86,162 C78,128 78,96 86,62 Z" fill="#24402f" stroke="url(#inkgoldGold)" stroke-width="3"></path>
-          <path d="M102,64 C98,96 98,128 102,160 M120,64 C118,96 118,128 120,160 M138,64 C142,96 142,128 138,160" fill="none" stroke="#3f6b52" stroke-width="1.2" opacity=".55"></path>
-          <path d="M94,64 C90,96 90,128 94,160" fill="none" stroke="#5d8a6e" stroke-width="1.4" opacity=".4"></path>
-          <path d="M100,72 L140,72 L146,96 L94,96 Z" fill="#8ab69b" opacity=".18"></path>
-          <path d="M94,118 L146,118 L140,142 L100,142 Z" fill="#8ab69b" opacity=".12"></path>
-          <path d="M94,74 C110,70 130,70 146,74" fill="none" stroke="#e8f0d8" stroke-width="2" stroke-linecap="round" opacity=".5"></path>
+          <circle cx="120" cy="24" r="4" fill="none" stroke="url(#inkgoldGold)" stroke-width="2.5"/>
+          <path d="M120,28 L120,40" stroke="url(#inkgoldGold)" stroke-width="2.5" stroke-dasharray="4 4"/>
+          <circle cx="120" cy="112" r="86" fill="url(#inkgoldGlow)" class="ig-glow"/>
+          <path d="M96,44 C104,36 136,36 144,44 L150,56 L90,56 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M102,46 L104,53 M112,44 L114,52 M126,44 L128,52 M136,46 L138,53" stroke="#8a6f3a" stroke-width="1.4" stroke-linecap="round" opacity=".8"/>
+          <path d="M90,56 L150,56 L146,62 L94,62 Z" fill="#b9924f"/>
+          <path d="M86,62 L154,62 C162,96 162,128 154,162 L86,162 C78,128 78,96 86,62 Z" fill="#24402f" stroke="url(#inkgoldGold)" stroke-width="3"/>
+          <path d="M102,64 C98,96 98,128 102,160 M120,64 C118,96 118,128 120,160 M138,64 C142,96 142,128 138,160" fill="none" stroke="#3f6b52" stroke-width="1.2" opacity=".55"/>
+          <path d="M94,64 C90,96 90,128 94,160" fill="none" stroke="#5d8a6e" stroke-width="1.4" opacity=".4"/>
+          <path d="M100,72 L140,72 L146,96 L94,96 Z" fill="#8ab69b" opacity=".18"/>
+          <path d="M94,118 L146,118 L140,142 L100,142 Z" fill="#8ab69b" opacity=".12"/>
+          <path d="M94,74 C110,70 130,70 146,74" fill="none" stroke="#e8f0d8" stroke-width="2" stroke-linecap="round" opacity=".5"/>
           <g class="ig-flame">
-            <ellipse cx="120" cy="120" rx="15" ry="20" fill="#f3dfae" opacity=".95"></ellipse>
-            <ellipse cx="120" cy="124" rx="9" ry="12" fill="#fff8e0"></ellipse>
-            <ellipse cx="117" cy="118" rx="3" ry="5" fill="#fff" opacity=".8"></ellipse>
+            <ellipse cx="120" cy="120" rx="15" ry="20" fill="#f3dfae" opacity=".95"/>
+            <ellipse cx="120" cy="124" rx="9" ry="12" fill="#fff8e0"/>
+            <ellipse cx="117" cy="118" rx="3" ry="5" fill="#fff" opacity=".8"/>
           </g>
-          <ellipse cx="120" cy="112" rx="22" ry="26" fill="none" stroke="#f3dfae" stroke-width="1.2" opacity=".35"></ellipse>
-          <path class="twinkle" d="M120,92 L121.6,97.2 127,98.8 121.6,100.4 120,105.6 118.4,100.4 113,98.8 118.4,97.2 Z" fill="#f3dfae"></path>
-          <path class="twinkle" style="animation-delay:1.4s" d="M92,84 L93.2,87.6 97,88.8 93.2,90 92,93.6 90.8,90 87,88.8 90.8,87.6 Z" fill="#f3dfae" opacity=".8"></path>
-          <path class="twinkle" style="animation-delay:2.1s" d="M148,132 L149,135.4 152.6,136.4 149,137.4 148,140.8 147,137.4 143.4,136.4 147,135.4 Z" fill="#f3dfae" opacity=".7"></path>
-          <path d="M90,162 L150,162 L154,172 L86,172 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"></path>
-          <path d="M86,172 L154,172 L150,180 L90,180 Z" fill="#b9924f"></path>
-          <ellipse cx="120" cy="182" rx="42" ry="6" fill="#0b1512" opacity=".55"></ellipse>
+          <ellipse cx="120" cy="112" rx="22" ry="26" fill="none" stroke="#f3dfae" stroke-width="1.2" opacity=".35"/>
+          <path class="twinkle" d="M120,92 L121.6,97.2 127,98.8 121.6,100.4 120,105.6 118.4,100.4 113,98.8 118.4,97.2 Z" fill="#f3dfae"/>
+          <path class="twinkle" style="animation-delay:1.4s" d="M92,84 L93.2,87.6 97,88.8 93.2,90 92,93.6 90.8,90 87,88.8 90.8,87.6 Z" fill="#f3dfae" opacity=".8"/>
+          <path class="twinkle" style="animation-delay:2.1s" d="M148,132 L149,135.4 152.6,136.4 149,137.4 148,140.8 147,137.4 143.4,136.4 147,135.4 Z" fill="#f3dfae" opacity=".7"/>
+          <path d="M90,162 L150,162 L154,172 L86,172 Z" fill="url(#inkgoldGold)" stroke="#8a6f3a" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M98,164 L100,170 M110,164 L112,170 M128,164 L130,170 M140,164 L142,170" stroke="#8a6f3a" stroke-width="1.3" stroke-linecap="round" opacity=".8"/>
+          <path d="M86,172 L154,172 L150,180 L90,180 Z" fill="#b9924f"/>
+          <ellipse cx="120" cy="182" rx="42" ry="6" fill="#0b1512" opacity=".55"/>
           <g class="ig-tassel">
-            <path d="M120,182 L120,196" stroke="url(#inkgoldGold)" stroke-width="2"></path>
-            <circle cx="120" cy="193" r="3" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1"></circle>
-            <path d="M114,196 L126,196 L123,208 L117,208 Z" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1" stroke-linejoin="round"></path>
-            <path d="M117,198 L118.5,206 M121,198 L121,206 M124,198 L122.5,206" stroke="#8a6f3a" stroke-width=".9" stroke-linecap="round"></path>
-            <path d="M120,208 L120,218" stroke="#b9924f" stroke-width="2" stroke-linecap="round"></path>
-            <circle cx="120" cy="219" r="2.2" fill="#f3dfae"></circle>
+            <path d="M120,182 L120,196" stroke="url(#inkgoldGold)" stroke-width="2"/>
+            <circle cx="120" cy="193" r="3" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1"/>
+            <path d="M114,196 L126,196 L123,208 L117,208 Z" fill="#d8bb83" stroke="#8a6f3a" stroke-width="1" stroke-linejoin="round"/>
+            <path d="M117,198 L118.5,206 M121,198 L121,206 M124,198 L122.5,206" stroke="#8a6f3a" stroke-width=".9" stroke-linecap="round"/>
+            <path d="M120,208 L120,218" stroke="#b9924f" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="120" cy="219" r="2.2" fill="#f3dfae"/>
           </g>
         </g>
         </g>
@@ -1518,7 +1539,11 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       <div class="empty">
       </div>
     </div>
-    <button class="scroll-bottom" id="btnScrollBottom" type="button" aria-label="捲動到最新訊息">↓</button>
+    <button class="scroll-bottom" id="btnScrollBottom" type="button" aria-label="捲動到最新訊息">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" aria-hidden="true" stroke-width="2.2" color="currentColor">
+      <path d="M6 12L12 18L18 12" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"></path>
+    </svg>
+    </button>
     <div class="input-area">
       <div class="attach-bar" id="attachBar"></div>
       <div class="input-row">
@@ -3759,7 +3784,7 @@ function toggleSpeak(m){
   u.onend=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
   u.onerror=()=>{ttsUtter=null;ttsMsg=null;updateTtsBtn()};
   ttsUtter=u;ttsMsg=m;
-  try{speechSynthesis.speak(u);updateTtsBtn();showToast('朗讀中… 點 ⏹ 可停止朗讀','success')}
+  try{speechSynthesis.speak(u);updateTtsBtn();showToast('朗讀中… <br>點 ⏹ 可停止朗讀','success')}
   catch(e){ttsUtter=null;ttsMsg=null;updateTtsBtn();showToast('朗讀失敗','warn')}
 }
 window.addEventListener('beforeunload',ttsStop);
@@ -3865,7 +3890,7 @@ async function saveMessageImages(m){
       }else failed++;
     }catch(e){failed++}
   }
-  if(opened)setTimeout(()=>showToast('無法取得圖片資料，已開新分頁，請長按／右鍵另存圖片','warn'),saved?1800:0);
+  if(opened)setTimeout(()=>showToast('無法取得圖片資料，已開新分頁，<br>請長按／右鍵另存圖片','warn'),saved?1800:0);
   if(failed&&!saved&&!opened)setTimeout(()=>showToast('儲存失敗：找不到圖片資料','warn'),(saved||opened)?1800:0);
 }
 
@@ -4026,7 +4051,7 @@ async function sendMessage(){
 
   const apiKey=getApiKey();
   if(!apiKey){
-    showToast('請先設定 API Key（在 ⚙ 設定 裡）','warn');
+    showToast('請先設定 API Key<br>（在 ⚙ 設定 裡）','warn');
     openSettings();
     return;
   }
@@ -4079,7 +4104,7 @@ async function sendMessage(){
       : /^tvly-/.test(WEB_SEARCH.tavilyKey||'');
     if(engineOk)await requestWebSearch(text);
     else{
-      showToast('偵測到搜尋關鍵字：尚未設定 '+(WEB_SEARCH.engine==='jina'?'Jina':'Tavily')+' API Key（請在檔案內搜尋「WEB_SEARCH」填入）','warn');
+//      showToast('偵測到搜尋關鍵字：尚未設定 '+(WEB_SEARCH.engine==='jina'?'Jina':'Tavily')+' API Key（請在檔案內搜尋「WEB_SEARCH」填入）','warn');
       requestAI();
     }
   }
@@ -4390,7 +4415,7 @@ async function requestPageRead(text,urls){
       return;
     }
     console.error('[Page] 網頁讀取失敗:',e);
-    showToast('網頁讀取失敗（'+e.message+'），無法取得內容','warn');
+    showToast('網頁讀取失敗（'+e.message+'），<br>無法取得內容','warn');
     // fallback context：明確禁止 AI 偷跑去搜尋（Jina 失敗時不該自動觸發 web_search，
     // 搜尋結果跟原網址無關，會誤導使用者），noTools:true 讓 requestAI 不附帶 web_search 工具
     context='（重要：以下網址的網頁讀取工具（Jina Reader）讀取失敗，無法取得實際內容。請直接告訴使用者無法讀取這些網址，建議他們改用純文字貼上內容摘要、或換成可公開存取的網頁。'+
@@ -5007,7 +5032,7 @@ async function requestAI(opts){
   if(!chat)return;
   const apiKey=getApiKey();
   if(!apiKey){
-    showToast('請先設定 API Key（在 ⚙ 設定 裡）','warn');
+    showToast('請先設定 API Key<br>（在 ⚙ 設定 裡）','warn');
     openSettings();
     return;
   }
@@ -5305,9 +5330,9 @@ async function requestAI(opts){
     if(streamDropped){
       if(opts.continueHint){
         // 自動續寫本身又中斷：不再無限觸發，提示使用者手動按 ⤵️
-        showToast('連線再次中斷，請手動按訊息下方的 ⤵️ 繼續生成','warn');
+        showToast('連線再次中斷，請手動按訊息下方的[繼續生成]','warn');
       }else{
-        showToast('連線提前中斷，正在自動續寫一次…','warn');
+        showToast('連線提前中斷，正在自動要求續寫','warn');
         // 等本輪 finally 收尾（isStreaming 設回 false）後再發起續寫，避免並發請求
         setTimeout(()=>{ if(activeChatId===chat.id&&!isStreaming) requestAI({continueHint:'從上次中斷處繼續，直接接續輸出剩餘內容，不要重複已輸出的部分。'}); },500);
       }
@@ -5435,7 +5460,7 @@ async function requestImage(opts){
   if(!chat)return;
   const apiKey=getImageApiKey();   // Agnes 官方圖片模型：一律用預設 Agnes Key（不受使用者自訂 Key 影響）
   if(!apiKey){
-    showToast('請先設定 API Key（在 ⚙ 設定 裡）','warn');
+    showToast('請先設定 API Key<br>（在 ⚙ 設定 裡）','warn');
     openSettings();
     return;
   }
@@ -5730,7 +5755,7 @@ async function checkStorageUsage(){
     const est=await navigator.storage.estimate();
     const usage=est.usage||0;
     const limitMB=parseInt(settings.storageWarnMB,10)||DEFAULT_STORAGE_WARN_MB;
-    if(usage>limitMB*1048576)showToast('⚠️ 本機儲存已用 '+fmtBytes(usage)+'（提醒門檻 '+limitMB+' MB），建議開啟圖片庫壓縮或清理','warn');
+    if(usage>limitMB*1048576)showToast('⚠️ 本機儲存已用 '+fmtBytes(usage)+'（提醒門檻 '+limitMB+' MB），<br>建議開啟圖片庫壓縮或清理','warn');
   }catch(e){}
 }
 
@@ -6170,7 +6195,7 @@ function toggleImgMode(){
   if(b)b.classList.toggle('active',imgMode);
   updateImgModeHint();
   saveDraft();   // 模式切換立即寫入草稿：否則草稿仍是切換前的模式，重整後 applyDraft 會把舊模式還原回來
-  showToast(imgMode?'已開啟圖片模式（🎨 送出時呼叫圖片模型）':'已切回文字模式','success');
+  showToast(imgMode?'已開啟[🎨圖片模式]<br>（送出訊息時會生成圖片）':'已切回[文字模式]','success');
 }
 document.getElementById('btnImgMode').addEventListener('click',toggleImgMode);
 
@@ -6279,7 +6304,7 @@ messagesEl.addEventListener('click',async e=>{
     const rowS=srcBadge.closest('.msg-row');
     const mS=chatS&&rowS?chatS.messages[parseInt(rowS.dataset.idx,10)]:null;
     if(mS&&Array.isArray(mS.sources)&&mS.sources.length)showSourcesModal(mS);
-    else showToast('這一則沒有記錄到搜尋來源（可能是改版前的舊訊息）','warn');
+    else showToast('這一則沒有記錄到搜尋來源<br>（可能是改版前的舊訊息）','warn');
     return;
   }
   const btn=e.target.closest('.msg-dropdown [data-act]');
@@ -6358,7 +6383,7 @@ messagesEl.addEventListener('click',async e=>{
     // 將 AI 生成的圖片設為圖生圖參考圖：複製一份新媒體記錄，避免日後刪除任一訊息時互相誤刪
     const part=Array.isArray(m.content)?m.content.find(p=>p.type==='image_ref'&&p.id):null;
     if(!part)return;
-    if(pendingImages.length>=4){showToast('參考圖最多 4 張（可從不同訊息各選一張合成），已達上限','warn');return}   // D9
+    if(pendingImages.length>=4){showToast('參考圖最多 4 張，<br>已達上限','warn');return}   // D9
     const data=await mediaGet(part.id);
     if(data==null){showToast('圖片資料已不存在（可能已被刪除）','warn');return}
     // 內容去重：同一張圖重複「修改圖片」時直接沿用既有 id，
@@ -6374,7 +6399,7 @@ messagesEl.addEventListener('click',async e=>{
     }
     renderAttachBar();   // 內部會 updateImgModeHint 更新輸入框提示
     scheduleDraft();
-    showToast('已加入為參考圖（共 '+pendingImages.length+' 張，可從其他訊息再加），請輸入要修改的內容描述','success');
+    showToast('已加入為參考圖<br>（共 '+pendingImages.length+' 張），<br>請輸入要修改的內容描述','success');
     msgInput.focus();
   }
 });
@@ -7240,12 +7265,22 @@ document.getElementById('bookmarkModal').addEventListener('click',e=>{if(e.targe
     return;
   }
   let rec=null,listening=false;
-  btn.addEventListener('click',()=>{
+  btn.addEventListener('click',async ()=>{
     if(listening){
       listening=false;
       btn.classList.remove('listening');
       try{rec.stop()}catch(e){}
       return;
+    }
+    // Android PWA修正：PWA權限獨立存放，先用getUserMedia觸發系統授權彈窗，拿到後放掉再啟動辨識
+    if(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia){
+      try{
+        const s=await navigator.mediaDevices.getUserMedia({audio:true});
+        s.getTracks().forEach(t=>{try{t.stop()}catch(e){}});
+      }catch(e){
+        showToast('麥克風權限被拒絕：<br>請先允許麥克風權限。','warn');
+        return;
+      }
     }
     try{rec=new SR()}catch(e){return}
     rec.lang='zh-TW';
@@ -7268,10 +7303,10 @@ document.getElementById('bookmarkModal').addEventListener('click',e=>{if(e.targe
       listening=false;
       btn.classList.remove('listening');
       const why={
-        'not-allowed':'語音輸入失敗：麥克風權限被拒絕（請允許麥克風存取）',
-        'service-not-allowed':'語音輸入失敗：瀏覽器或系統未允許語音服務',
-        'network':'語音輸入失敗：需要網路連線（辨識在雲端進行）',
-        'audio-capture':'語音輸入失敗：找不到可用的麥克風',
+        'not-allowed':'語音輸入失敗：<br>麥克風權限被拒絕<br>（請允許麥克風存取）',
+        'service-not-allowed':'語音輸入失敗：<br>瀏覽器或系統未允許語音服務',
+        'network':'語音輸入失敗：<br>需要網路連線<br>（辨識在雲端進行）',
+        'audio-capture':'語音輸入失敗：<br>找不到可用的麥克風',
         'no-speech':'沒有偵測到說話內容',
         'aborted':null
       }[ev.error];
@@ -7279,7 +7314,7 @@ document.getElementById('bookmarkModal').addEventListener('click',e=>{if(e.targe
     };
     try{
       rec.start();
-      showToast('語音辨識中…再次點擊 🎤 可停止');
+      showToast('語音辨識中…<br>再次點擊 🎤 可停止');
     }catch(e){
       listening=false;
       btn.classList.remove('listening');
@@ -7452,7 +7487,7 @@ document.getElementById('btnBatchDownload').addEventListener('click',()=>{
   if(!gallerySelected.size){showToast('尚未選取任何圖片','warn');return}
   const n=gallerySelected.size;
   [...gallerySelected].forEach(id=>saveMessageImages({content:[{type:'image_ref',id}]}));
-  showToast('開始下載 '+n+' 張圖片（瀏覽器可能詢問允許多個下載）','success');
+  showToast('開始下載 '+n+' 張圖片<br>（瀏覽器可能詢問允許多個下載）','success');
 });
 document.getElementById('btnBatchCompress').addEventListener('click',async()=>{
   if(!gallerySelected.size){showToast('尚未選取任何圖片','warn');return}
@@ -7463,7 +7498,7 @@ document.getElementById('btnBatchCompress').addEventListener('click',async()=>{
   if(!cands.length){showToast('選取中沒有可壓縮的 PNG 圖片','warn');return}
   if(!await showConfirm('將把選取的 '+cands.length+' 張 PNG 轉存為 JPEG（品質 85%、尺寸不變）。\n\n此操作不可還原，確定繼續？'))return;
   const r=await compressGalleryEntries(cands);
-  showToast(r.done?('已壓縮 '+r.done+' 張，節省 '+fmtBytes(r.savedBytes)):'選取的圖片都不需要壓縮',r.done?'success':'warn');
+  showToast(r.done?('已壓縮 '+r.done+' 張，節省 '+fmtBytes(r.savedBytes)):'<br>選取的圖片都不需要壓縮',r.done?'success':'warn');
   renderGalleryGrid();
 });
 // 讀取 IndexedDB 全部圖片記錄（Gallery 用）→ 已併入上方媒體輔助區（B1）
@@ -7503,7 +7538,7 @@ document.getElementById('btnCompressImages').addEventListener('click',async()=>{
   let entries;
   try{entries=await mediaAllEntries()}catch(e){showToast('讀取失敗：'+((e&&e.message)||e),'warn');return}
   const cands=entries.filter(rec=>rec&&rec.id&&isPngMedia(rec.data));
-  if(!cands.length){showToast('沒有可壓縮的 PNG 圖片（JPEG／遠端連結不在處理範圍）','warn');return}
+  if(!cands.length){showToast('沒有可壓縮的 PNG 圖片<br>（JPEG／遠端連結不在處理範圍）','warn');return}
   const msg=`將把 ${cands.length} 張 PNG 圖片轉存為 JPEG\n（品質 85%、尺寸不變、透明處鋪白底）。\n\n此動作不可還原，確定繼續？`;
   if(!await showConfirm(msg))return;
   btn.disabled=true;
@@ -7511,7 +7546,7 @@ document.getElementById('btnCompressImages').addEventListener('click',async()=>{
   const r=await compressGalleryEntries(cands);
   btn.disabled=false;btn.textContent=oldText;
   if(r.done){
-    showToast(`已壓縮 ${r.done} 張圖片，節省 ${fmtBytes(r.savedBytes)}`,'success');
+    showToast(`已壓縮 ${r.done} 張圖片，<br>節省 ${fmtBytes(r.savedBytes)}`,'success');
     renderGalleryGrid();   // 刷新縮圖
   }else{
     showToast('沒有圖片需要壓縮','warn');
