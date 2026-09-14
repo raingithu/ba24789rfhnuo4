@@ -27,7 +27,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .app{display:flex;height:100%;height:100dvh;height:100svh;overflow:hidden}
 
 /* 側邊欄 */
-.sidebar{width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s;min-height:0}
+.sidebar{width:312px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s;min-height:0}
 .sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex:0 0 auto}
 .sidebar-header h2{font-size:18px;font-weight:600;color:var(--accent)}
 .btn-new{padding:8px 14px;background:var(--msg-user-bg);color:var(--text);border:none;border-radius:18px;cursor:pointer;font-size:13px;transition:opacity .2s}
@@ -1892,7 +1892,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div class="field-row">
       <div class="field">
         <label>最大輸出 Tokens</label>
-        <input type="number" id="settingMaxTokens" min="256" max="65536" step="256" value="4096">
+        <input type="number" id="settingMaxTokens" min="256" max="65536" step="256" value="8192">
       </div>
       <div class="field">
         <label>傳送上下文則數</label>
@@ -2701,11 +2701,11 @@ const DEFAULT_SETTINGS={
   apiKey:'sk-4IyUWw7JhQppy4xZ5weeaHiUlh1zOxMFFbxZ5Tq06XEPAR9T',
   model:'agnes-2.5-flash',
   endpoint:'https://apihub.agnes-ai.com/v1',
-  temperature:0.6,
+  temperature:'0.6',
   persona:'cat',
   theme:'default',
   systemPrompt:'',
-  maxTokens:4096,
+  maxTokens:'8192',
   ctxLimit:'40',
   autoScroll:false,
   quickReply:true,
@@ -2841,10 +2841,10 @@ const SEARCH_KEYWORDS=['搜尋','查詢','找一下','搜一下','查一下','�
 // （三之8 擴充說明：台灣的放假／停班課查詢不必另行搜尋——同天氣／地震，query 會先走官方直查：
 //   國定假日與補班＝人事總處辦公日曆表（jsDelivr CDN，2017 年以後）；
 //   颱風停班停課＝人事總處即時公告 NCDR RSS AlertType=33（只列有效期內的）。直接回填後模型照資料回答並附來源連結。）
-const WEB_SEARCH_TOOL={type:'function',function:{name:'web_search',description:'查詢即時或最新資訊（新聞、匯率、股價、賽事、公告等）。注意：台灣天氣、台灣地震與台灣放假／停班課的查詢不必另行搜尋——呼叫本工具時，系統會自動改為回傳官方資料（台灣天氣＝今明 36 小時預報＋指定縣市的一週預報；地震＝最近的地震報告；提到颱風時會額外附上颱風警特報，只含未過期的警報；放假＝國定假日與補班官方日曆；停班課＝人事總處即時公告，只含有效期內的），因此 query 請保留具體地點與年份（如「高雄」、「2026」）。其他主題則回傳一般網路搜尋結果（農民曆宜忌請改用 almanac_lookup 工具，不要用本工具搜尋）。query 請用繁體中文、具體明確。',parameters:{type:'object',properties:{query:{type:'string',description:'查詢字串（台灣天氣／地震時請含縣市名；放假查詢請含年份）'}},required:['query']}}};
+const WEB_SEARCH_TOOL={type:'function',function:{name:'web_search',description:'查詢即時或最新資訊（新聞、匯率、股價、賽事、公告等）。注意：天氣、地震、放假／停班課的查詢不必另行找來源——呼叫本工具時，系統會自動改為回傳官方資料（台灣天氣＝中央氣象署今明 36 小時預報＋指定縣市的一週預報；國外天氣＝Open-Meteo 該城市未來 7 天預報＋現在實況；地震＝最近的地震報告；提到颱風時會額外附上颱風警特報，只含未過期的警報；放假＝國定假日與補班官方日曆；停班課＝人事總處即時公告，只含有效期內的），因此 query 請保留具體地名與年份（台灣寫縣市如「高雄」，國外寫城市如「東京」「倫敦」「紐約」；放假查詢請含年份如「2026」）。這些官方來源都免費、不佔搜尋額度，所以天氣問題（含國外城市）請放心直接呼叫本工具，不要回答「我無法查詢即時天氣」或「請自行查詢」。其他主題則回傳一般網路搜尋結果（農民曆宜忌請改用 almanac_lookup 工具，不要用本工具搜尋）。query 請用繁體中文、具體明確。',parameters:{type:'object',properties:{query:{type:'string',description:'查詢字串（天氣請含地名，台灣寫縣市、國外寫城市；地震請含縣市；放假查詢請含年份）'}},required:['query']}}};
 const TOOL_STATE={unsupported:false};   // 後端拒絕 tools 時設為 true，本工作階段不再附帶工具
 // 農民曆本地工具（離線計算，保證正確；「最近哪天適合…」請模型自行展開候選日期逐一查詢）
-const ALMANAC_TOOL={type:'function',function:{name:'almanac_lookup',description:'查詢指定日期的農民曆（宜、忌、沖煞、胎神、喜神／財神方位，本地離線計算，保證正確）。農民曆問題一律用本工具，不要用 web_search 上網搜尋。「最近哪天適合…」這類問題請自行展開成候選日期逐一查詢（今天日期見系統提示的今天資訊），再結合其他資料綜合回答。',parameters:{type:'object',properties:{date:{type:'string',description:'日期：中文如「9月20日」「下週一」「明天」，或 YYYY-MM-DD。一次查一個日期。'}}},required:['date']}};
+const ALMANAC_TOOL={type:'function',function:{name:'almanac_lookup',description:'查詢指定日期的農民曆（宜、忌、沖煞、胎神、喜神／財神方位，本地離線計算，保證正確、零成本）。農民曆問題一律用本工具，不要用 web_search 上網搜尋。「最近哪天適合…」這類問題請自行展開成候選日期逐一查詢（今天日期見系統提示的今天資訊），再結合其他資料綜合回答。',parameters:{type:'object',properties:{date:{type:'string',description:'日期：中文如「9月20日」「下週一」「明天」、農曆如「農曆八月十五」、或 YYYY-MM-DD。一次查一個日期。'}}},required:['date']}};
 
 // ===== 現在時刻（三之6）=====
 // 過去只給模型「日期」、沒給「幾點幾分」，遇到「剛剛／現在有沒有地震」這類需要算時間差的問題，
@@ -3083,7 +3083,7 @@ function getTemperature(){
 }
 function getMaxTokens(){
   const n=parseInt(settings.maxTokens,10);
-  return Number.isFinite(n)?Math.min(65536,Math.max(256,n)):4096;
+  return Number.isFinite(n)?Math.min(65536,Math.max(256,n)):8192;
 }
 function getCtxLimit(){
   const v=settings.ctxLimit;
@@ -4374,11 +4374,28 @@ async function sendMessage(){
     // 訊息含網址：讀取網頁內容讓 AI 分析（貼網址意圖明確，不需關鍵字；優先於搜尋關鍵字）
     await requestPageRead(text,extractUrls(text));
   }
-  else if((almResult=tryAlmanacDirect(text,prevUserText(),null)||tryAlmanacRange(text,prevUserText(),null))){
-    // 農民曆直查優先於關鍵字分流：明確日期→單日離線計算；模糊擇日（最近哪天…）→未來14天篩選。
+  else if((almResult=tryAlmanacDirect(text,prevUserText(),null)||tryAlmanacRange(text,prevUserText(),null)||tryAlmanacHint(text,prevUserText()))){
+    // 農民曆直查優先於關鍵字分流：明確日期→單日離線計算；模糊擇日（最近哪天…）→未來14天篩選；
+    // 問了農民曆但沒給可解析日期（如「農民曆 2026 宜忌」）→附今日宜忌並引導給日期，避免白扣搜尋額度。
     // 意圖＋日期確定時直接本地計算注入（正確答案，不經模型判斷、不扣額度）；
     // 都解析不出→落回關鍵字／直接請求原流程。網址意圖仍優先於此（上一分支）。
     await requestAI({searchContext:almResult.context,_searchQuery:text,_cwa:true,_directKind:'almanac'});
+  }
+  else if(isWeatherQuery(text)&&isForeignWxAsk(text,prevUserText())){
+    // 天氣後端攔截（農民曆 B' 同款）：天氣意圖＋問句＋可抽出地名時，後端直接查（台灣 CWA／國外 Open-Meteo）
+    // 再注入，不經模型 initiative——弱後端／無工具後端照樣有正確資料。查到才注入；失敗回 null → 純文字請求。
+    // 位置在農民曆之後、關鍵字之前：陳述句（今天天氣真好）因問句閘門不會進來。
+    isStreaming=true;updateSendButton();abortCtrl=new AbortController();
+    const wxStat=makeStatusEl('<span class="spinner"></span>🌍 正在查詢氣象資訊');
+    let wxHit=null;
+    try{wxHit=await tryCwaDirect(text,h=>{wxStat.innerHTML=h},abortCtrl.signal,prevUserText());}
+    catch(e){if(wxStat.isConnected)wxStat.remove();if(e&&e.name==='AbortError')return;wxHit=null;}
+    if(wxStat.isConnected)wxStat.remove();
+    if(wxHit&&wxHit.context){
+      setSearchSources(text,wxHit.sources);
+      await requestAI({searchContext:wxHit.context,_searchQuery:text,_cwa:true,_directKind:'cwa'});
+    }
+    else requestAI();
   }
   else if(matchSearchKeyword(text)){
     // 一之4：關鍵字命中改走兩條路，避免誤觸發付費搜尋
@@ -4918,7 +4935,9 @@ async function buildSearchContext(query,results,st,sig,fresh){
 // 保留 web_search 工具讓模型自行 fallback（見 _cwa 提示）。
 // 三之5：模型改寫的 query 常出現簡體（「高雄天气」）或英文（「Kaohsiung weather」），
 // 只認繁體會漏判 → 明明是台灣天氣卻跑去跑 Tavily 白扣額度。這裡補上簡體與常見英文寫法。
-const WEATHER_RE=/天氣|天气|氣溫|气温|溫度|温度|降雨|下雨|雨量|颱風|台风|暴風圈|暴风圈|寒流|冷氣團|热浪|熱浪|高溫|高温|低溫|低温|紫外線|紫外线|體感|体感|預報|预报|weather|forecast|temperature|typhoon|rainfall/i;
+// 補常見問法（實測漏接）：「巴黎現在幾度」「首爾冷不冷」原本不在表內 → 判定不是天氣查詢 →
+// 掉進付費搜尋。加入 幾度／冷不冷／熱不熱／會冷／會熱／下雪／颳風／風大／悶熱／潮濕／濕度。
+const WEATHER_RE=/天氣|天气|氣溫|气温|溫度|温度|降雨|下雨|雨量|颱風|台风|暴風圈|暴风圈|寒流|冷氣團|热浪|熱浪|高溫|高温|低溫|低温|紫外線|紫外线|體感|体感|預報|预报|幾度|幾多度|冷不冷|熱不熱|會冷|會熱|下雪|颳風|風大|悶熱|潮濕|濕度|weather|forecast|temperature|typhoon|rainfall/i;
 const CWA_LOCATIONS=['基隆市','臺北市','新北市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣','澎湖縣','金門縣','連江縣'];
 // 三之5：簡體地名用字 → 繁體。實測氣象署只認繁體縣市名：送簡體（花莲县）或英文（Kaohsiung）
 // 會回 HTTP 200、success=true 但資料 0 筆，因此要在送出前先把縣市名轉成繁體。
@@ -5066,6 +5085,85 @@ function fmtCwaTyphoon(records){
   }
   return out.join('\n');
 }
+// ===== 國外天氣（Open-Meteo，免 Key；台灣縣市一律走 CWA，loc 抓不到才到這裡）=====
+// 觸發：天氣意圖＋無台灣縣市＋問句殘留可 geocode 的地名（如東京天氣、紐約明天會下雨嗎）。
+// 純「台灣天氣」「明天會下雨嗎」→ extractForeignPlace 回 null → 落回原本 CWA 全台 36 小時。
+function extractForeignPlace(q){
+  let s=String(q||'');
+  if(/台灣|臺灣|國內|本島|外島|離島/.test(s))return null;   // 國內意圖 → CWA 全台
+  s=s.replace(/台/g,'臺');
+  try{s=s.replace(new RegExp(WEATHER_RE.source,'gi'),'');}catch(e){}
+  s=s.replace(/今天|今日|明天|明日|後天|大後天|昨天|前天|本週|這週|下週|週末|假日|現在|目前|此刻|最近|這幾天|年|月|日|星期.|週.|每天|逐小時|\d+/g,'')
+    .replace(/國外|海外|好嗎|好|嗎|呢|吧|啊|喔|請問|請|幫我|幫忙|查一下|查詢|怎麼樣|如何|會不會|會|怎麼|什麼|狀況|情形|穿搭|穿衣|適合出遊|出遊|旅遊|旅行|遊玩/g,'')
+    .replace(/[?？!！。,.，、\s]+/g,'');
+  let m=s.match(/[\u3400-\u4db5\u4e00-\u9fff\uf900-\ufaff]{2,}/);
+  if(m)return m[0].slice(0,12);
+  m=s.match(/[A-Za-z]{4,}/);
+  return m?m[0].slice(0,32):null;
+}
+// 國外天氣提問閘門（sendMessage 後端攔截用）：天氣意圖＋可抽出地名。
+// 陳述句（今天天氣真好）不觸發；台灣縣市也會放行（tryCwaWeather 內 CWA 優先，本函式只管放行）。
+// 放寬原因（實測漏接）：「東京天氣」「倫敦天氣」「高雄這週天氣」都是正常問法，卻因缺「嗎／呢／預報」
+// 等問句詞而被擋 → 落到純文字請求。改為：地名能抽出來就放行，改用陳述句黑名單擋「只是在描述天氣」。
+const WX_STATEMENT_RE=/真好|好熱|好冷|好涼|變涼|變冷|變熱|舒服|糟透|很不錯|很悶|下雨了|下雪了|出太陽|天氣不錯/;
+// 兩段文字接成一段查詢字串：相同時不重複（sendMessage 的「本句＋上一句」在單則對話會是同字串，
+// 直接串接會變成「東京東京」，geocode 一定失敗）。
+function joinQ(a,b){a=String(a||'');b=String(b||'');return a&&b&&a!==b?a+' '+b:(a||b);}
+function isForeignWxAsk(text,prev){
+  if(!isWeatherQuery(text))return null;
+  const s=String(text||'');
+  if(WX_STATEMENT_RE.test(s))return null;
+  const nq=s.replace(/台/g,'臺');
+  const twCounty=CWA_LOCATIONS.some(t=>nq.includes(t)||nq.includes(t.replace(/[市縣]$/,'')));
+  if(twCounty||isTyphoonQuery(s))return '臺灣';   // 台灣縣市／颱風 → 交給 CWA（呼叫端只用真值判斷，不看內容）
+  return extractForeignPlace(joinQ(s,prev))||null;
+}
+const OM_GEO='https://geocoding-api.open-meteo.com/v1/search';
+const OM_FC='https://api.open-meteo.com/v1/forecast';
+function wmoText(c){const m={0:'晴',1:'大致晴朗',2:'多雲',3:'陰天',45:'霧',48:'霧凇',51:'輕微毛毛雨',53:'毛毛雨',55:'濃密毛毛雨',56:'凍毛毛雨',57:'凍毛毛雨',61:'小雨',63:'中雨',65:'大雨',66:'凍雨',67:'凍雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'小陣雨',81:'陣雨',82:'強陣雨',85:'陣雪',86:'強陣雪',95:'雷雨',96:'雷雨伴冰雹',99:'雷雨伴冰雹'};return m[c]!=null?m[c]:('代碼'+c);}
+async function omJson(url,sig){
+  const ac=new AbortController();
+  if(sig&&sig.aborted)ac.abort();
+  else if(sig)sig.addEventListener('abort',()=>ac.abort(),{once:true});
+  const tid=setTimeout(()=>ac.abort(),TIMEOUT.cwa);
+  try{const r=await fetch(url,{signal:ac.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}
+  finally{clearTimeout(tid)}
+}
+function fmtOmDay(iso){const m=String(iso||'').match(/(\d{4})-(\d{2})-(\d{2})/);if(!m)return String(iso||'');const d=new Date(+m[1],+m[2]-1,+m[3]);return (+m[2])+'/'+(+m[3])+'(週'+'日一二三四五六'[d.getDay()]+')';}
+function fmtOmForecast(j){
+  if(!j||!j.daily||!Array.isArray(j.daily.time)||!j.daily.time.length)return '';
+  const n=j.daily.time.length,out=[];
+  for(let i=0;i<n;i++){
+    const w=wmoText(j.daily.weather_code&&j.daily.weather_code[i]);
+    const mx=j.daily.temperature_2m_max&&j.daily.temperature_2m_max[i],mn=j.daily.temperature_2m_min&&j.daily.temperature_2m_min[i];
+    const p=j.daily.precipitation_probability_max&&j.daily.precipitation_probability_max[i];
+    out.push('  '+fmtOmDay(j.daily.time[i])+'：'+w+' '+(mn!=null?Math.round(mn):'?')+'~'+(mx!=null?Math.round(mx):'?')+'°C'+(p!=null?' 降雨'+p+'%':''));
+  }
+  let head='';
+  if(j.current)head='【現在】'+(j.current.temperature_2m!=null?Math.round(j.current.temperature_2m)+'°C ':'')+wmoText(j.current.weather_code)+(j.current.relative_humidity_2m!=null?' 濕度'+j.current.relative_humidity_2m+'%':'')+(j.current.wind_speed_10m!=null?' 風速'+Math.round(j.current.wind_speed_10m)+'km/h':'')+'\n';
+  return head+'【未來'+n+'天】\n'+out.join('\n');
+}
+async function tryOpenMeteo(place,st,sig){
+  try{
+    st('<span class="spinner"></span>🌍 正在查詢 Open-Meteo（氣象資訊）');
+    const g=await omJson(OM_GEO+'?name='+encodeURIComponent(place)+'&count=3&language=zh&format=json',sig);
+    const hit=g&&g.results&&g.results[0];
+    if(!hit||hit.latitude==null)throw new Error('查無地點「'+place+'」');
+    const f=await omJson(OM_FC+'?latitude='+hit.latitude+'&longitude='+hit.longitude+'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7',sig);
+    const body=fmtOmForecast(f);
+    if(!body)throw new Error('預報格式未預期');
+    const label=(hit.name||place)+(hit.country?'（'+hit.country+'）':'');
+    const today=nowText();
+    const context='以下是 '+today+' 於 Open-Meteo 取得的'+label+'天氣預報：\n\n'+body
+      +'\n\n（回答規則：1. 直接依上述資料回答該地天氣，不要用搜尋結果或自身知識覆蓋。2. 只涵蓋未來 7 天（當地時區）；問第 8 天以後時直接說尚無預報，不要硬答。3. 現在時間是 '+today+'，【現在】是當地最新實況。）';
+    dbg('[OM] 國外天氣完成:',label,'context 長度:',context.length);
+    return {context:context,sources:[{title:'Open-Meteo: '+label+'天氣預報',url:'https://open-meteo.com/'}]};
+  }catch(e){
+    if(e.name==='AbortError')throw e;
+    dbg('[OM] 國外天氣失敗，落回 CWA 全台:',e&&e.message);
+    return null;
+  }
+}
 // ===== 三之8：台灣國定假日／停班停課直查（不扣 Tavily 額度）=====
 // 假日：imsyuan/taiwan-holidays（來源：data.gov.tw 14718 辦公日曆表，月更），經 jsDelivr CDN。
 //   完整日曆 data/<YYYY>.json；欄位 {date:YYYYMMDD, week, isHoliday, description, lunar}
@@ -5076,8 +5174,52 @@ function isHolidayQuery(q){return HOLIDAY_RE.test(q||'')}
 // ===== 農民曆直查（本地離線計算，不扣 Tavily 額度；掛在 tryCwaDirect 總分派）=====
 // 意圖閘門＋日期解析雙重把關：無日期（如「搬家公司推薦」）→ 回 null 走一般搜尋，
 // 避免「今天適合慢跑嗎」這類非擇日問題被誤注入（慢跑不在擇日動詞表內）。
-const ALMANAC_RE=/宜|忌|沖|煞|胎神|黃曆|黃歷|農民曆|老黃曆|吉時|嫁娶|入宅|動土|安床|開市|破土|安葬|祭祀|祈福|搬家|結婚|開工|相沖|沖到/i;
-function isAlmanacQuery(q){return ALMANAC_RE.test(q||'');}
+const ALMANAC_RE=/宜|忌|沖|煞|胎神|黃曆|黃歷|農民曆|老黃曆|吉時|吉日|好日子|看日子|擇日子|選日子|時辰|宜忌|開運|黃道|嫁娶|入宅|動土|安床|開市|破土|安葬|祭祀|祈福|搬家|結婚|開工|相沖|沖到|農曆|农历/i;
+// 地名誤判防護：宜蘭／宜興含「宜」、沖繩含「沖」。不剔除的話「宜蘭天氣」「沖繩天氣」
+// 會被誤判成農民曆問題，在 tryCwaDirect 裡攔在天氣前面（原本會直接回 null 掉進付費搜尋）。
+const ALMANAC_PLACE_EXCEPT=/宜蘭|宜兴|宜興|沖繩|沖縄|冲绳/g;
+function isAlmanacQuery(q){return ALMANAC_RE.test(String(q||'').replace(ALMANAC_PLACE_EXCEPT,''));}
+// 農曆 M/D 轉陽曆：掃描該年找農曆對應日（solarToLunar 為純算術，掃一年 <5ms）；只要非閏月正日
+function lunarFestivalSolar(y,lm,ld){
+  try{
+    for(let i=0;i<366;i++){
+      const t=new Date(y,0,1);t.setDate(t.getDate()+i);
+      if(t.getFullYear()!==y)break;
+      const l=solarToLunar(t);
+      if(l&&!l.isLeap&&l.month===lm&&l.day===ld)return new Date(t.getFullYear(),t.getMonth(),t.getDate());
+    }
+  }catch(e){}
+  return null;
+}
+// 中文數字 → 阿拉伯數字（農曆月日用）：支援 十五／廿三／三十／初五／正／元／冬／臘
+const CN_NUM={一:1,二:2,三:3,四:4,五:5,六:6,七:7,八:8,九:9,十:10,廿:20,卅:30,正:1,元:1,冬:11,臘:12,腊:12};
+function cnNum(s){
+  if(s==null)return null;
+  s=String(s).trim();
+  if(!s)return null;
+  if(/^\d+$/.test(s))return +s;
+  if(CN_NUM[s]!=null)return CN_NUM[s];
+  let m;
+  if(m=s.match(/^初(.+)$/)){const v=CN_NUM[m[1]];return v!=null?v:null;}     // 初五＝5
+  if(m=s.match(/^廿(.+)$/)){const v=CN_NUM[m[1]];return v!=null?20+v:null;}   // 廿三＝23
+  if(m=s.match(/^十(.+)$/)){const v=CN_NUM[m[1]];return v!=null?10+v:null;}   // 十五＝15
+  if(m=s.match(/^(.+)十$/)){const v=CN_NUM[m[1]];return v!=null?v*10:null;}   // 二十＝20
+  return null;
+}
+// 農曆（年,月,日,閏）→ 陽曆 Date。掃描自前一年 12 月起 450 天，確保涵蓋農曆年頭
+// （農曆正月初一落在陽曆 1/21～2/21）。純算術，約數毫秒。
+function lunarToSolar(ly,lm,ld,leap){
+  try{
+    const start=new Date(ly-1,11,1);
+    for(let i=0;i<450;i++){
+      const t=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i);
+      const l=solarToLunar(t);
+      if(l&&l.year===ly&&!!l.isLeap===!!leap&&l.month===lm&&l.day===ld)
+        return new Date(t.getFullYear(),t.getMonth(),t.getDate());
+    }
+  }catch(e){}
+  return null;
+}
 // 中文日期解析（回傳 Date／null）：明確日期優先，其次相對日期，最後下週／本週Ｘ
 function parseAlmanacDate(q,now){
   q=String(q||'');now=now||new Date();
@@ -5088,8 +5230,32 @@ function parseAlmanacDate(q,now){
   if(m=q.match(/(\d{4})\s*年\s*(\d{1,2})\s*月\s*(\d{1,2})\s*日?/))return valid(+m[1],+m[2],+m[3]);
   if(m=q.match(/(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})/))return valid(+m[1],+m[2],+m[3]);
   if(m=q.match(/((?:19|20)\d{2})(\d{2})(\d{2})/))return valid(+m[1],+m[2],+m[3]);   // 20260920
+  // 農曆日期（農曆八月十五／農曆8月15／閏六月…）：必須排在下面的「M月D日」之前，
+  // 否則「農曆8月15日」會被當成陽曆 8/15 而算錯。
+  if(m=q.match(/(?:農曆|农历|陰曆|陰历|舊曆|旧历)\s*(閏|闰)?\s*([0-9一二三四五六七八九十廿卅初正元冬臘腊]{1,3})\s*月\s*([0-9一二三四五六七八九十廿卅初]{1,3})\s*[日號号]?/)){
+    const lm=cnNum(m[2]),ld=cnNum(m[3]);
+    if(lm!=null&&ld!=null&&lm>=1&&lm<=12&&ld>=1&&ld<=30){
+      const ym=q.match(/((?:19|20)\d{2})\s*年/);
+      const y=ym?+ym[1]:today.getFullYear();
+      let t=lunarToSolar(y,lm,ld,!!m[1]);
+      if(!t&&!ym)t=lunarToSolar(y+1,lm,ld,!!m[1]);   // 今年該農曆日已過 → 找明年
+      if(t)return t;
+    }
+  }
   if(m=q.match(/(\d{1,2})\s*月\s*(\d{1,2})\s*日?/))return noYear(+m[1],+m[2]);
   if(m=q.match(/(\d{1,2})\/(\d{1,2})/))return noYear(+m[1],+m[2]);
+  // 農曆節日（中秋節這類無數字日期）：轉當年農曆 M/D 再掃陽曆對應日；已過→明年，「明年」前綴→+1 年
+  const fest={'春節':[1,1],'農曆新年':[1,1],'過年':[1,1],'元宵':[1,15],'元宵節':[1,15],'端午':[5,5],'端午節':[5,5],'七夕':[7,7],'中秋':[8,15],'中秋節':[8,15],'重陽':[9,9],'重陽節':[9,9]};
+  for(const k in fest){
+    if(q.indexOf(k)<0)continue;
+    let y=today.getFullYear();
+    const ym=q.match(/((?:19|20)\d{2})\s*年/);
+    if(ym)y=+ym[1];else if(q.indexOf('明年')>=0)y++;
+    const t=lunarFestivalSolar(y,fest[k][0],fest[k][1]);
+    if(!t)break;
+    if(!ym&&t<today){const t2=lunarFestivalSolar(y+1,fest[k][0],fest[k][1]);return t2||t;}
+    return t;
+  }
   const rel={'大後天':3,'後天':2,'明天':1,'明日':1,'今天':0,'今日':0,'本日':0,'昨天':-1,'前天':-2};
   for(const k in rel){if(q.indexOf(k)>=0){const t=new Date(today);t.setDate(t.getDate()+rel[k]);return t;}}
   const wn={一:1,二:2,三:3,四:4,五:5,六:6,日:0,天:0};
@@ -5098,9 +5264,9 @@ function parseAlmanacDate(q,now){
   return null;
 }
 function tryAlmanacDirect(query,extra,statusCb){
-  const rawQ=String(query||'')+' '+String(extra||'');
-  if(!isAlmanacQuery(rawQ))return null;
-  if(statusCb)statusCb('<span class="spinner"></span>📅 正在查詢農民曆（離線計算）');
+  const rawQ=joinQ(query,extra);
+  if(!hasAlmanacIntent(rawQ))return null;
+  if(statusCb)statusCb('<span class="spinner"></span>📅 正在查詢農民曆');
   const dt=parseAlmanacDate(rawQ,new Date());
   if(!dt)return null;
   const alm=almanacSummary(dt);
@@ -5127,24 +5293,52 @@ function runAlmanacCall(c){
 // ===== 模糊擇日直查（B' 篩選式保底：不依賴模型主動調工具，後端無 tools 照樣有正確資料）=====
 // 觸發需同時：模糊時間詞（最近／哪天／未來…）＋擇日動作詞（出遊／搬家…）。只注入未來14天「相關的天」
 // （動作→宜忌詞映射命中），非全量 dump，未知動作退回未來7天精簡宜忌。上下文約 200~700 字。
-const ALMANAC_FUZZY_RE=/最近|哪天|哪幾天|哪一天|未來|這週|下週|一週|7天|七天|14天|半個月|一個月|擇日|選日|黃道吉日/i;
+const ALMANAC_FUZZY_RE=/最近|哪天|哪幾天|哪一天|未來|這週|下週|一週|7天|七天|14天|半個月|一個月|這個月|本月|下個月|這禮拜|接下來|擇日|選日|黃道吉日/i;
 const ALMANAC_ACTION_MAP=[
   {re:/出遊|旅遊|旅行|遊玩|出國|遠行|玩幾天/i,terms:['出行']},
   {re:/搬家|遷居|搬遷/i,terms:['移徙','入宅']},
-  {re:/結婚|嫁娶|婚禮|訂婚|納采|文定/i,terms:['嫁娶','納采']},
-  {re:/開工|開市|開店|開業|開張/i,terms:['開市']},
-  {re:/動土|裝修|裝潢|修造/i,terms:['動土','修造']},
-  {re:/入宅|入厝/i,terms:['入宅','移徙']},
-  {re:/安葬|喪葬|出殯|入殮/i,terms:['安葬']},
-  {re:/祈福|拜拜|祭祀/i,terms:['祈福','祭祀']},
-  {re:/簽約|簽訂|立券|交易/i,terms:['立券','交易']},
-  {re:/開刀|手術|求醫|看病|治病/i,terms:['求醫','治病']},
-  {re:/求財|投資|開戶/i,terms:['求財']}
+  {re:/結婚|嫁娶|婚禮|訂婚|納采|文定|相親|提親|喜宴|宴客|請客|辦桌/i,terms:['嫁娶','納采']},
+  {re:/開工|開市|開店|開業|開張|開幕|掛招牌/i,terms:['開市']},
+  {re:/動土|裝修|裝潢|修造|翻修|整修|修房子|改建/i,terms:['動土','修造']},
+  {re:/入宅|入厝|遷入|搬新家/i,terms:['入宅','移徙']},
+  {re:/安葬|喪葬|出殯|入殮|撿骨|進塔/i,terms:['安葬']},
+  {re:/祈福|拜拜|祭祀|普渡|拜祖先/i,terms:['祈福','祭祀']},
+  {re:/簽約|簽訂|立券|交易|簽合約|談生意|談合約|買車|交車|買房|買屋|置產|過戶/i,terms:['立券','交易']},
+  {re:/開刀|手術|求醫|看病|治病|住院|出院|探病|洗牙|看牙|健檢|體檢/i,terms:['求醫','治病']},
+  {re:/求財|投資|開戶|標會/i,terms:['求財']},
+  // 以下為本次補齊（實測「最近哪天適合面試」原本不在表內 → 直接放棄 → 掉進付費搜尋）
+  {re:/面試|求職|找工作|應徵|報到|上任|升遷|考試|考照|考公|國考|入學|開學|拜師/i,terms:['赴任','入學']},
+  {re:/剪髮|剪頭髮|理髮|剃頭|染髮|燙髮|剃胎髮/i,terms:['理髮']},
+  {re:/簽證|辦護照|留學|出國讀書|移民|外派/i,terms:['出行','移徙']},
+  {re:/安床|床母|移床/i,terms:['安床']},
+  {re:/上樑|豎柱|謝土|破土|拆卸|拆屋|拆遷/i,terms:['上樑','豎柱','謝土','破土']},
+  {re:/開光|安神|安香|入火|安座/i,terms:['開光','安香']},
+  {re:/種植|栽種|播種|種樹|翻土/i,terms:['栽種']},
+  {re:/會友|拜訪|探親|聚會|聯誼/i,terms:['會友']}
 ];
+// 擇日語境詞：出現這些詞＝使用者在問「日子好不好」，不是問天氣／新聞。
+// 刻意不收「好嗎／好不好／可以嗎／日子」——太泛（「最近好嗎」「過日子」會誤觸）。
+const ALMANAC_INTENT_RE=/適合|好日子|吉日|宜忌|時辰|擇日|選日|看日子|選日子|開運|黃道|哪天好/;
+// 「強」時間詞：明確在規劃一段時間。只有強時間詞才允許「動作未收錄 → 注入全量」的降級路徑，
+// 避免「最近有什麼適合的餐廳」這種閒聊被當成擇日問題。
+const ALMANAC_FUZZY_STRONG_RE=/哪天|哪幾天|哪一天|未來|這週|下週|一週|7天|七天|14天|半個月|一個月|這個月|本月|下個月|這禮拜|接下來|擇日|選日|黃道吉日/i;
+// 回傳：null＝不是擇日問題（放行給天氣／一般搜尋）；{terms:[...]}＝有明確動作；
+// {terms:[]}＝有擇日語境但動作未收錄 → 注入未來 14 天全量宜忌（不再直接放棄、不再掉進付費搜尋）。
 function parseFuzzyAction(rawQ){
-  if(!ALMANAC_FUZZY_RE.test(rawQ||''))return null;
-  for(const a of ALMANAC_ACTION_MAP){if(a.re.test(rawQ))return a.terms;}
-  return null;   // 有模糊時間詞但無已知動作詞（如最近天氣／新聞）→ 交回原本流程，禁止塞農民曆
+  const s=String(rawQ||'');
+  if(!ALMANAC_FUZZY_RE.test(s))return null;
+  for(const a of ALMANAC_ACTION_MAP){if(a.re.test(s))return {terms:a.terms};}
+  // 天氣查詢直接放行：否則「最近天氣適合出門嗎」會被「最近＋適合」攔成農民曆問題
+  if(ALMANAC_INTENT_RE.test(s)&&ALMANAC_FUZZY_STRONG_RE.test(s)&&!isWeatherQuery(s))return {terms:[]};
+  return null;   // 只有模糊時間詞、無擇日語境（如最近新聞）→ 交回原本流程，禁止塞農民曆
+}
+// 農民曆意圖總判定（單日直查的閘門）：意圖詞／擇日語境／動作詞任一命中，且不是天氣查詢。
+// 補「明確日期＋擇日語境但無意圖詞」的缺口：例如「11月5日適合做什麼」過去過不了
+// isAlmanacQuery（無「宜忌沖煞」等詞）→ 掉進付費搜尋。天氣詞優先，避免「11月5日天氣好嗎」被搶走。
+function hasAlmanacIntent(q){
+  const s=String(q||'');
+  if(isWeatherQuery(s))return false;
+  return isAlmanacQuery(s)||ALMANAC_INTENT_RE.test(s)||ALMANAC_ACTION_MAP.some(a=>a.re.test(s));
 }
 function fmtRangeDay(dt){
   const ds=(dt.getMonth()+1)+'/'+dt.getDate()+'（'+'日一二三四五六'[dt.getDay()]+'）';
@@ -5153,10 +5347,11 @@ function fmtRangeDay(dt){
   return ds+alm.replace(/^農民曆：/,'');
 }
 function tryAlmanacRange(query,extra,statusCb){
-  const rawQ=String(query||'')+' '+String(extra||'');
-  const terms=parseFuzzyAction(rawQ);
-  if(terms===null)return null;
-  if(statusCb)statusCb('<span class="spinner"></span>📅 正在查詢未來農民曆（離線計算）');
+  const rawQ=joinQ(query,extra);
+  const parsed=parseFuzzyAction(rawQ);
+  if(parsed===null)return null;
+  const terms=parsed.terms;
+  if(statusCb)statusCb('<span class="spinner"></span>📅 正在查詢農民曆');
   const today=new Date();today.setHours(0,0,0,0);
   const hits=[],all=[];
   for(let i=0;i<14;i++){
@@ -5172,9 +5367,29 @@ function tryAlmanacRange(query,extra,statusCb){
   }
   if(!all.length)return null;
   let body='';
-  if(hits.length)body='【未來14天含「'+terms.join('／')+'」相關宜忌的日子】\n'+hits.join('\n')+'\n（沒列出的日期表示當日宜忌無「'+terms.join('／')+'」相關。）';
+  if(!terms.length){
+    // 動作未收錄（面試／考試／裝修…）：注入未來 14 天全量宜忌，由模型自行比對挑日子。
+    // 過去這種情況直接回 null → 掉進付費搜尋，是最常見的白扣額度來源。
+    body='【未來14天宜忌（使用者問的是「'+String(query||'').slice(0,40)+'」，該動作未在對照表內，請自行比對宜忌挑合適的日子）】\n'+all.map(a=>a.line).join('\n');
+  }else if(hits.length)body='【未來14天含「'+terms.join('／')+'」相關宜忌的日子】\n'+hits.join('\n')+'\n（沒列出的日期表示當日宜忌無「'+terms.join('／')+'」相關。）';
   else body='【未來14天沒有宜忌含「'+terms.join('／')+'」的日子】\n'+all.slice(0,7).map(a=>a.line).join('\n')+'\n（供參考：未來7天精簡宜忌如上。）';
   const context='使用者在問模糊擇日問題（'+String(query||'').slice(0,60)+'），以下為離線計算結果：\n\n'+almanacS2T(body)+'\n\n（回答規則：1. 直接依上述資料回答，不要呼叫搜尋、不要編造其他日期。2. 可結合你手上的天氣資料綜合建議（如適合同時宜出行且天氣好）。3. 使用者追問其他動作或日期時，引導他給明確日期，不要自行推算。）';
+  return {context:context,sources:[]};
+}
+// 農民曆「問了但沒給明確日期」的保底：附今日農民曆，並請模型引導使用者給明確日期。
+// 沒有這條時，「農民曆 2026 宜忌」「農民曆 查詢」這類會一路落到付費搜尋（實測白扣額度）。
+// 閘門刻意收緊：需命中農民曆專屬詞，且不是知識題（「農民曆的由來」該走一般搜尋，不該注入今日宜忌）。
+const ALMANAC_KNOWLEDGE_RE=/由來|起源|歷史|是什麼|什麼是|介紹|意思|英文|定義|原理|怎麼來的|為什麼|差別|比較/;
+function tryAlmanacHint(query,extra){
+  const rawQ=joinQ(query,extra);
+  if(isWeatherQuery(rawQ))return null;
+  if(!isAlmanacQuery(rawQ))return null;
+  if(ALMANAC_KNOWLEDGE_RE.test(rawQ))return null;
+  const today=new Date();
+  const alm=almanacSummary(today);
+  if(!alm)return null;
+  const ds=today.getFullYear()+'年'+(today.getMonth()+1)+'月'+today.getDate()+'日（星期'+'日一二三四五六'[today.getDay()]+'）';
+  const context='使用者問了農民曆（'+String(query||'').slice(0,40)+'），但沒有指定可解析的日期。以下是今天（'+ds+'）的農民曆離線計算結果：\n\n【今日'+alm.replace(/^農民曆：/,'')+'】\n\n（回答規則：1. 若使用者問的是「今天」，直接依上述資料回答。2. 若他問的是其他日期，請明確請他給出日期（例如「10月5日」或「農曆八月十五」），不要自行推算、不要編造。3. 不要呼叫搜尋。）';
   return {context:context,sources:[]};
 }
 const NDS_RE=/停班|停課|颱風假|不上班|不上課|天然災害/i;
@@ -5264,10 +5479,15 @@ async function tryCwaWeather(query,statusCb,sig,extra){
     //   （使用者問「明天」卻只拿到今明 36 小時，就是這個原因）。先比全名、再比簡稱，
     //   「新竹縣」這種才不會被「新竹市」搶走。
     // 抓不到縣市（例如純英文查詢）時 loc=''：只拉全台 36 小時、跳過一週預報，不會送錯參數。
-    const rawQ=(String(query||'')+' '+String(extra||''));   // 未正規化的原文：颱風判斷要用它（nq 會把「台」轉成「臺」）
+    const rawQ=joinQ(query,extra);   // 未正規化的原文：颱風判斷要用它（nq 會把「台」轉成「臺」）；joinQ 避免單則對話時字串重複
     let nq=rawQ.replace(/台/g,'臺');
     for(const pair of CWA_LOC_S2T)nq=nq.replace(pair[0],pair[1]);
     const loc=CWA_LOCATIONS.find(t=>nq.includes(t))||CWA_LOCATIONS.find(t=>nq.includes(t.replace(/[市縣]$/,'')))||'';
+    if(!loc){
+      // 無台灣縣市 → 試國外分支（Open-Meteo）：地名解不出或查詢失敗時回 null，繼續走原本 CWA 全台 36 小時
+      const fp=extractForeignPlace(rawQ);
+      if(fp){const om=await tryOpenMeteo(fp,st,sig);if(om)return om;}
+    }
     st('<span class="spinner"></span>🌤️ 正在查詢氣象署（今明 36 小時）');
     const cur=await cwaFetch(WEB_SEARCH.cwaCurrent,loc?{locationName:loc}:{},sig);
     const curText=fmtCwaCurrent(cur);
@@ -5460,7 +5680,7 @@ async function tryHolidayDirect(query,statusCb,sig,extra){
         }
       }
       parts.push(txt);
-      sources.push({title:'台灣國定假日（資料來源：人事總處辦公日曆表）',url:'https://tw-holidays.gooliya.com/'});
+      sources.push({title:'台灣國定假日（資料來源：人事總處辦公日曆表）',url:'https://www.dgpa.gov.tw/'});
     }
     if(wantNds){
       st('<span class="spinner"></span>🌀 正在查詢停班停課（人事總處即時公告）');
@@ -5489,14 +5709,36 @@ async function tryHolidayDirect(query,statusCb,sig,extra){
     return null;
   }
 }
-// 統一派發：天氣 → 天氣直查；地震 → 地震直查；放假／停班課 → 假日直查；其他 → null（走一般搜尋）
+// 統一派發：農民曆 → 放假／停班課 → 天氣 → 模糊擇日 → 地震；其他 → null（走一般搜尋）
+// 【重要】每一層都必須「試過才往下」：過去每層都直接 return，只要判定成立但解析失敗（回 null）
+// 就整條結束。結果「高雄這週天氣」被農民曆的時間詞（這週）攔下、動作解析失敗回 null 後，
+// 就再也到不了氣象署，直接掉進付費搜尋——這正是加了農民曆之後台灣天氣反而變差的原因。
 async function tryCwaDirect(query,statusCb,sig,extra){
-  query=String(query||'');
-  if(isAlmanacQuery(query)||isAlmanacQuery(extra))return tryAlmanacDirect(query,extra,statusCb);   // 農民曆本地直查（同步離線計算，不扣額度）
-  if(ALMANAC_FUZZY_RE.test(query||'')||ALMANAC_FUZZY_RE.test(extra||''))return tryAlmanacRange(query,extra,statusCb);   // 模糊擇日（最近哪天…）→ 未來14天篩選
-  if(isHolidayQuery(query)||isHolidayQuery(extra))return tryHolidayDirect(query,statusCb,sig,extra);
-  if(isWeatherQuery(query))return tryCwaWeather(query,statusCb,sig,extra);
-  if(isQuakeQuery(query))return tryCwaQuake(query,statusCb,sig);
+  query=String(query||'');extra=String(extra||'');
+  if(hasAlmanacIntent(query)||hasAlmanacIntent(extra)){
+    const a=tryAlmanacDirect(query,extra,statusCb);   // 農民曆單日直查（同步離線計算，不扣額度）
+    if(a)return a;
+  }
+  if(isHolidayQuery(query)||isHolidayQuery(extra)){
+    const h=await tryHolidayDirect(query,statusCb,sig,extra);
+    if(h)return h;
+  }
+  if(isWeatherQuery(query)){
+    const w=await tryCwaWeather(query,statusCb,sig,extra);   // 台灣→氣象署；國外→Open-Meteo
+    if(w)return w;
+  }
+  if(ALMANAC_FUZZY_RE.test(query)||ALMANAC_FUZZY_RE.test(extra)){
+    const r=tryAlmanacRange(query,extra,statusCb);   // 模糊擇日（最近哪天…）→ 未來14天篩選
+    if(r)return r;
+  }
+  if(isQuakeQuery(query)){
+    const q=await tryCwaQuake(query,statusCb,sig);
+    if(q)return q;
+  }
+  // 最後保險：確定是農民曆問題但日期與動作都解析不出 → 附今日農民曆並引導使用者給日期，
+  // 不要讓它掉進付費搜尋（「農民曆 2026 宜忌」就是這種）。
+  const hint=tryAlmanacHint(query,extra);
+  if(hint)return hint;
   return null;
 }
 
@@ -5705,8 +5947,8 @@ async function requestAI(opts){
         ?'（使用者的訊息含有「查／找／搜尋」等用語。若他確實在要即時資訊（天氣、新聞、匯率、股價、賽事、公告等），就呼叫 web_search；若只是一般問題或名詞解釋，直接回答即可，不需要搜尋。）'
         :'';
       const note=useTools
-        ?'（提示：現在時間是 '+todayNote+'。你可以呼叫 web_search 工具查詢即時資訊（天氣、匯率、股價、新聞、賽事等）。若使用者的問題需要即時或最新資料而你沒有把握，就呼叫工具；若不需要即時資料則直接回答。呼叫工具時若查詢涉及日期，務必使用上面的今天實際日期，不要憑記憶猜測。若使用者只是要日期換算（如今天是農曆幾號、星期幾），或問「今天／某明確日期」的農民曆宜忌且上方今天資訊或直查資料已有答案，直接回答即可，不要為此呼叫工具；若問的是「最近哪天／未來一週」這類需看多天的問題，上方沒有答案時必須主動呼叫 almanac_lookup 逐日查詢（一次一個日期、可一次調用多個），查完再綜合回答，絕對不要說「沒有資料庫／無法查詢」或叫使用者去別處查；只有日期解析不出來時才呼叫 web_search。若你沒有呼叫工具，切勿編造即時資料。台灣天氣官方預報只有未來7天（今天起算）；若使用者問第8天以後的天氣，不要拿搜尋到的舊資料硬當答案，直接說明該日期尚無官方預報，改給氣候常態＋行前複查建議。你有兩個工具：web_search（即時資訊）與 almanac_lookup（指定日期農民曆，參數 date 如「9月20日」或 YYYY-MM-DD，一次查一個日期；「最近哪天適合…」請自行展開候選日期逐一查詢再綜合回答，農民曆問題不要上網搜尋）。你確實具備聯網搜尋與農民曆查詢能力，絕對不要自稱「沒有聯網／查不到」。不要輸出其他 tool_calls。）'+kwHint
-        :'（注意：現在時間是 '+todayNote+'。本次對話沒有進行網路搜尋，你沒有任何即時資料來源。切勿編造即時資訊（天氣、匯率、股價、新聞、比分等）或模仿搜尋結果的格式輸出假資料；若使用者詢問此類資訊，請明確說明你無法取得即時資料，並建議使用者輸入「查一下」等關鍵字要求你搜尋網路（日期換算與農民曆宜忌除外——上方的今天資訊或直查資料已有答案，可直接回答；仍無資料時再引導使用者輸入「查一下＋日期」要求搜尋）。另外：你不具備任何工具或函式，絕對不要輸出 tool_calls／函式呼叫，一律只用純文字回答。）';
+        ?'（提示：現在時間是 '+todayNote+'。你可以呼叫 web_search 工具查詢即時資訊（天氣——含國外城市、匯率、股價、新聞、賽事等）。若使用者的問題需要即時或最新資料而你沒有把握，就呼叫工具；若不需要即時資料則直接回答。呼叫工具時若查詢涉及日期，務必使用上面的今天實際日期，不要憑記憶猜測。若使用者只是要日期換算（如今天是農曆幾號、星期幾），上方今天資訊已有答案，直接回答即可；但只要問到某個日期的農民曆宜忌而上方沒有該日期的資料，就直接呼叫 almanac_lookup（離線計算、零成本、保證正確），不要改叫 web_search，也不要說「查不到」。若問的是「最近哪天／未來一週／這個月」這類需看多天的問題，必須主動呼叫 almanac_lookup 逐日查詢（一次一個日期、可一次調用多個），查完再綜合回答，絕對不要說「沒有資料庫／無法查詢」或叫使用者去別處查。若你沒有呼叫工具，切勿編造即時資料。台灣天氣官方預報只有未來7天（今天起算）；若使用者問第8天以後的天氣，不要拿搜尋到的舊資料硬當答案，直接說明該日期尚無官方預報，改給氣候常態＋行前複查建議。你有兩個工具：web_search（即時資訊，天氣含台灣與國外城市）與 almanac_lookup（指定日期農民曆，參數 date 如「9月20日」「農曆八月十五」或 YYYY-MM-DD，一次查一個日期；「最近哪天適合…」請自行展開候選日期逐一查詢再綜合回答，農民曆問題不要上網搜尋）。你確實具備聯網搜尋與農民曆查詢能力，絕對不要自稱「沒有聯網／查不到」。不要輸出其他 tool_calls。）'+kwHint
+        :'（注意：現在時間是 '+todayNote+'。本次對話沒有進行網路搜尋，你沒有任何即時資料來源。切勿編造即時資訊（天氣、匯率、股價、新聞、比分等）或模仿搜尋結果的格式輸出假資料；若使用者詢問此類資訊，請明確說明你無法取得即時資料，並建議使用者輸入「查一下」等關鍵字要求你搜尋網路（日期換算與農民曆宜忌除外——上方的今天資訊或直查資料已有答案，可直接回答；仍無資料時再引導使用者輸入「查一下＋日期」要求搜尋）。另外：你不具備任何工具或函式，絕對不要輸出 tool_calls／函式呼叫，一律只用純文字回答；也絕對不要假裝「馬上幫你查」——做不到就直說並引導關鍵字，不要開空頭支票。）';
       if(sys)msgs[0].content+='\n'+note;
       else msgs.unshift({role:'system',content:note});
       // 快速回覆的第二道保險（模型關不掉思考時用）：系統提示直接要求省略思考、輸出答案。
@@ -5719,9 +5961,9 @@ async function requestAI(opts){
       const isHol=opts._directKind==='holiday';
       const isAlm=opts._directKind==='almanac';
       let cwaNote='';
-      if(isAlm)cwaNote='（提示：現在時間是 '+todayNote+'。上方已附本地農民曆離線計算結果（明確單日，或「最近／未來」多天篩選）。請直接依該資料回答，不要呼叫 web_search，不要編造資料沒有的日期，也不要用搜尋結果覆蓋它；可結合對話中已有的天氣資料綜合建議。）';
+      if(isAlm)cwaNote='（提示：現在時間是 '+todayNote+'。上方已附本地農民曆離線計算結果（明確單日，或「最近／未來」多天篩選，或使用者未給日期時的今日宜忌）。請直接依該資料回答，不要呼叫 web_search，不要編造資料沒有的日期，也不要用搜尋結果覆蓋它；若使用者問的是其他日期而上方的資料沒涵蓋，請明確請他給出日期（例如「10月5日」或「農曆八月十五」）；可結合對話中已有的天氣資料綜合建議。）';
       else if(isHol)cwaNote='（提示：現在時間是 '+todayNote+'。上方已附台灣放假／停班課官方資料（國定假日與補班＝人事總處辦公日曆表，2017 年以後；停班課＝人事總處即時公告，只含有效期內的）。使用者問放假、停班、停課時，請直接依該資料回答並附上來源連結。若資料不足——例如使用者問的是 2017 年以前的假日、台灣以外地區、或公告有效期外的停班課——再呼叫 web_search 工具補查；資料足夠時不要呼叫工具。沒有呼叫工具時切勿編造資料。）';
-      else cwaNote='（提示：現在時間是 '+todayNote+'。上方已附中央氣象署（官方網址 www.cwa.gov.tw）的台灣天氣預報（今明 36 小時＋一週）。使用者問台灣天氣時，請直接依該資料回答並附上來源連結，日期與時段以資料中的 startTime 為準。若資料不足——例如使用者問的是台灣以外地區的天氣、需要特定鄉鎮的細節、即時觀測或過去天氣——再呼叫 web_search 工具補查；資料足夠時不要呼叫工具。沒有呼叫工具時切勿編造資料。）';
+      else cwaNote='（提示：現在時間是 '+todayNote+'。上方已附中央氣象署（官方網址 www.cwa.gov.tw）的台灣天氣預報（今明 36 小時＋一週）。使用者問天氣時，請直接依該資料回答並附上來源連結，日期與時段以資料中的 startTime 為準。若上方是 Open-Meteo 的國外預報，直接依該資料回答即可；台灣資料不足（需要特定鄉鎮的細節、即時觀測或過去天氣）時才呼叫 web_search 工具補查；資料足夠時不要呼叫工具。沒有呼叫工具時切勿編造資料。）';
       if(sys)msgs[0].content+='\n'+cwaNote;
       else msgs.unshift({role:'system',content:cwaNote});
     }else if(opts._toolMsgs){
@@ -6231,7 +6473,7 @@ const SETTING_FIELDS=[
   {id:'settingImageRatio',key:'imageRatio',type:'text'},
   {id:'settingEndpoint',key:'endpoint',type:'text',trim:true},
   {id:'settingTemp',key:'temperature',type:'float',def:0.6},
-  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:4096},
+  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:8192},
   {id:'settingCtx',key:'ctxLimit',type:'text'},
   {id:'settingAutoScroll',key:'autoScroll',type:'bool'},
   {id:'settingQuickReply',key:'quickReply',type:'bool'},
