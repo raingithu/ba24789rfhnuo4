@@ -660,6 +660,11 @@ body[data-theme="mistyslate"] #galleryModal .modal-actions{background:#adbccd}
 /* 葉子輕擺 */
 #petCream #radishLeaves{transform-box:fill-box;transform-origin:50% 100%;animation:petLeafSway 4.2s ease-in-out infinite}
 @keyframes petLeafSway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+/* 雙手同時小幅換姿（平時檔案姿勢，偶爾切另一組位置；包 g 層動，原 ellipse 姿勢不受影響） */
+#petCream .pet-hand{transform-box:fill-box;transform-origin:50% 90%;animation:petHandShift 8s ease-in-out infinite}
+#petCream .hand-back{--dx:4px;--dr:-10deg}
+#petCream .hand-front{--dx:-4px;--dr:10deg}
+@keyframes petHandShift{0%,78%,100%{transform:translate(0,0) rotate(0)}78%,96%{transform:translate(var(--dx),0) rotate(var(--dr))}}
 @media (prefers-reduced-motion:reduce){#petCream svg,#petCream svg *{animation:none !important}#petCream svg{will-change:auto}}
 /* ===== 批次1 新增 ===== */
 /* A5 合併後，.act/.del 樣式集中在檔頭 */
@@ -1059,24 +1064,30 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
           <!-- 腳 -->
           <ellipse cx="80" cy="204" rx="10" ry="12" fill="url(#radBody)"/>
           <ellipse cx="140" cy="204" rx="10" ry="12" fill="url(#radBody)"/>
-          <!-- 手 -->
+          <!-- 手（後／畫面右） -->
+          <g class="pet-hand hand-back">
           <ellipse cx="160" cy="120" rx="12" ry="24" transform="rotate(40 168 140)" fill="url(#radHand)"/>
+          </g>
           <!-- 身體 -->
-          <path id="radishBody" d="M110 48 C150 48 170 80 168 140 C170 138 164 168 156 188 C138 238 148 200 110 198 C72 200 80 238 62 188 C52 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
-          <path id="radishBody" d="M110 48 C150 48 170 80 168 140 C170 138 162 168 152 186 C138 210 82 210 68 186 C58 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
-          <!-- 手 -->
+          <path id="radishBody" d="M110 48 C150 48 170 80 168 136 C170 138 165 168 156.4 188 C138 238 156 200 110 190 C72 200 80 238 62 188 C52 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
+          <path d="M110 48 C150 48 170 80 168 140 C170 138 162 168 152 186 C138 210 82 210 68 186 C58 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
+          <!-- 手（前／畫面左） -->
+          <g class="pet-hand hand-front">
           <ellipse cx="58" cy="120" rx="12" ry="24" transform="rotate(-40 52 140)" fill="url(#radHand)"/>
+          </g>
           <!-- 臉 -->
           <g id="radishFace">
+            <!-- 眼 -->
             <ellipse class="pet-eye" cx="92" cy="90" rx="3.6" ry="8" fill="#2f2f2f"/>
             <ellipse class="pet-eye" cx="126" cy="90" rx="3.6" ry="8" fill="#2f2f2f"/>
+            <!-- 腮紅 -->
             <ellipse class="pet-blush" cx="72" cy="100" rx="16" ry="12" fill="url(#radBlush)"/>
             <ellipse class="pet-blush" cx="148" cy="100" rx="16" ry="12" fill="url(#radBlush)"/>
             <g fill="none" stroke="#e8918a" stroke-width="2.5" stroke-linecap="round" opacity="0.4" transform="translate(0 -8)">
-              <path d="M65 114 L70 105"/>
-              <path d="M73 113 L78 104"/>
-              <path d="M155 114 L150 105"/>
-              <path d="M147 113 L142 104"/>
+              <path d="M66 114 L69 105"/>
+              <path d="M73 113 L76 104"/>
+              <path d="M153 114 L150 105"/>
+              <path d="M146 113 L143 104"/>
             </g>
           </g>
         </g>
@@ -3119,7 +3130,7 @@ function getQuickReply(){return settings.quickReply!==false}
 // ===== AI 人格設定（內建 12 種 ＋ 使用者自訂）=====
 const BUILTIN_PERSONAS={
   default:{name:'🤖 通用助理',desc:'自然親切的通用助理，適合日常對話與各種問題。',prompt:''},
-  cat:{name:'🐱 一隻貓',desc:'可愛的貓語氣，活潑會撒嬌，但依然聰明可靠。',prompt:'你是一隻可愛的貓「喵喵」，品種依你喜好選擇，說話時句尾常加上「喵」或「～喵」，語氣活潑撒嬌、喜歡用顏文字與「喵嗚」等可愛的語助詞。雖然個性像貓一樣好奇愛撒嬌，但回答內容仍要正確、有幫助，不會因為賣萌而犧牲資訊品質。'},
+  cat:{name:'🐱 一隻貓',desc:'可愛的貓語氣，活潑會撒嬌，但依然聰明可靠。',prompt:'你是一隻可愛的貓「喵喵」，品種依你喜好選擇，說話時句尾常加上「喵」或「～喵」，語氣活潑撒嬌、喜歡用顏文字與「喵嗚」等可愛的語助詞。要扮演好貓的角色不要像客服一樣回答，但是，雖然個性像貓一樣好奇愛撒嬌，回答內容仍要正確、有幫助，不會因為賣萌而犧牲資訊品質。'},
   pro:{name:'💼 專業顧問',desc:'正式、嚴謹、條理分明，適合工作與商務情境。',prompt:'你是一位專業顧問，語氣正式、嚴謹、有條理。回答時結構清晰，善用條列與分點，先給結論再說明理由，並適時提醒風險與注意事項，避免過於口語或隨性的表達。'},
   funny:{name:'😂 幽默大師',desc:'風趣搞笑、善用哏與比喻，讓對話輕鬆愉快。',prompt:'你是一位幽默大師，回答時喜歡加入風趣的比喻、時事哏和雙關笑話，讓對話輕鬆愉快。即使內容認真，也要用輕鬆幽默的方式包裝，並會使用表情符號。但以上不影響資訊的正確性與實用性。'},
   coder:{name:'👨‍💻 程式導師',desc:'耐心教學的技術導師，擅長程式與除錯解說。',prompt:'你是一位耐心的程式導師，擅長用淺顯易懂的方式解釋技術概念。回答程式問題時會先說明思路，再給出完整可運作的範例程式碼，並加上適當註解；遇到除錯問題時會引導使用者思考原因，而不只給答案。'},
