@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#ccdeeb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -27,7 +27,7 @@ html,body{height:100%;height:100dvh;font-family:'IBM Plex Mono',ui-monospace,SFM
 .app{display:flex;height:100%;height:100dvh;height:100svh;overflow:hidden}
 
 /* 側邊欄 */
-.sidebar{width:312px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s;min-height:0}
+.sidebar{width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s;min-height:0}
 .sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex:0 0 auto}
 .sidebar-header h2{font-size:18px;font-weight:600;color:var(--accent)}
 .btn-new{padding:8px 14px;background:var(--msg-user-bg);color:var(--text);border:none;border-radius:18px;cursor:pointer;font-size:13px;transition:opacity .2s}
@@ -645,6 +645,22 @@ body[data-theme="mistyslate"] #galleryModal .modal-actions{background:#adbccd}
 .steam{animation:riseFade 4.2s ease-in-out infinite;transform-box:fill-box}
 @keyframes drift{0%,100%{transform:translateX(0)}50%{transform:translateX(7px)}}
 .drift{animation:drift 5s ease-in-out infinite;transform-box:fill-box}
+/* ===== 白蘿蔔寵物動畫（僅 #petCream，其他寵物不受影響）===== */
+#petCream svg{display:block;margin:0 auto;will-change:transform;animation:petFloat 4s ease-in-out infinite}
+@keyframes petFloat{0%,100%{transform:translateY(0) scale(1,.96)}30%{transform:translateY(-10px) scale(.99,1.02)}}
+/* 身體微微左右搖晃 */
+#petCream #radishSway{transform-box:fill-box;transform-origin:50% 20%;animation:petBodySway 4.2s ease-in-out infinite}
+@keyframes petBodySway{animation:rad-body-sway 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
+/* 眨眼：以眼睛自身中心做 scaleY */
+#petCream .pet-eye{transform-box:fill-box;transform-origin:center;animation:petBlink 4.6s linear infinite}
+@keyframes petBlink{0%,88%,100%{transform:scale(1,1)}91%{transform:scale(1.15,.12)}94%{transform:scale(1,1)}96%{transform:scale(1.15,.1)}}
+/* 腮紅呼吸 */
+#petCream .pet-blush{opacity:.72;transform-box:fill-box;transform-origin:center;animation:petBlush 3.2s ease-in-out infinite}
+@keyframes petBlush{0%,100%{opacity:.72;transform:scale(.94)}50%{opacity:1;transform:scale(1.08)}}
+/* 葉子輕擺 */
+#petCream #radishLeaves{transform-box:fill-box;transform-origin:50% 100%;animation:petLeafSway 4.2s ease-in-out infinite}
+@keyframes petLeafSway{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+@media (prefers-reduced-motion:reduce){#petCream svg,#petCream svg *{animation:none !important}#petCream svg{will-change:auto}}
 /* ===== 批次1 新增 ===== */
 /* A5 合併後，.act/.del 樣式集中在檔頭 */
 /* C1 圖片燈箱 */
@@ -998,66 +1014,72 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
 
     <!-- 小寵物：典雅米白（蘿蔔人）-->
     <div id="petCream" class="pet" data-pet="cream" style="text-align:center">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="160" role="img" aria-label="蘿蔔人">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -20 244 244" width="160" height="180" role="img" aria-label="白蘿蔔">
         <defs>
           <linearGradient id="radBody" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0" stop-color="#ffffff"></stop>
-            <stop offset="1" stop-color="#f2e9d6"></stop>
+            <stop offset="0.3" stop-color="#ffffff"></stop>
+            <stop offset="1" stop-color="#ffefdf"></stop>
+          </linearGradient>
+          <linearGradient id="radHand" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff"></stop>
+            <stop offset="0.66" stop-color="#fff8f2"></stop>
+            <stop offset="1" stop-color="#ffffef"></stop>
           </linearGradient>
           <linearGradient id="radLeaf" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#b9d97e"></stop>
-            <stop offset="1" stop-color="#86b45c"></stop>
+            <stop offset="0" stop-color="#d4e092"></stop>
+            <stop offset="1" stop-color="#bed166"></stop>
           </linearGradient>
           <linearGradient id="radLeafD" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stop-color="#a8cf6e"></stop>
-            <stop offset="1" stop-color="#7aa852"></stop>
+            <stop offset="0" stop-color="#cfdf8f"></stop>
+            <stop offset="1" stop-color="#9ac556"></stop>
           </linearGradient>
           <radialGradient id="radBlush">
             <stop offset="0" stop-color="#f6a69b" stop-opacity=".8"></stop>
             <stop offset=".6" stop-color="#f6a69b" stop-opacity=".38"></stop>
             <stop offset="1" stop-color="#f6a69b" stop-opacity="0"></stop>
           </radialGradient>
-          <radialGradient id="radShadow">
-            <stop offset="0" stop-color="#d9cdae" stop-opacity=".8"></stop>
-            <stop offset=".6" stop-color="#d9cdae" stop-opacity=".38"></stop>
-            <stop offset="1" stop-color="#d9cdae" stop-opacity="0"></stop>
-          </radialGradient>
         </defs>
-        <style>
-          .rad-pray{animation:rad-pray 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 0%}
-          @keyframes rad-pray{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
-          .rad-sway-body{animation:rad-body-sway 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
-          @keyframes rad-body-sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.2deg)}}
-          .rad-sway-leaf{animation:rad-leaf-sway 5s ease-in-out -1.2s infinite;transform-box:fill-box;transform-origin:50% 100%}
-          @keyframes rad-leaf-sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(4deg)}}
-          @media (prefers-reduced-motion:reduce){.rad-pray,.rad-sway-body,.rad-sway-leaf{animation:none !important}}
-        </style>
-        <g class="breath">
-          <path class="twinkle" d="M168,66 Q169,72 175,73 Q169,74 168,80 Q167,74 161,73 Q167,72 168,66 Z" fill="#e8c428"></path>
-          <path class="twinkle" style="animation-delay:1.3s" d="M48,78 Q49,83 54,84 Q49,85 48,90 Q47,85 42,84 Q47,83 48,78 Z" fill="#e8c428"></path>
-          <g class="rad-sway-body">
-          <g class="rad-sway-leaf">
-            <ellipse cx="85" cy="61" rx="13" ry="17" transform="rotate(-28 88 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="2.4"></ellipse>
-            <ellipse cx="135" cy="61" rx="13" ry="17" transform="rotate(28 132 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="2.4"></ellipse>
-            <ellipse cx="110" cy="56" rx="14" ry="20" fill="url(#radLeaf)" stroke="#2e3527" stroke-width="2.4"></ellipse>
-            <path d="M110,52 C112,59 112,66 110,72 C108,66 108,59 110,52 Z" fill="#6f9a4e" opacity=".85"></path>
-            <path d="M82,61 C85.5,64.5 89.5,69 93.5,73.5 C93,65.75 89,61.25 82.6,61.2 Z" fill="#6f9a4e" opacity=".85"></path>
-            <path d="M138,61 C134.5,64.5 130.5,69 126.5,73.5 C127,65.75 131,61.25 137.4,61.2 Z" fill="#6f9a4e" opacity=".85"></path>
+        <!-- 閃光 -->
+        <path class="twinkle" d="M 20 43 Q 20 54 31 54 Q 20 54 20 65 Q 20 54 9 54 Q 20 54 20 43 Z" fill="#f8f4d8"></path>
+        <path class="twinkle" style="animation-delay:1.3s" d="M 200 43 Q 200 54 211 54 Q 200 54 200 65 Q 200 54 189 54 Q 200 54 200 43 Z" fill="#f8f4d8"></path>
+        <!-- 葉子 -->
+        <g transform="translate(0 -10)">
+          <g id="radishLeaves" class="rad-sway-leaf">
+            <ellipse cx="85" cy="61" rx="14" ry="18" transform="rotate(-50 88 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="0"/>
+            <ellipse cx="135" cy="61" rx="14" ry="18" transform="rotate(50 132 58)" fill="url(#radLeafD)" stroke="#2e3527" stroke-width="0"/>
+            <ellipse cx="110" cy="54" rx="15" ry="21" fill="url(#radLeaf)" stroke="#2e3527" stroke-width="0"/>
+            <path d="M110,52 C112,59 112,66 110,72 C108,66 108,59 110,52 Z" fill="#6f9a4e" opacity=".85"/>
+            <path d="M82,61 C85.5,64.5 89.5,69 93.5,73.5 C93,65.75 89,61.25 82.6,61.2 Z" fill="#6f9a4e" opacity=".85" transform="translate(2 0)"/>
+            <path d="M138,61 C134.5,64.5 130.5,69 126.5,73.5 C127,65.75 131,61.25 137.4,61.2 Z" fill="#6f9a4e" opacity=".85" transform="translate(-2 0)"/>
           </g>
-          <path d="M60,204 C44,160 46,120 64,96 C82,66 138,66 156,96 C174,120 176,160 160,204 C144,211 128,206 110,209 C92,212 74,209 60,204 Z" fill="url(#radBody)" stroke="#2e3527" stroke-width="2.4" stroke-linejoin="round"></path>
-          <g transform="translate(0,-10)">
-          <path d="M85,126 Q92,133 100,124" fill="none" stroke="#2e3527" stroke-width="2.4" stroke-linecap="round"></path>
-          <path d="M121,124 Q128,133 136,126" fill="none" stroke="#2e3527" stroke-width="2.4" stroke-linecap="round"></path>
-          <ellipse cx="72" cy="138" rx="13" ry="9" fill="url(#radBlush)"></ellipse>
-          <ellipse cx="148" cy="138" rx="13" ry="9" fill="url(#radBlush)"></ellipse>
-          <path d="M69,136 l-1,5 M74,136 l-1,5 M145,136 l1,5 M150,136 l1,5" fill="none" stroke="#e8836b" stroke-width="1.6" stroke-linecap="round" opacity=".9"></path>
+        </g>
+        <g transform="translate(0 14)">
+        <g id="radishSway">
+          <!-- 腳 -->
+          <ellipse cx="80" cy="204" rx="10" ry="12" fill="url(#radBody)"/>
+          <ellipse cx="140" cy="204" rx="10" ry="12" fill="url(#radBody)"/>
+          <!-- 手 -->
+          <ellipse cx="160" cy="120" rx="12" ry="24" transform="rotate(40 168 140)" fill="url(#radHand)"/>
+          <!-- 身體 -->
+          <path id="radishBody" d="M110 48 C150 48 170 80 168 140 C170 138 164 168 156 188 C138 238 148 200 110 198 C72 200 80 238 62 188 C52 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
+          <path id="radishBody" d="M110 48 C150 48 170 80 168 140 C170 138 162 168 152 186 C138 210 82 210 68 186 C58 168 50 138 52 140 C50 80 70 48 110 48 Z" fill="url(#radBody)"/>
+          <!-- 手 -->
+          <ellipse cx="58" cy="120" rx="12" ry="24" transform="rotate(-40 52 140)" fill="url(#radHand)"/>
+          <!-- 臉 -->
+          <g id="radishFace">
+            <ellipse class="pet-eye" cx="92" cy="90" rx="3.6" ry="8" fill="#2f2f2f"/>
+            <ellipse class="pet-eye" cx="126" cy="90" rx="3.6" ry="8" fill="#2f2f2f"/>
+            <ellipse class="pet-blush" cx="72" cy="100" rx="16" ry="12" fill="url(#radBlush)"/>
+            <ellipse class="pet-blush" cx="148" cy="100" rx="16" ry="12" fill="url(#radBlush)"/>
+            <g fill="none" stroke="#e8918a" stroke-width="2.5" stroke-linecap="round" opacity="0.4" transform="translate(0 -8)">
+              <path d="M65 114 L70 105"/>
+              <path d="M73 113 L78 104"/>
+              <path d="M155 114 L150 105"/>
+              <path d="M147 113 L142 104"/>
+            </g>
           </g>
-          <g class="rad-pray">
-            <ellipse cx="110" cy="160" rx="20" ry="14" fill="url(#radShadow)"></ellipse>
-            <path d="M82,149 C90,138 101,132 110,137 C111,149 106,160 97,168" fill="none" stroke="#2e3527" stroke-width="2.4" stroke-linecap="round"></path>
-            <path d="M138,149 C130,138 119,132 110,137 C109,149 114,160 123,168" fill="none" stroke="#2e3527" stroke-width="2.4" stroke-linecap="round"></path>
-          </g>
-          </g>
+        </g>
         </g>
       </svg>
     </div>
@@ -1812,7 +1834,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
       </div>
       <div class="field">
         <label>API Key</label>
-        <input type="password" id="settingKey" placeholder="輸入 API Key">
+        <input type="password" id="settingKey" placeholder="．．．．．．．．．．．．">
       </div>
     </div>
     <div class="field-row">
@@ -1892,7 +1914,7 @@ body.drag-over .main{outline:2px dashed var(--accent);outline-offset:-8px}
     <div class="field-row">
       <div class="field">
         <label>最大輸出 Tokens</label>
-        <input type="number" id="settingMaxTokens" min="256" max="65536" step="256" value="8192">
+        <input type="number" id="settingMaxTokens" min="256" max="65536" step="256" value="16384">
       </div>
       <div class="field">
         <label>傳送上下文則數</label>
@@ -2698,14 +2720,14 @@ async function migrateLegacyMedia(){
 
 // ===== 網頁預設設定 =====
 const DEFAULT_SETTINGS={
-  apiKey:'sk-4IyUWw7JhQppy4xZ5weeaHiUlh1zOxMFFbxZ5Tq06XEPAR9T',
+  apiKey:'', // ← 真 Key 已搬到 Supabase Edge Function Secrets，前端不再存放
   model:'agnes-2.5-flash',
   endpoint:'https://apihub.agnes-ai.com/v1',
   temperature:'0.6',
   persona:'cat',
   theme:'default',
   systemPrompt:'',
-  maxTokens:'8192',
+  maxTokens:'16384',
   ctxLimit:'40',
   autoScroll:false,
   quickReply:true,
@@ -2800,9 +2822,9 @@ function isQuickReplyUnsupportedError(msg){
   return /reasoning|thinking|chat_template|extra_body|\bthink\b|unknown (field|argument|parameter)|unexpected|not (supported|recognized|allowed)/i.test(m);
 }
 // ===== 網路搜尋設定（Tavily + Jina Reader + 氣象署 OpenData）：要修改的參數都在這裡 =====
-// tavilyKey：貼上你的 Tavily API Key（tvly- 開頭，https://tavily.com 註冊取得）
-//           未設定（不是 tvly- 開頭）時，偵測到搜尋關鍵字會提示警告並改用純模型回答
-// jinaKey：Jina Reader API Key（jina_ 開頭，https://jina.ai 註冊取得；搜尋端點 s.jina.ai 必要）
+// 搜尋／氣象三把 Key 已搬後端 Secrets（TAVILY_API_KEY／JINA_API_KEY／CWA_KEY），前端留空，一律走後端代理
+// tavilyKey／jinaKey／cwaKey：保留欄位（舊直連相容），現不使用
+// r.jina.ai 全文讀取刻意走前端匿名：避免 Jina 搜尋額度被讀全文吃光（見讀取函式註解）
 // jinaEndpoint：Jina 搜尋端點 base（搜尋直接加在後面，如 s.jina.ai/今日高雄天氣）
 // engine：目前採用的搜尋引擎 —— 'jina'＝Jina Reader 搜尋；'tavily'＝Tavily，兩種都可用
 // fetchPages：搜尋後用 Jina Reader 讀取全文的網頁數（前 N 筆）；pageChars：每頁最多注入字元數
@@ -2811,12 +2833,12 @@ function isQuickReplyUnsupportedError(msg){
 //         查不到或失敗時自動落回一般搜尋。留空＝停用天氣直查。
 const WEB_SEARCH={
   engine:'tavily',                     // 搜尋引擎：'jina'｜'tavily'
-  tavilyKey:'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',
+  tavilyKey:'', // ← 已搬後端 TAVILY_API_KEY
   tavilyEndpoint:'https://api.tavily.com/search',
-  jinaKey:'jina_ed27437d443543919c05f7febff5d465XXxYrxhV8wM7uci4mUzNvNI9lplM',
+  jinaKey:'', // ← 已搬後端 JINA_API_KEY
   jinaEndpoint:'https://s.jina.ai/',
   jinaReader:'https://r.jina.ai/',
-  cwaKey:'CWA-A2436D95-6750-4FD1-BB03-E4B9148C5FC6',   // 氣象署授權碼（CWA- 開頭）
+  cwaKey:'', // ← 已搬後端 CWA_KEY   // 氣象署授權碼（CWA- 開頭）
   cwaEndpoint:'https://opendata.cwa.gov.tw/api/v1/rest/datastore/',
   cwaCurrent:'F-C0032-001',            // 一般天氣預報-今明 36 小時（各縣市；Wx/MaxT/MinT/PoP12h/CI）
   cwaWeekly:'F-D0047-091',             // 全台縣市鄉鎮未來 1 週逐 12 小時預報（需 LocationName 指定縣市；
@@ -2977,15 +2999,10 @@ function noteStreamSignal(hasSignal){
   }
 }
 
-function getApiKey(){return settings.apiKey||DEFAULT_SETTINGS.apiKey}
-// ===== API Key 池：主 Key 限流／失效時自動輪替備用 Key =====
-// ▼▼ 備用 Key 直接填在這裡（只有 Agnes 端點會使用；使用者改成自訂 API 端點時不會動用到備用池）▼▼
-const BACKUP_API_KEYS=[
-  'sk-ydGbGKIaQ9Pb1brFIH6QblPqpb5Bk923BYVfregugFq4zG1O',   // ← 填入第 1 把備用 Agnes Key
-  'sk-3V9MT4xVJoGqZaZT5cMV3yoRcj2i0iXUWd0Q7stA7bayHhXJ'    // ← 填入第 2 把備用 Agnes Key
-//  ''    // ← 填入第 3 把備用 Agnes Key（需要更多就照格式再往下加）
-];
-// ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
+function getApiKey(){return isProxyMode()?SUPABASE_ANON_KEY:(settings.apiKey||DEFAULT_SETTINGS.apiKey)}
+// ===== API Key 池（已退役）：真 Key 改放 Supabase Edge Function Secrets，前端不再存放 =====
+// 如需關閉代理走舊直連，把 Key 貼在設定面板的 API Key 欄即可，此陣列不再使用
+const BACKUP_API_KEYS=[]; // ← 備用 Key 已搬到後端 AGNES_API_KEYS Secrets（逗號分隔），前端不再存放
 // KEY_POOL.ptr 是輪替起點，KEY_POOL.fail 記錄各 Key 的冷卻到期時間（ms epoch）
 const KEY_POOL={ptr:0,fail:{}};
 function getKeyPool(prim){
@@ -3034,7 +3051,13 @@ function getModel(){return settings.model||'agnes-2.5-flash'}
 function getImageModel(){return settings.imageModel||'agnes-image-2.1-flash'}
 function getImageSize(){return settings.imageSize||'2K'}
 function getImageRatio(){return settings.imageRatio||'9:16'}
-function getEndpoint(){return settings.endpoint||'https://apihub.agnes-ai.com/v1'}
+// ===== 後端代理（Supabase Edge Function agnes-proxy）：真 Key 藏後端，前端只放可公開的 anon key =====
+const SUPABASE_PROXY_BASE='https://ctpzyxuezychetfdkftb.supabase.co/functions/v1/agnes-proxy';
+const SUPABASE_ANON_KEY='sb_publishable_PqU-ptNARKPSzRWn7wATBg_HS__tcpJ'; // ← 貼 Supabase Dashboard → Project Settings → API 的 anon public key（可公開）
+function hasUserKey(){return !!(settings.apiKey&&String(settings.apiKey).trim())}
+function isProxyMode(){return !hasUserKey()} // 有自填 Key 走直連，沒填走後端代理
+function proxyHeaders(){return {'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Content-Type':'application/json'}} // 後端函式 JWT 驗證用（搜尋/CWA 一律走後端）
+function getEndpoint(){return isProxyMode()?SUPABASE_PROXY_BASE:(settings.endpoint||'https://apihub.agnes-ai.com/v1')}
 // Agnes API 端點與模型清單（設定面板／請求共用單一來源）
 const AGNES_API_ENDPOINT='https://apihub.agnes-ai.com/v1';
 // 文字模型可選清單（當端點為 Agnes 時，模型欄位切為下拉選單）
@@ -3043,10 +3066,10 @@ const AGNES_TEXT_MODELS=['agnes-2.0-flash','agnes-2.5-flash','agnes-3.0-flash'];
 const AGNES_IMAGE_MODELS=['agnes-image-2.1-flash','agnes-image-2.5-flash'];
 // 圖片請求端點：Agnes 官方圖片模型固定綁定 Agnes 端點，避免使用者把 API 端點改成其他服務後圖片模式打到錯誤端點；
 // 自訂圖片模型（非清單內）沿用一般端點設定
-function getImageEndpoint(){return AGNES_IMAGE_MODELS.includes(getImageModel())?AGNES_API_ENDPOINT:getEndpoint()}
+function getImageEndpoint(){return isProxyMode()?SUPABASE_PROXY_BASE:(AGNES_IMAGE_MODELS.includes(getImageModel())?AGNES_API_ENDPOINT:getEndpoint())}
 // 圖片請求 Key：Agnes 官方圖片模型一律用預設 Agnes Key（使用者改端點時換掉的自訂 Key 是給其他服務的，不能用到 Agnes 上）；
 // 自訂圖片模型沿用設定裡的 Key
-function getImageApiKey(){return AGNES_IMAGE_MODELS.includes(getImageModel())?DEFAULT_SETTINGS.apiKey:getApiKey()}
+function getImageApiKey(){return isProxyMode()?SUPABASE_ANON_KEY:(settings.apiKey||DEFAULT_SETTINGS.apiKey)}
 // 端點是否為 Agnes（寬容處理：忽略首尾空白與結尾斜線）
 function isAgnesEndpoint(ep){
   return String(ep||'').trim().replace(/\/+$/,'')===AGNES_API_ENDPOINT.replace(/\/+$/,'');
@@ -3083,7 +3106,7 @@ function getTemperature(){
 }
 function getMaxTokens(){
   const n=parseInt(settings.maxTokens,10);
-  return Number.isFinite(n)?Math.min(65536,Math.max(256,n)):8192;
+  return Number.isFinite(n)?Math.min(65536,Math.max(256,n)):16384;
 }
 function getCtxLimit(){
   const v=settings.ctxLimit;
@@ -4408,9 +4431,7 @@ async function sendMessage(){
       return;
     }
     // 關鍵字命中：目前引擎有設定對應 key 才走搜尋流程，否則提示並照常送純文字請求
-    const engineOk=WEB_SEARCH.engine==='jina'
-      ? /^jina_/.test(WEB_SEARCH.jinaKey||'')
-      : /^tvly-/.test(WEB_SEARCH.tavilyKey||'');
+    const engineOk=true; // 搜尋 Key 已搬後端，前端不再檢查
     if(engineOk)await requestWebSearch(text);
     else{
 //      showToast('偵測到搜尋關鍵字：尚未設定 '+(WEB_SEARCH.engine==='jina'?'Jina':'Tavily')+' API Key（請在檔案內搜尋「WEB_SEARCH」填入）','warn');
@@ -4801,17 +4822,15 @@ async function performJinaSearch(query,statusCb,sig){
   let raw='';
   let isJson=false;
   try{
-    const resp=await fetch(WEB_SEARCH.jinaEndpoint,{
+    const resp=await fetch(SUPABASE_PROXY_BASE+'/jina/search',{
       method:'POST',
-      headers:{
-        'Authorization':'Bearer '+WEB_SEARCH.jinaKey,
-        'Content-Type':'application/json',
+      headers:Object.assign(proxyHeaders(),{ // Jina Key 由後端注入；以下為搜尋行為參數，原樣轉發
         'X-Engine':'browser',                              // 官方能拿到正確資訊的引擎（s.jina.ai 搜尋+JSON 結構）
         'X-Locale':'zh-TW',                               // 與官方測試一致，結果回 zh-Hant-TW
         'X-With-Images-Summary':'true',
         'X-With-Links-Summary':'true',
         'Accept':'application/json, text/plain'
-      },
+      }),
       body:JSON.stringify({q:query}),
       signal:ac.signal
     });
@@ -4964,24 +4983,11 @@ async function cwaFetch(ds,params,sig){
   const tid=setTimeout(()=>ac.abort(),TIMEOUT.cwa);
   try{
     let j=null;
-    try{
-      // 直連：opendata.cwa.gov.tw 若未送 CORS 標頭，瀏覽器 fetch 會丟 TypeError
-      const resp=await fetch(u,{headers:{'Authorization':WEB_SEARCH.cwaKey},signal:ac.signal});
-      if(!resp.ok)throw Object.assign(new Error('HTTP '+resp.status),{cwaHttp:true});
-      j=await resp.json();
-    }catch(err){
-      if(err.name==='AbortError')throw err;
-      if(err.cwaHttp)throw err;   // 4xx/5xx＝金鑰或參數問題，走中繼也一樣失敗
-      // CORS／網路失敗 → 改走 Jina Reader 中繼（授權碼改放 query 參數，CWA 官方支援此用法）
-      dbg('[CWA] 直連失敗（可能是 CORS），改走 Jina 中繼:',err&&err.message);
-      u.searchParams.set('Authorization',WEB_SEARCH.cwaKey);
-      const r2=await fetch(WEB_SEARCH.jinaReader+u.toString(),{signal:ac.signal,headers:{'x-return-format':'text'}});
-      if(!r2.ok)throw new Error('HTTP '+r2.status);
-      const s=await r2.text();
-      const b=s.lastIndexOf('}'),a=s.indexOf('{');
-      if(a<0||b<=a)throw new Error('中繼回應非 JSON');
-      j=JSON.parse(s.slice(a,b+1));
-    }
+    // 走後端代理：授權碼由後端注入（URL 不再帶 Key）；後端轉發無 CORS 問題，中繼分支刪除
+    const pu=SUPABASE_PROXY_BASE+'/cwa/'+ds+'?'+u.searchParams.toString();
+    const resp=await fetch(pu,{headers:proxyHeaders(),signal:ac.signal});
+    if(!resp.ok)throw Object.assign(new Error('HTTP '+resp.status),{cwaHttp:true});
+    j=await resp.json();
     if(!j||!j.records)throw new Error('資料集無資料（確認資料集代號與授權碼）');
     CWA_CACHE.set(key,{at:Date.now(),records:j.records});
     return j.records;
@@ -5760,9 +5766,9 @@ async function performTavilySearch(query,statusCb,sig){
   const reqBody={query:query,search_depth:'basic',max_results:WEB_SEARCH.maxResults};
   if(day)reqBody.time_range='day';
   else if(week)reqBody.time_range='week';
-  const resp=await fetch(WEB_SEARCH.tavilyEndpoint,{
+  const resp=await fetch(SUPABASE_PROXY_BASE+'/tavily/search',{
     method:'POST',
-    headers:{'Authorization':'Bearer '+WEB_SEARCH.tavilyKey,'Content-Type':'application/json'},
+    headers:proxyHeaders(), // Tavily Key 由後端注入
     body:JSON.stringify(reqBody),
     signal:ac.signal
   });
@@ -5824,7 +5830,7 @@ async function requestWebSearch(query){
     let weather=false,directKind=null;
     // 三之4／三之8：天氣與地震走氣象署 OpenData、放假／停班課走官方直查、農民曆走本地離線計算（都不花 Tavily 額度）；
     // web_search 工具保留，模型遇到資料不足（台灣以外地區、2017 年以前等）時自行呼叫工具補查。無 key／失敗 → 落回一般搜尋。
-    if(WEB_SEARCH.cwaKey&&(isWeatherQuery(query)||isQuakeQuery(query))||isHolidayQuery(query)||isAlmanacQuery(query)||ALMANAC_FUZZY_RE.test(query)){
+    if((isWeatherQuery(query)||isQuakeQuery(query))||isHolidayQuery(query)||isAlmanacQuery(query)||ALMANAC_FUZZY_RE.test(query)){
       statusDiv.innerHTML=(isAlmanacQuery(query)||ALMANAC_FUZZY_RE.test(query))?'<span class="spinner"></span>📅 正在查詢農民曆':'<span class="spinner"></span>🌤️ 正在查詢中央氣象署';
       const w=await tryCwaDirect(query,h=>{statusDiv.innerHTML=h},abortCtrl.signal);
       if(w){
@@ -5868,7 +5874,7 @@ async function regenWithSearch(q){
   let context='',weather=false;
   try{
     // 三之4／三之8：同 requestWebSearch——重新生成也先走官方直查（氣象署／假日），失敗落回一般搜尋
-    if(WEB_SEARCH.cwaKey&&(isWeatherQuery(q)||isQuakeQuery(q))||isHolidayQuery(q)||isAlmanacQuery(q)||ALMANAC_FUZZY_RE.test(q)){
+    if((isWeatherQuery(q)||isQuakeQuery(q))||isHolidayQuery(q)||isAlmanacQuery(q)||ALMANAC_FUZZY_RE.test(q)){
       statusDiv.innerHTML='<span class="spinner"></span>🌤️ 正在查詢中央氣象署';
       const w=await tryCwaDirect(q,h=>{statusDiv.innerHTML=h});
       if(w){setSearchSources(q,w.sources);context=w.context;weather=true}
@@ -5947,7 +5953,7 @@ async function requestAI(opts){
         ?'（使用者的訊息含有「查／找／搜尋」等用語。若他確實在要即時資訊（天氣、新聞、匯率、股價、賽事、公告等），就呼叫 web_search；若只是一般問題或名詞解釋，直接回答即可，不需要搜尋。）'
         :'';
       const note=useTools
-        ?'（提示：現在時間是 '+todayNote+'。你可以呼叫 web_search 工具查詢即時資訊（天氣——含國外城市、匯率、股價、新聞、賽事等）。若使用者的問題需要即時或最新資料而你沒有把握，就呼叫工具；若不需要即時資料則直接回答。呼叫工具時若查詢涉及日期，務必使用上面的今天實際日期，不要憑記憶猜測。若使用者只是要日期換算（如今天是農曆幾號、星期幾），上方今天資訊已有答案，直接回答即可；但只要問到某個日期的農民曆宜忌而上方沒有該日期的資料，就直接呼叫 almanac_lookup（離線計算、零成本、保證正確），不要改叫 web_search，也不要說「查不到」。若問的是「最近哪天／未來一週／這個月」這類需看多天的問題，必須主動呼叫 almanac_lookup 逐日查詢（一次一個日期、可一次調用多個），查完再綜合回答，絕對不要說「沒有資料庫／無法查詢」或叫使用者去別處查。若你沒有呼叫工具，切勿編造即時資料。台灣天氣官方預報只有未來7天（今天起算）；若使用者問第8天以後的天氣，不要拿搜尋到的舊資料硬當答案，直接說明該日期尚無官方預報，改給氣候常態＋行前複查建議。你有兩個工具：web_search（即時資訊，天氣含台灣與國外城市）與 almanac_lookup（指定日期農民曆，參數 date 如「9月20日」「農曆八月十五」或 YYYY-MM-DD，一次查一個日期；「最近哪天適合…」請自行展開候選日期逐一查詢再綜合回答，農民曆問題不要上網搜尋）。你確實具備聯網搜尋與農民曆查詢能力，絕對不要自稱「沒有聯網／查不到」。不要輸出其他 tool_calls。）'+kwHint
+        ?'（提示：現在時間是 '+todayNote+'。你可以呼叫 web_search 工具查詢即時資訊（天氣——含國外城市、匯率、股價、新聞、賽事等）。若使用者的問題需要即時或最新資料而你沒有把握，就呼叫工具；若不需要即時資料則直接回答。呼叫工具時若查詢涉及日期，務必使用上面的今天實際日期，不要憑記憶猜測。若使用者只是要日期換算（如今天是農曆幾號、星期幾），上方今天資訊已有答案，直接回答即可；但只要問到某個日期的農民曆宜忌而上方沒有該日期的資料，就直接呼叫 almanac_lookup（離線計算、零成本、保證正確），不要改叫 web_search，也不要說「查不到」。若問的是「最近哪天／未來一週／這個月」這類需看多天的問題，必須主動呼叫 almanac_lookup 逐日查詢（一次一個日期、可一次調用多個），查完再綜合回答，絕對不要說「沒有資料庫／無法查詢」或叫使用者去別處查。若你沒有呼叫工具，切勿編造即時資料。若使用者只是打招呼或寒暄（如在嗎、你好），自然簡短回應即可，不要主動列舉你的功能。台灣天氣官方預報只有未來7天（今天起算）；若使用者問第8天以後的天氣，不要拿搜尋到的舊資料硬當答案，直接說明該日期尚無官方預報，改給氣候常態＋行前複查建議。你有兩個工具：web_search（即時資訊，天氣含台灣與國外城市）與 almanac_lookup（指定日期農民曆，參數 date 如「9月20日」「農曆八月十五」或 YYYY-MM-DD，一次查一個日期；「最近哪天適合…」請自行展開候選日期逐一查詢再綜合回答，農民曆問題不要上網搜尋）。你確實具備聯網搜尋與農民曆查詢能力，絕對不要自稱「沒有聯網／查不到」。不要輸出其他 tool_calls。）'+kwHint
         :'（注意：現在時間是 '+todayNote+'。本次對話沒有進行網路搜尋，你沒有任何即時資料來源。切勿編造即時資訊（天氣、匯率、股價、新聞、比分等）或模仿搜尋結果的格式輸出假資料；若使用者詢問此類資訊，請明確說明你無法取得即時資料，並建議使用者輸入「查一下」等關鍵字要求你搜尋網路（日期換算與農民曆宜忌除外——上方的今天資訊或直查資料已有答案，可直接回答；仍無資料時再引導使用者輸入「查一下＋日期」要求搜尋）。另外：你不具備任何工具或函式，絕對不要輸出 tool_calls／函式呼叫，一律只用純文字回答；也絕對不要假裝「馬上幫你查」——做不到就直說並引導關鍵字，不要開空頭支票。）';
       if(sys)msgs[0].content+='\n'+note;
       else msgs.unshift({role:'system',content:note});
@@ -6132,7 +6138,7 @@ async function requestAI(opts){
         const lastUserMsg=(()=>{for(let i=msgs.length-1;i>=0;i--){const m=msgs[i];if(m&&m.role==='user'&&typeof m.content==='string')return m.content}return ''})();
         try{
           // 三之4／三之8：天氣／地震走氣象署 OpenData、放假／停班課走官方直查（都不扣 Tavily 額度）；查不到再走一般搜尋
-          if(WEB_SEARCH.cwaKey||isHolidayQuery(q)||isHolidayQuery(lastUserMsg)||isAlmanacQuery(q)||isAlmanacQuery(lastUserMsg)||ALMANAC_FUZZY_RE.test(q)||ALMANAC_FUZZY_RE.test(lastUserMsg))cwaHit=await tryCwaDirect(q,h=>{tStat.innerHTML=h},sig,lastUserMsg);
+          if(isHolidayQuery(q)||isHolidayQuery(lastUserMsg)||isAlmanacQuery(q)||isAlmanacQuery(lastUserMsg)||ALMANAC_FUZZY_RE.test(q)||ALMANAC_FUZZY_RE.test(lastUserMsg))cwaHit=await tryCwaDirect(q,h=>{tStat.innerHTML=h},sig,lastUserMsg);
           if(cwaHit){
             toolResult=cwaHit.context;
             cwaUsed=true;
@@ -6473,7 +6479,7 @@ const SETTING_FIELDS=[
   {id:'settingImageRatio',key:'imageRatio',type:'text'},
   {id:'settingEndpoint',key:'endpoint',type:'text',trim:true},
   {id:'settingTemp',key:'temperature',type:'float',def:0.6},
-  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:8192},
+  {id:'settingMaxTokens',key:'maxTokens',type:'int',def:16384},
   {id:'settingCtx',key:'ctxLimit',type:'text'},
   {id:'settingAutoScroll',key:'autoScroll',type:'bool'},
   {id:'settingQuickReply',key:'quickReply',type:'bool'},
@@ -6630,8 +6636,10 @@ async function checkStorageUsage(){
 }
 
 async function resetSettings(){
-  if(!await showConfirm('確定要將所有設定恢復為網頁預設值嗎？'))return;
+  if(!await showConfirm('確定要將所有設定恢復為網頁預設值嗎？\n僅保留自填 API Key，自訂人格會清除。'))return;
+  const keepKey=settings.apiKey;   // 重設保留自填 Key：清空會把人踢回代理，Key 得重貼
   settings={...DEFAULT_SETTINGS};
+  if(keepKey)settings.apiKey=keepKey;
   loadCustomPersonas();   // 重設會清掉自訂人格設定，同步把運作中的人格清單還原回內建（再開設定即為空白新增項）
   saveSettingsData(settings);
   // B2：以 SETTING_FIELDS 映射表統一回填預設值
@@ -6642,6 +6650,7 @@ async function resetSettings(){
     else el.value=DEFAULT_SETTINGS[f.key]!=null?DEFAULT_SETTINGS[f.key]:(f.def!=null?f.def:'');
   });
   syncModelInput();   // 預設端點是 Agnes → 切回下拉形態
+  document.getElementById('settingKey').value=settings.apiKey||'';   // 自填 Key 有保留：面板跟著顯示保留的值
   // 人格下拉選單同步重建：loadCustomPersonas 已清掉自訂人格，但不重建下拉殘留舊 option 與舊選取值
   fillPersonaOptions();
   document.getElementById('settingPersona').value=getPersonaId();
@@ -8508,7 +8517,7 @@ updateSendButton();
       ctx.fillText('🐱',96,102);
       const mf={
         name:'ChatCAT',short_name:'ChatCAT',start_url:'.',display:'standalone',
-        background_color:'#0d0d0d',theme_color:'#0d0d0d',
+        background_color:'#ccdeeb',theme_color:'#ccdeeb',
         icons:[{src:cv.toDataURL('image/png'),sizes:'192x192',type:'image/png'}]
       };
       link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
