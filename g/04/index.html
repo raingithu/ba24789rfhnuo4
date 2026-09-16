@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0d0d0d">
+<meta name="theme-color" content="#ccdeeb">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -5115,19 +5115,34 @@ function fmtCwaTyphoon(records){
 // ===== 國外天氣（Open-Meteo，免 Key；台灣縣市一律走 CWA，loc 抓不到才到這裡）=====
 // 觸發：天氣意圖＋無台灣縣市＋問句殘留可 geocode 的地名（如東京天氣、紐約明天會下雨嗎）。
 // 純「台灣天氣」「明天會下雨嗎」→ extractForeignPlace 回 null → 落回原本 CWA 全台 36 小時。
-function extractForeignPlace(q){
+// 地名候選抽取：回傳「可能是地名」的候選陣列（依可信度排序），供 tryOpenMeteo 逐一 geocode。
+// 回空陣列 → 呼叫端落回 CWA 全台 36 小時（純「明天會下雨嗎」這類沒講地點的問法）。
+// 2026-09-16 修正：原本只回單一字串，且剝除詞表不完整，實測會抽出「東京一週」「本東京未來一週」
+// 「東京那東京的」這類垃圾 → geocode 全部失敗 → 落回台灣全台資料，模型誤以為工具只會給台灣。
+//   1. 不再單獨剝「日」——「日本」會被拆成「本」（「日」只在數字日期語境剝）。
+//   2. 補剝時間／意圖／語助詞：一週／未來／旅遊／穿著／適合／那／的…
+//   3. 改為「依空白分段 + 整段」多候選，讓「東京 天氣 那東京的呢」也能撈回「東京」。
+function foreignPlaceCandidates(q){
   let s=String(q||'');
-  if(/台灣|臺灣|國內|本島|外島|離島/.test(s))return null;   // 國內意圖 → CWA 全台
+  if(/台灣|臺灣|國內|本島|外島|離島/.test(s))return [];   // 國內意圖 → CWA
   s=s.replace(/台/g,'臺');
   try{s=s.replace(new RegExp(WEATHER_RE.source,'gi'),'');}catch(e){}
-  s=s.replace(/今天|今日|明天|明日|後天|大後天|昨天|前天|本週|這週|下週|週末|假日|現在|目前|此刻|最近|這幾天|年|月|日|星期.|週.|每天|逐小時|\d+/g,'')
-    .replace(/國外|海外|好嗎|好|嗎|呢|吧|啊|喔|請問|請|幫我|幫忙|查一下|查詢|怎麼樣|如何|會不會|會|怎麼|什麼|狀況|情形|穿搭|穿衣|適合出遊|出遊|旅遊|旅行|遊玩/g,'')
-    .replace(/[?？!！。,.，、\s]+/g,'');
-  let m=s.match(/[\u3400-\u4db5\u4e00-\u9fff\uf900-\ufaff]{2,}/);
-  if(m)return m[0].slice(0,12);
-  m=s.match(/[A-Za-z]{4,}/);
-  return m?m[0].slice(0,32):null;
+  s=s.replace(/今天|今日|明天|明日|後天|大後天|昨天|前天|本週|這週|下週|上週|本周|下周|這周|週末|假日|現在|目前|此刻|最近|這幾天|未來|接下來|一週|兩週|一周|兩周|七天|7天|14天|半個月|這個月|下個月|年|月|\d{1,2}日|星期.|週.|每天|逐小時|\d+/g,'')
+    .replace(/國外|海外|好嗎|好|嗎|呢|吧|啊|喔|耶|哦|請問|請|幫我|幫忙|查一下|查詢|怎麼樣|如何|會不會|會|怎麼|什麼|狀況|情形|穿搭|穿衣|穿著|適合出遊|出遊|出門|旅遊|旅行|遊玩|行程|景點|美食|適合|推薦/g,'')
+    .replace(/[?？!！。,.，、]+/g,' ');
+  const out=[];
+  const push=v=>{
+    v=String(v||'').replace(/[\s\u3000]+/g,'').replace(/^[那的這]+/,'').replace(/[那的這了吧呀]+$/,'');
+    if(v.length>=2&&!out.includes(v))out.push(v.slice(0,12));
+  };
+  const segs=s.split(/[\s\u3000]+/).filter(Boolean);
+  for(const seg of segs)push(seg);   // 分段優先：「日本 東京」先試「日本」（會被國名過濾）再試「東京」
+  if(segs.length>1)push(segs.join(''));
+  const en=String(q||'').match(/[A-Za-z]{4,}/);   // 純英文查詢（Tokyo weather）
+  if(en)push(en[0]);
+  return out;
 }
+function extractForeignPlace(q){const c=foreignPlaceCandidates(q);return c.length?c[0]:null;}
 // 國外天氣提問閘門（sendMessage 後端攔截用）：天氣意圖＋可抽出地名。
 // 陳述句（今天天氣真好）不觸發；台灣縣市也會放行（tryCwaWeather 內 CWA 優先，本函式只管放行）。
 // 放寬原因（實測漏接）：「東京天氣」「倫敦天氣」「高雄這週天氣」都是正常問法，卻因缺「嗎／呢／預報」
@@ -5147,6 +5162,26 @@ function isForeignWxAsk(text,prev){
 }
 const OM_GEO='https://geocoding-api.open-meteo.com/v1/search';
 const OM_FC='https://api.open-meteo.com/v1/forecast';
+// Open-Meteo geocoding 對繁體中文地名覆蓋不全：實測「首爾」查無結果，但「Seoul」查得到。
+// 這張表只放「實測查無」的常見城市，查到就當備援候選再試一次（不必維護完整對照）。
+const FOREIGN_ALIAS={'首爾':'Seoul','釜山':'Busan','雪梨':'Sydney','墨爾本':'Melbourne','奧克蘭':'Auckland',
+  '溫哥華':'Vancouver','多倫多':'Toronto','蒙特婁':'Montreal','大阪':'Osaka','京都':'Kyoto','札幌':'Sapporo',
+  '福岡':'Fukuoka','名古屋':'Nagoya','曼谷':'Bangkok','普吉':'Phuket','峇里島':'Bali','吉隆坡':'Kuala Lumpur',
+  '雅加達':'Jakarta','馬尼拉':'Manila','河內':'Hanoi','胡志明市':'Ho Chi Minh City','杜拜':'Dubai',
+  '伊斯坦堡':'Istanbul','米蘭':'Milan','威尼斯':'Venice','巴塞隆納':'Barcelona','布拉格':'Prague','雪梨':'Sydney'};
+// geocoding 會回一堆同名地點（實測「倫敦」第一筆是加拿大安大略省的倫敦市），
+// 依 feature_code 取行政層級最高的（PPLC 首都 > PPLA 省會 > PPL 一般城市），同級再比人口。
+function pickBestCity(results){
+  if(!Array.isArray(results)||!results.length)return null;
+  const RANK={PPLC:0,PPLA:1,PPLA2:2,PPLA3:3,PPLA4:4};
+  const rank=fc=>RANK[String(fc||'')]!=null?RANK[fc]:5;
+  const ok=results.filter(h=>h&&h.latitude!=null&&h.name!==h.country&&!/^PCL/.test(String(h.feature_code||'')));
+  if(!ok.length)return null;
+  // 人口優先：同名地點裡人口最多的幾乎就是使用者要的（紐約市 > 英國約克、倫敦市 > 加拿大倫敦），
+  // 人口相同或缺失時才比行政層級（PPLC 首都 > PPLA 省會 > PPL）。
+  ok.sort((a,b)=>((b.population||0)-(a.population||0))||(rank(a.feature_code)-rank(b.feature_code)));
+  return ok[0];
+}
 function wmoText(c){const m={0:'晴',1:'大致晴朗',2:'多雲',3:'陰天',45:'霧',48:'霧凇',51:'輕微毛毛雨',53:'毛毛雨',55:'濃密毛毛雨',56:'凍毛毛雨',57:'凍毛毛雨',61:'小雨',63:'中雨',65:'大雨',66:'凍雨',67:'凍雨',71:'小雪',73:'中雪',75:'大雪',77:'雪粒',80:'小陣雨',81:'陣雨',82:'強陣雨',85:'陣雪',86:'強陣雪',95:'雷雨',96:'雷雨伴冰雹',99:'雷雨伴冰雹'};return m[c]!=null?m[c]:('代碼'+c);}
 async function omJson(url,sig){
   const ac=new AbortController();
@@ -5170,16 +5205,33 @@ function fmtOmForecast(j){
   if(j.current)head='【現在】'+(j.current.temperature_2m!=null?Math.round(j.current.temperature_2m)+'°C ':'')+wmoText(j.current.weather_code)+(j.current.relative_humidity_2m!=null?' 濕度'+j.current.relative_humidity_2m+'%':'')+(j.current.wind_speed_10m!=null?' 風速'+Math.round(j.current.wind_speed_10m)+'km/h':'')+'\n';
   return head+'【未來'+n+'天】\n'+out.join('\n');
 }
+// place 可為字串或候選陣列（foreignPlaceCandidates 的輸出）：逐一 geocode，取第一個「真的是城市」的結果。
+// 2026-09-16：geocoding 對國名會回國家本身（「日本」→ feature_code PCLI，座標是全國中心點），
+// 必須跳過換下一個候選，否則「日本 東京」會答成日本全國平均。
 async function tryOpenMeteo(place,st,sig){
+  const list=(Array.isArray(place)?place:[place]).map(v=>String(v||'').trim()).filter(Boolean);
   try{
     st('<span class="spinner"></span>🌍 正在查詢 Open-Meteo（氣象資訊）');
-    const g=await omJson(OM_GEO+'?name='+encodeURIComponent(place)+'&count=3&language=zh&format=json',sig);
-    const hit=g&&g.results&&g.results[0];
-    if(!hit||hit.latitude==null)throw new Error('查無地點「'+place+'」');
+    let hit=null;
+    // 兩段語言 × 原文／alias 四種組合都試：zh-TW 城市名才是繁體（「首爾」），
+    // 但 zh-TW 的譯名庫較小（實測「巴黎」查無、zh 才查得到），所以 zh-TW 失敗再退 zh。
+    for(const p of list){
+      const names=[p,FOREIGN_ALIAS[p]].filter(Boolean);
+      for(const lang of ['zh-TW','zh']){
+        for(const nm of names){
+          const g=await omJson(OM_GEO+'?name='+encodeURIComponent(nm)+'&count=5&language='+lang+'&format=json',sig);
+          const h=pickBestCity(g&&g.results);
+          if(h){hit=h;break}
+        }
+        if(hit)break;
+      }
+      if(hit)break;
+    }
+    if(!hit)throw new Error('查無地點「'+(list[0]||'')+'」');
     const f=await omJson(OM_FC+'?latitude='+hit.latitude+'&longitude='+hit.longitude+'&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&forecast_days=7',sig);
     const body=fmtOmForecast(f);
     if(!body)throw new Error('預報格式未預期');
-    const label=(hit.name||place)+(hit.country?'（'+hit.country+'）':'');
+    const label=(hit.name||list[0])+(hit.country?'（'+hit.country+'）':'');
     const today=nowText();
     const context='以下是 '+today+' 於 Open-Meteo 取得的'+label+'天氣預報：\n\n'+body
       +'\n\n（回答規則：1. 直接依上述資料回答該地天氣，不要用搜尋結果或自身知識覆蓋。2. 只涵蓋未來 7 天（當地時區）；問第 8 天以後時直接說尚無預報，不要硬答。3. 現在時間是 '+today+'，【現在】是當地最新實況。）';
@@ -5511,9 +5563,16 @@ async function tryCwaWeather(query,statusCb,sig,extra){
     for(const pair of CWA_LOC_S2T)nq=nq.replace(pair[0],pair[1]);
     const loc=CWA_LOCATIONS.find(t=>nq.includes(t))||CWA_LOCATIONS.find(t=>nq.includes(t.replace(/[市縣]$/,'')))||'';
     if(!loc){
-      // 無台灣縣市 → 試國外分支（Open-Meteo）：地名解不出或查詢失敗時回 null，繼續走原本 CWA 全台 36 小時
-      const fp=extractForeignPlace(rawQ);
-      if(fp){const om=await tryOpenMeteo(fp,st,sig);if(om)return om;}
+      // 無台灣縣市 → 試國外分支（Open-Meteo）。抽不出地名（如「明天會下雨嗎」）→ 照舊走 CWA 全台 36 小時。
+      const cands=foreignPlaceCandidates(rawQ);
+      if(cands.length){
+        const om=await tryOpenMeteo(cands,st,sig);
+        if(om)return om;
+        // 抽得出地名卻查不到（城市名拼錯／Open-Meteo 失敗）→ 絕不落回台灣全台資料：
+        // 那會讓模型拿到一堆台灣縣市後誤答，並反覆重試同一支工具（2026-09-16 實測連續重試 5 次）。
+        dbg('[OM] 國外天氣查不到，明確回報（不落回 CWA 全台）:',cands.join('/'));
+        return {context:'（查不到「'+cands[0]+'」的天氣：Open-Meteo 沒有這個地點，或查詢連線失敗。請直接告訴使用者目前查不到該地預報，不要改答其他地區的天氣，也不要重複呼叫工具。）',sources:[]};
+      }
     }
     st('<span class="spinner"></span>🌤️ 正在查詢氣象署（今明 36 小時）');
     const cur=await cwaFetch(WEB_SEARCH.cwaCurrent,loc?{locationName:loc}:{},sig);
@@ -5736,6 +5795,12 @@ async function tryHolidayDirect(query,statusCb,sig,extra){
     return null;
   }
 }
+// 官方直查路由閘門（單一來源）：天氣／颱風／地震 → 氣象署或 Open-Meteo、放假停班課 → 人事總處、
+// 農民曆 → 本地離線計算。這四類都免 Tavily 額度；其餘（新聞／匯率／股價／景點／餐廳…）才走付費搜尋。
+// 【重要】sendMessage、requestWebSearch、regenWithSearch、web_search 工具執行器四處都必須呼叫本函式。
+// 2026-09-16 的 regression 就是四處各寫一份條件、其中 web_search 工具那份漏了 isWeatherQuery／isQuakeQuery，
+// 導致模型主動查天氣時全部落到付費搜尋，還被 6145 當成「免費輪」反覆放行重試（連續 5 次白扣額度）。
+function needsDirectLookup(q){return isWeatherQuery(q)||isQuakeQuery(q)||isHolidayQuery(q)||isAlmanacQuery(q)||ALMANAC_FUZZY_RE.test(String(q||''));}
 // 統一派發：農民曆 → 放假／停班課 → 天氣 → 模糊擇日 → 地震；其他 → null（走一般搜尋）
 // 【重要】每一層都必須「試過才往下」：過去每層都直接 return，只要判定成立但解析失敗（回 null）
 // 就整條結束。結果「高雄這週天氣」被農民曆的時間詞（這週）攔下、動作解析失敗回 null 後，
@@ -5851,7 +5916,7 @@ async function requestWebSearch(query){
     let weather=false,directKind=null;
     // 三之4／三之8：天氣與地震走氣象署 OpenData、放假／停班課走官方直查、農民曆走本地離線計算（都不花 Tavily 額度）；
     // web_search 工具保留，模型遇到資料不足（台灣以外地區、2017 年以前等）時自行呼叫工具補查。無 key／失敗 → 落回一般搜尋。
-    if((isWeatherQuery(query)||isQuakeQuery(query))||isHolidayQuery(query)||isAlmanacQuery(query)||ALMANAC_FUZZY_RE.test(query)){
+    if(needsDirectLookup(query)){
       statusDiv.innerHTML=(isAlmanacQuery(query)||ALMANAC_FUZZY_RE.test(query))?'<span class="spinner"></span>📅 正在查詢農民曆':'<span class="spinner"></span>🌤️ 正在查詢中央氣象署';
       const w=await tryCwaDirect(query,h=>{statusDiv.innerHTML=h},abortCtrl.signal);
       if(w){
@@ -5895,7 +5960,7 @@ async function regenWithSearch(q){
   let context='',weather=false;
   try{
     // 三之4／三之8：同 requestWebSearch——重新生成也先走官方直查（氣象署／假日），失敗落回一般搜尋
-    if((isWeatherQuery(q)||isQuakeQuery(q))||isHolidayQuery(q)||isAlmanacQuery(q)||ALMANAC_FUZZY_RE.test(q)){
+    if(needsDirectLookup(q)){
       statusDiv.innerHTML='<span class="spinner"></span>🌤️ 正在查詢中央氣象署';
       const w=await tryCwaDirect(q,h=>{statusDiv.innerHTML=h});
       if(w){setSearchSources(q,w.sources);context=w.context;weather=true}
@@ -6142,7 +6207,7 @@ async function requestAI(opts){
         q='';
       }
       // 三之5：多出來的那一輪只放行免費查詢（氣象署／假日直查），避免模型拿加開的輪數去燒 Tavily 額度
-      if(q&&toolDepth>=WEB_SEARCH.toolMaxRounds&&!(isWeatherQuery(q)||isQuakeQuery(q)||isHolidayQuery(q)||isAlmanacQuery(q)||ALMANAC_FUZZY_RE.test(q))){
+      if(q&&toolDepth>=WEB_SEARCH.toolMaxRounds&&!needsDirectLookup(q)){
         dbg('[Chat] 加開的續問輪僅開放免費來源（氣象署），略過付費搜尋:',String(q).slice(0,80));
         q='';
       }
@@ -6159,7 +6224,10 @@ async function requestAI(opts){
         const lastUserMsg=(()=>{for(let i=msgs.length-1;i>=0;i--){const m=msgs[i];if(m&&m.role==='user'&&typeof m.content==='string')return m.content}return ''})();
         try{
           // 三之4／三之8：天氣／地震走氣象署 OpenData、放假／停班課走官方直查（都不扣 Tavily 額度）；查不到再走一般搜尋
-          if(isHolidayQuery(q)||isHolidayQuery(lastUserMsg)||isAlmanacQuery(q)||isAlmanacQuery(lastUserMsg)||ALMANAC_FUZZY_RE.test(q)||ALMANAC_FUZZY_RE.test(lastUserMsg))cwaHit=await tryCwaDirect(q,h=>{tStat.innerHTML=h},sig,lastUserMsg);
+          // 【本次修復】原本這行只判斷假日／農民曆，漏了 isWeatherQuery／isQuakeQuery：
+          // 模型主動呼叫 web_search 查天氣時不會走氣象署／Open-Meteo，直接落到付費搜尋；
+          // 又因 6145 仍把天氣視為「免費輪」而反覆放行，造成連續重試燒額度。改用單一路由閘門。
+          if(needsDirectLookup(q)||needsDirectLookup(lastUserMsg))cwaHit=await tryCwaDirect(q,h=>{tStat.innerHTML=h},sig,lastUserMsg);
           if(cwaHit){
             toolResult=cwaHit.context;
             cwaUsed=true;
@@ -8538,7 +8606,7 @@ updateSendButton();
       ctx.fillText('🐱',96,102);
       const mf={
         name:'ChatCAT',short_name:'ChatCAT',start_url:'.',display:'standalone',
-        background_color:'#0d0d0d',theme_color:'#0d0d0d',
+        background_color:'#ccdeeb',theme_color:'#ccdeeb',
         icons:[{src:cv.toDataURL('image/png'),sizes:'192x192',type:'image/png'}]
       };
       link.href=URL.createObjectURL(new Blob([JSON.stringify(mf)],{type:'application/manifest+json'}));
