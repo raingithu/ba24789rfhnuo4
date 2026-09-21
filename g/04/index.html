@@ -32,7 +32,7 @@ html,body{height:100%;height:100dvh;font-family:'Chiron GoRound TC',ui-monospace
 /* 側邊欄 */
 input,textarea,select,span{font-family:'Chiron GoRound TC',ui-monospace,SFMono-Regular,Consolas, monospace,'Noto Sans TC','Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;}
 button{font-family:'LXGW WenKai TC',cursive,ui-monospace,SFMono-Regular,Consolas, monospace,'Noto Sans TC','Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;font-weight:800;}
-h2,h3{font-family:'LXGW WenKai TC','IBM Plex Mono','Noto Sans TC','Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;font-weight:900}
+h1,h2,h3{font-family:'LXGW WenKai TC','IBM Plex Mono','Noto Sans TC','Segoe UI','PingFang TC','Microsoft JhengHei',sans-serif;font-weight:900}
 .sidebar{width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;transition:transform .3s;min-height:0}
 .sidebar-header{padding:16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex:0 0 auto}
 .sidebar-header h2{font-size:18px;color:var(--accent)}
@@ -607,7 +607,7 @@ body[data-theme="mistyslate"]{
   .btn-settings{background:#3c8d99}
   .btn-settings:hover{color:#97f6ff}
   .chat-item:hover{background:#22666e15}
-  #msgInput{background:#22666e}
+  #msgInput{color:var(--text2);background:#22666e}
   .r-bob{animation:r-bob 5s ease-in-out infinite;transform-box:fill-box;transform-origin:50% 100%}
   .chick-bob{animation:chick-bob 5s ease-in-out -2.5s infinite;transform-box:fill-box;transform-origin:50% 100%}
 }
@@ -2347,6 +2347,11 @@ function clearPendingImages(){
 }
 let pendingQueue=null;   // D8：串流中排隊的下一則訊息 {text,images}
 let abortCtrl=null;     // 串流中斷控制器
+let pendingUploads=0;   // 附件上傳中計數（addImageFiles 非同步壓縮+寫DB期間 >0）
+let sendLock=false;     // sendMessage 互斥：等待附件期間連打 Enter/連點按鈕只送一次
+let uploadWaiters=[];   // 等待附件完成的 resolve 佇列（sendMessage 無感等待用，不 toast）
+function waitForUploads(){if(pendingUploads<=0)return Promise.resolve();return new Promise(r=>uploadWaiters.push(r))}
+function uploadDone(){if(pendingUploads>0)pendingUploads--;if(pendingUploads<=0){pendingUploads=0;const ws=uploadWaiters;uploadWaiters=[];ws.forEach(r=>{try{r()}catch(e){}})}}
 let imgMode=false;      // 圖片模式：ON 時送出改呼叫圖片模型（文生圖 / 圖生圖）
 
 // ===== A2：blob URL 追蹤（渲染建立的 objectURL 統一記錄，重建訊息區時釋放）=====
@@ -3308,23 +3313,26 @@ function getSystemPrompt(){
   return parts.join('\n\n');
 }
 
-function newChat(){
+function newChat(keepInputState){
   const id='chat_'+Date.now();
   chats[id]={id,title:'新對話',messages:[],createdAt:Date.now(),updatedAt:Date.now()};
   // 還沒選定對話時打的草稿（鍵 '__new__'）跟著新對話走，開新對話不丟字
   if(drafts['__new__']){drafts[id]=drafts['__new__'];delete drafts['__new__'];saveDrafts()}
   saveChatsData(chats);
-  setActiveChat(id);   // A7：setActiveChat 內已呼叫 renderChatList，不再重複呼叫
+  setActiveChat(id,keepInputState);   // A7：setActiveChat 內已呼叫 renderChatList，不再重複呼叫
 }
 
-function setActiveChat(id){
+function setActiveChat(id,keepInputState){
   if(draftTimer){clearTimeout(draftTimer);draftTimer=null}
   saveDraft();              // 切走前先把目前輸入內容存成草稿
   activeChatId=id;
   saveChatsDataNow();   // B2：切換對話前先沖掉待寫存的變更
   renderMessages();
   renderChatList();
-  applyDraft(id);           // 帶入這場對話的草稿（非同步：附件要讀 IndexedDB）
+  // keepInputState：sendMessage 送出中自動開的新對話用——跳過草稿重套。
+  // applyDraft 會 clearPendingImages() 清掉正要送出的附件（第一次使用/無歷史時必踩，症狀＝第一則只送出文字、
+  // 附件留到第二則）。全新對話也沒有舊草稿可還原：文字本來就在輸入框，附件本來就在 pendingImages，略過即可。
+  if(!keepInputState)applyDraft(id);
   // 搜尋列開著時切換對話：用同一組關鍵字在新對話裡重搜（索引是針對訊息陣列的，必須重算）
   if(findQ)runFind();
 }
@@ -4362,8 +4370,31 @@ function makeStatusEl(html,id){
 // 前一則使用者訊息（農民曆追問用：動作在上句、日期在下句時合併判斷；圖片訊息取其文字段）
 function prevUserText(){try{const ms=chats[activeChatId].messages;let n=0;for(let i=ms.length-1;i>=0;i--){const m=ms[i];if(m&&m.role==='user'){n++;if(n===2){if(typeof m.content==='string')return m.content;if(Array.isArray(m.content)){const t=m.content.find(p=>p&&p.type==='text');return (t&&t.text)||'';}}}};}catch(e){}return '';}
 async function sendMessage(){
+  // 檔案還拖在半空（尚未 drop）：這時圖還沒進 pendingUploads/pendingImages，直接送會漏圖。
+  // 等 drop 之後接下方「等上傳」一起送；若拖曳被取消（dragend/dragleave）就照原內容送。
+  if(dragActive){
+    if(sendLock){
+      const input0=document.getElementById('msgInput');
+      if(input0&&document.activeElement!==input0){try{input0.focus()}catch(e){}}
+      return;
+    }
+    sendLock=true;
+    try{await waitForDragEnd()}finally{sendLock=false}
+  }
+  // 附件還在處理（拖放/貼上/選檔後的壓縮+寫DB非同步中）：有附件才等，無附件直接送，不 toast；
+  // 沒上傳時 pendingUploads==0，此段零開銷直接跳過。
+  if(pendingUploads>0){
+    if(sendLock){   // 等待期間又按 Enter/按鈕：忽略這次（輸入框文字還在，不會丟），等第一次連圖一起送
+      const input0=document.getElementById('msgInput');
+      if(input0&&document.activeElement!==input0){try{input0.focus()}catch(e){}}
+      return;
+    }
+    sendLock=true;
+    try{await waitForUploads()}finally{sendLock=false}
+  }
   let almResult=null;   // 農民曆直查結果暫存（條件內賦值用，避免同步函式調兩次）
   const input=document.getElementById('msgInput');
+  // 注意：text 在等待附件後才讀，否則會讀到舊快照而漏圖
   const text=input.value.trim();
   if(isStreaming){
     // D8：串流中送出 → 排隊，目前回覆完成後自動送出（送出鈕此時仍是「停止」，行為不變）
@@ -4376,7 +4407,7 @@ async function sendMessage(){
     return;
   }
   // 若無活躍對話，自動建立
-  if(!activeChatId)newChat();
+  if(!activeChatId)newChat(true);   // 送出中自動開新對話：不可重套草稿（applyDraft 會清掉正要送出的附件）
   if(!text && !pendingImages.length)return;
 
   const apiKey=getApiKey();
@@ -6971,7 +7002,7 @@ function renderAttachBar(){
   const bar=document.getElementById('attachBar');
   if(!pendingImages.length){bar.innerHTML='';updateImgModeHint();return}
   bar.innerHTML=pendingImages.map((u,i)=>
-    `<div class="attach-thumb"><img src="${escHtml(u.url||'')}" alt="附件"><button class="attach-remove" data-i="${i}" type="button" title="移除圖片">✕</button></div>`
+    `<div class="attach-thumb" style="position: relative; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background-color: rgb(240, 238, 236); flex-shrink: 0; border: 2px solid rgb(213, 210, 207); transform: rotate(-4deg); box-shadow: rgba(0, 0, 0, 0.12) 0px 2px 8px;"><img src="${escHtml(u.url||'')}" alt="附件"><button class="attach-remove" data-i="${i}" type="button" title="移除圖片">✕</button></div>`
   ).join('');
   updateImgModeHint();
 }
@@ -6989,8 +7020,9 @@ document.getElementById('attachBar').addEventListener('click',e=>{
 async function addImageFiles(files){
   const list=[...(files||[])].filter(f=>f&&f.type&&f.type.indexOf('image/')===0);
   if(!list.length)return 0;
+  pendingUploads++;
   let n=0;
-  for(const f of list){
+  try{for(const f of list){
     if(pendingImages.length>=8){showToast('一次最多附加 8 張圖片','warn');break}
     try{
       let data;
@@ -7007,6 +7039,7 @@ async function addImageFiles(files){
       showToast('圖片讀取失敗：'+(f.name||''),'warn');
     }
   }
+  }finally{uploadDone()}
   if(n)scheduleDraft();
   return n;
 }
@@ -7017,18 +7050,28 @@ document.getElementById('fileInput').addEventListener('change',async e=>{
 });
 // ===== 拖放 / 貼上圖片上傳（PC 端原本只能按 📎 選檔）=====
 function dragHasFiles(e){return !!(e.dataTransfer&&Array.from(e.dataTransfer.types||[]).indexOf('Files')>=0)}
+// 拖曳進行中（dragenter～drop/dragend）：圖還沒 drop、addImageFiles 還沒開始，pendingUploads==0，
+// sendMessage 的「等上傳」機制攔不到這個窗口——拖曳途中按 Enter 必須另外等拖曳結束。
+let dragActive=false;
+let dragEndWaiters=[];
+function waitForDragEnd(){if(!dragActive)return Promise.resolve();return new Promise(r=>dragEndWaiters.push(r))}
+function dragEnded(){if(!dragActive)return;dragActive=false;const ws=dragEndWaiters;dragEndWaiters=[];ws.forEach(r=>{try{r()}catch(e){}})}
 ['dragenter','dragover'].forEach(ev=>document.addEventListener(ev,e=>{
   if(!dragHasFiles(e))return;
   e.preventDefault();
+  dragActive=true;
   document.body.classList.add('drag-over');
 }));
 ['dragleave','dragend'].forEach(ev=>document.addEventListener(ev,e=>{
   if(e.type==='dragleave'&&e.relatedTarget)return;   // 移到子元素不算離開
+  dragEnded();
   document.body.classList.remove('drag-over');
 }));
 document.addEventListener('drop',e=>{
   if(!dragHasFiles(e))return;
   e.preventDefault();
+  dragEnded();   // 先喚醒等待中的 sendMessage（被喚醒的 microtask 要等本 handler 跑完才執行，
+                 // 屆時下行 addImageFiles 已同步 pendingUploads++，會接著走「等上傳」）
   document.body.classList.remove('drag-over');
   addImageFiles(e.dataTransfer.files);
 });
@@ -7352,13 +7395,17 @@ messagesEl.addEventListener('click',async e=>{
     const part=Array.isArray(m.content)?m.content.find(p=>p.type==='image_ref'&&p.id):null;
     if(!part)return;
     if(pendingImages.length>=4){showToast('參考圖最多 4 張，<br>已達上限','warn');return}   // D9
-    const data=await mediaGet(part.id);
-    if(data==null){showToast('圖片資料已不存在（可能已被刪除）','warn');return}
-    // 內容去重：同一張圖重複「修改圖片」時直接沿用既有 id，
-    // 圖庫不會再多出一份一模一樣的檔案（舊版每次修改都複製一份，改十次就十份）
-    let nid;
-    try{nid=await mediaPutDedup(data,'e')}catch(e){showToast('圖片讀取失敗','warn');return}
-    pendingImages.push({id:nid,url:previewUrlFor(data)});
+    // 下方兩個 await 期間按 Enter 會漏圖：先計數（同 addImageFiles 模式），完成或失敗都在 finally 歸零
+    pendingUploads++;
+    try{
+      const data=await mediaGet(part.id);
+      if(data==null){showToast('圖片資料已不存在（可能已被刪除）','warn');return}
+      // 內容去重：同一張圖重複「修改圖片」時直接沿用既有 id，
+      // 圖庫不會再多出一份一模一樣的檔案（舊版每次修改都複製一份，改十次就十份）
+      let nid;
+      try{nid=await mediaPutDedup(data,'e')}catch(e){showToast('圖片讀取失敗','warn');return}
+      pendingImages.push({id:nid,url:previewUrlFor(data)});
+    }finally{uploadDone()}
     if(!imgMode){
       imgMode=true;   // 修改圖片需在圖片模式下送出，自動開啟
       const b=document.getElementById('btnImgMode');
